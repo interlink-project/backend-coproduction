@@ -1,0 +1,82 @@
+version: "3.3"
+services:
+  redis:
+    container_name: backend-redis
+    image: redis:6-alpine
+    networks:
+      - default
+
+  db:
+    container_name: coproduction-db
+    image: postgres:12
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
+    #volumes:
+    #  - app-db-data:/var/lib/postgresql/data/pgdata
+    env_file:
+      - .env
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      placement:
+        constraints:
+          - node.labels.${STACK_NAME?Variable not set}.app-db-data == true
+          
+  coproduction:
+    image: 'coproductionprod:${TAG-latest}'
+    container_name: coproduction-prod
+    env_file:
+      - .env
+    environment:
+      - SERVER_NAME=${DOMAIN?Variable not set}
+      - SERVER_HOST=https://${DOMAIN?Variable not set}
+      - PORT=${PORT}
+      # Allow explicit env var override for tests
+    depends_on:
+      - db
+    build:
+      context: .
+      dockerfile: Dockerfile.coproduction
+      args:
+        INSTALL_DEV: ${INSTALL_DEV-false}
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=traefik-public
+        - traefik.http.routers.${STACK_NAME?Variable not set}-coproduction-http.rule=PathPrefix(`/coproduction`)
+        - traefik.http.services.${STACK_NAME?Variable not set}-coproduction.loadbalancer.server.port=${PORT}
+        - traefik.http.routers.${STACK_NAME?Variable not set}-coproduction-http.middlewares=coproduction-stripprefix
+        - traefik.http.middlewares.coproduction-stripprefix.stripprefix.prefixes=/coproduction
+    networks:
+      - traefik-public
+      - default
+
+  coproductionworker:
+    image: 'coproductionworkerprod:${TAG-latest}'
+    container_name: coproductionworker-prod
+    depends_on:
+      - db
+      - redis
+    env_file:
+      - .env
+    environment:
+      - SERVER_NAME=${DOMAIN?Variable not set}
+      - SERVER_HOST=https://${DOMAIN?Variable not set}
+    build:
+      context: .
+      dockerfile: Dockerfile.coproduction
+      target: coproductionworker
+      args:
+        INSTALL_DEV: ${INSTALL_DEV-false}
+    networks:
+      - default
+
+networks:
+  traefik-public:
+    external: true

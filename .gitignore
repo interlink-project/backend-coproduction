@@ -1,0 +1,10 @@
+.vscode
+.mypy_cache
+docker-stack.yml
+.cache
+.DS_Store
+
+/interlinkers/*
+!/interlinkers/images
+!/interlinkers/*.sh
+!/interlinkers/README.md

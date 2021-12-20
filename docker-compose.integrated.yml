@@ -1,0 +1,41 @@
+version: "3.3"
+services:
+
+  coproduction:
+    image: 'coproductiondev:${TAG-latest}'
+    container_name: coproduction-integrated
+    volumes:
+      - ./coproduction:/app
+    environment:
+      - SERVER_HOST=http://${DOMAIN?Variable not set}/coproduction
+      - PORT=${PORT}
+      - BASE_PATH=/coproduction
+    build:
+      context: .
+      dockerfile: Dockerfile.coproduction
+      target: coproduction
+      args:
+        INSTALL_DEV: ${INSTALL_DEV-true}
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik-public
+      - traefik.http.routers.${STACK_NAME?Variable not set}-coproduction-http.rule=PathPrefix(`/coproduction`)
+      - traefik.http.services.${STACK_NAME?Variable not set}-coproduction.loadbalancer.server.port=${PORT}
+      - traefik.http.routers.${STACK_NAME?Variable not set}-coproduction-http.middlewares=coproduction-stripprefix
+      - traefik.http.middlewares.coproduction-stripprefix.stripprefix.prefixes=/coproduction
+
+  coproductionworker:
+    image: 'coproductionworkerdev:${TAG-latest}'
+    container_name: coproductionworker-integrated
+    volumes:
+      - ./coproduction:/app
+    environment:
+      - RUN=celery worker -A app.worker -l info -Q main-queue -c 1
+      - SERVER_HOST=http://${DOMAIN?Variable not set}
+      - BASE_PATH=/coproduction
+    build:
+      context: .
+      dockerfile: Dockerfile.coproduction
+      target: coproductionworker
+      args:
+        INSTALL_DEV: ${INSTALL_DEV-true}

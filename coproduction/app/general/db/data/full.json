@@ -1,0 +1,260 @@
+{
+    "phases": {
+        "project_start": {
+            "initiate_a_coproduction_endeavour": {
+                "specify_the_main_aim_of_the_project": [
+                    "DIGITAL TEMPLATE - skeleton to guide the description of the main aim of the collaborative project"
+                ],
+                "set_the_overall_initial_workplan": [
+                    "DIGITAL TEMPLATE - workplan skeleton that summarizes co-production steps and tentative timeline"
+                ]
+            }
+        },
+        "engage": {
+            "identify_stakeholders": {
+                "map_stakeholders_analyse_motivation_skills_expectations": [
+                    "DIGITAL TEXT - guidelines that explain the rationale of the process of stakeholders mapping and analysis.",
+                    "DIGITAL TEMPLATE - excel file with columns that guide the (written) analysis of the stakeholders ",
+                    "TANGIBLE - cards to facilitate the stakeholders analysis during a brainstorming (cards for people, roles, possible expectations, ecc...)"
+                ],
+                "visually_map_the_network_of_stakeholders": [
+                    "TANGIBLE - canvas with a graph that helps position the stakeholders in the network and draw the dependency relationships. Includes instructions to ensure network balance"
+                ],
+                "create_a_contact_list_of_potential_network_participants": [
+                    "DIGITAL TEMPLATE - excel file"
+                ]
+            },
+            "engage_stakeholders": {
+                "prepare_an_engagement_plan": [
+                    "GUIDELINES - description of different engagement methods for the different phases",
+                    "DIGITAL CANVAS - annotate workplan with expected level of engagement of different stakeholders"
+                ],
+                "create_awareness_and_communication": [
+                    "GUIDELINES - instructions for communication plan",
+                    "CANVAS - templates for communication plan",
+                    "EXAMPLES",
+                    "DIGITAL TEMPLATE - templates for dissemination content",
+                    "SOFTWARE - Tools for communication"
+                ],
+                "communicate_benefit_for_stakeholders": [
+                    "GUIDELINES - explanation of the need to foster stakeholders' initial motivation to participate",
+                    "SOFTWARE - Tools for communication"
+                ],
+                "engage_citizens_in_the_coproduction_process": [
+                    "GUIDELINES - Guidelines for communication campaigns ",
+                    "GUIDELINES - explain the role of the non-disclosure agreement"
+                ]
+            },
+            "define_legal_and_ethical_framework": {
+                "define_a_nondisclosure_agreement": [
+                    "DIGITAL TEMPLATE - skeleton for the non-discplosure agreement",
+                    "EXAMPLES - Example of NDA"
+                ],
+                "define_a_partnership_agreement": [
+                    "GUIDELINES - explain the role of the partnership agreement",
+                    "DIGITAL TEMPLATE - skeleton for the partnership agreement (different templates may be made available according to the type of co-production initiative) ",
+                    "EXAMPLES - Examples of Partnership Agreement"
+                ]
+            },
+            "focus_the_problem_collaboratively": {
+                "collaboratively_analyse_the_problem": [],
+                "gather_needs_and_ideas_via_crowdsourcing": [
+                    "SOFTWARE - Tools for information crowdsourcing"
+                ],
+                "sketch_an_initial_idea_of_the_service": [
+                    "GUIDELINES - explain how to sketch an effective service scenario",
+                    "DIGITAL CANVAS - for service scenario description ",
+                    "EXAMPLES - Examples of public service scenarios (for example taken from INTERLINK use cases)"
+                ],
+                "collaborative_agree_on_a_service_idea": [
+                    "SOFTWARE - Tools for e-voting"
+                ],
+                "define_requirements_and_constraints_for_the_service": [
+                    "DIGITAL TEMPLATE - to guide the collection of contraints and requirements"
+                ]
+            },
+            "define_data_management_plan": {
+                "clarify_the_purpose_for_data_collection": [],
+                "understand_how_the_data_flows": [],
+                "be_aware_of_data_impact": [],
+                "to_be_completed_with_input_from_wp": []
+            }
+        },
+        "coevaluation_go_no_go": {
+            "define_evaluation_criteria": {
+                "set_evaluation_criteria": [
+                    "GUIDELINES - description of the importance of setting up evaluation procedures right from the beginning of a project"
+                ],
+                "define_kpis": [
+                    "GUIDELINES - explain the importance of defining KPIs",
+                    "DIGITAL TEMPLATE - Templates for KPI description",
+                    "EXAMPLES - Examples of meaningful KPIs for Public Services of different types derived from existing case studies"
+                ]
+            },
+            "iterative_evaluation_of_viability_and_sustainability": {
+                "define_preliminary_ideas_for_a_sustainability_business_model": [
+                    "DIGITAL CANVAS - Business Model Canvas",
+                    "EXAMPLES - Examples of Business Models for Public Services with different governance models"
+                ],
+                "adjust_the_project_workplan": []
+            },
+            "team_formation_for_next_step": {
+                "revise_the_map_of_stakeholders": [],
+                "revise_engagement_methods": [],
+                "": []
+            }
+        },
+        "design": {
+            "problem_exploration": {
+                "ideas_collection_for_problem_refinement": [
+                    "GUIDELINES - how to collect ideas to solve a challenge / to refine an idea",
+                    "GUIDELINES - how to organize a brainstorming",
+                    "SOFTWARE - Tools for brainstorming"
+                ],
+                "ideas_crowdsourcing": [
+                    "GUIDELINES - how to support the co-creation team to collect ideas from a large set of contributors (e.g. citizens) related to a specific challenge, organize and manage the ideas and eventually evaluate them",
+                    "SOFTWARE - Tools for information crowdsourcing",
+                    "SOFTWARE - Tools for e-voting",
+                    "HUMAN EXPERTS - Experts in service design"
+                ],
+                "context_analysis": [
+                    "GUIDELINES - explain why it is important to understand the context in which a service is delivered",
+                    "CANVAS - context analysis",
+                    "HUMAN EXPERTS - Experts in service design"
+                ],
+                "map_of_actors": [
+                    "CANVAS - Actors involved in service delivery",
+                    "EXAMPLES - Examples for map of actors",
+                    "HUMAN EXPERTS - Experts in service design"
+                ],
+                "collect_data": [
+                    "GUIDELINES - How to collect data about users, their behaviour, their potential use of a service",
+                    "DIGITAL TEMPLATE - How to collect data through interviews",
+                    "DIGITAL TEMPLATE - How to collect data through  surveys",
+                    "DIGITAL TEMPLATE - How to collect data through focus groups",
+                    "DIGITAL TEMPLATE - How to collect web data",
+                    "SOFTWARE - Tools for surveys",
+                    "HUMAN EXPERTS - Experts in service design"
+                ]
+            },
+            "service_design": {
+                "define_personas": [
+                    "GUIDELINES - how to define personas",
+                    "DIGITAL TEMPLATE - Personas",
+                    "EXAMPLES - Example personas",
+                    "HUMAN EXPERTS - Experts in service design"
+                ],
+                "define_scenarios": [
+                    "GUIDELINES - how to define scenarios",
+                    "DIGITAL TEMPLATE - to help create and use scenarios",
+                    "EXAMPLES - Example scenarios",
+                    "HUMAN EXPERTS - Experts in service design"
+                ],
+                "define_user_journeys": [
+                    "GUIDELINES - how to define user journeys",
+                    "DIGITAL TEMPLATE - to help create and use user journeys",
+                    "EXAMPLES - Examples of user journeys",
+                    "HUMAN EXPERTS - Experts in service design"
+                ],
+                "engage_relevant_actors_in_the_design": [
+                    "GUIDELINES - how to manage a co-design workshop",
+                    "HUMAN EXPERTS - Experts in service design"
+                ],
+                "prototype": [
+                    "GUIDELINES - how to create a low fidelity prototype",
+                    "EXAMPLES - Examples of low fidelity prototypes",
+                    "HUMAN EXPERTS - Experts in service design"
+                ]
+            },
+            "service_specification": {
+                "service_specification": [
+                    "GUIDELINES - how to perform service specification",
+                    "GUIDELINES - standard transversal requirements for public services",
+                    "DIGITAL TEMPLATE -  for requirements and functionalities description",
+                    "DIGITAL TEMPLATE - for service blueprint",
+                    "EXAMPLES - Examples of service specification",
+                    "HUMAN EXPERTS - Experts in technical design"
+                ],
+                "user_interface_design": [
+                    "GUIDELINES - on user interface design for public services",
+                    "EXAMPLES - Examples of user interface designs (e.g. AGID)",
+                    "HUMAN EXPERTS - Experts in technical design"
+                ],
+                "data_model_design": [
+                    "HUMAN EXPERTS - Experts in technical design"
+                ],
+                "software_architecture_and_api_design": [
+                    "HUMAN EXPERTS - Experts in software design"
+                ]
+            },
+            "sustainability": {
+                "evaluation_of_codesign": [
+                    "UNKNOWN - Usage of resources mentioned in (D) above",
+                    "DIGITAL TEMPLATE - Template for SWOT analysis"
+                ],
+                "refine_the_preliminary_business_model": [
+                    "CANVAS - Business Model Canvas",
+                    "EXAMPLES - Examples of Business Models for Public Services with different governance models"
+                ]
+            }
+        },
+        "coevaluation": {
+            "coevaluation": {
+                "usability_acceptance_ease_of_use_evaluation": [
+                    "QUESTIONNAIRES - Questionnaires for evaluating the user experience with the service",
+                    "GUIDELINES - Guidelines for data analysis",
+                    "HUMAN EXPERTS - Experts in service evaluation"
+                ]
+            },
+            "team_formation_for_next_step": {
+                "revise_the_map_of_stakeholders": []
+            }
+        },
+        "implementation_codelivery": {
+            "technical_implementation": {
+                "": []
+            },
+            "service_implementation": {
+                "": []
+            },
+            "service_codelivery": {
+                "identify_all_the_actors_engaged_in_the_codelivery_their_role_and_responsability": [
+                    "CANVAS - Map of actors engaged in co-delivery - Refinement of knowledge resources in (B) above"
+                ],
+                "coordinate_the_actors_involved_in_the_codelivery_of_the_service": [
+                    "GUIDELINES - Guidelines for coordinating a co-delivery team",
+                    "EXAMPLES - Examples of coordinating actors",
+                    "BEST PRACTICES - Best practices on coordinating actors",
+                    "SOFTWARE - Tools for coordination"
+                ],
+                "guarantee_transparent_communication_about_the_service_codelivered": []
+            }
+        },
+        "sustainability": {
+            "handover": {
+                "": []
+            },
+            "maintenance": {
+                "task_distribution_for_maintenancecontracts_regulationdata_management_archiving": []
+            },
+            "coevaluation": {
+                "monitoring_ongoing_evaluationperiodic_evaluations_with_stakeholders": []
+            }
+        }
+    },
+    "assetTypes": [
+        "DIGITAL TEMPLATE",
+        "DIGITAL TEXT",
+        "TANGIBLE",
+        "GUIDELINES",
+        "DIGITAL CANVAS",
+        "CANVAS",
+        "EXAMPLES",
+        "SOFTWARE",
+        "HUMAN EXPERTS",
+        "UNKNOWN",
+        "BEST PRACTICES",
+        "QUESTIONNAIRES"
+    ]
+}
+

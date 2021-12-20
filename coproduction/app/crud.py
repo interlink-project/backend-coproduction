@@ -1,0 +1,9 @@
+from app.coproductionprocesses.crud import exportCrud as coproductionprocess
+from app.coproductionschemas.crud import exportCrud as coproductionschema
+from app.phases.crud import crud_instantiations as phaseinstantiation
+from app.phases.crud import crud_phases as phases 
+from app.objectives.crud import crud_instantiations as objectiveinstantiation
+from app.objectives.crud import crud_objectives as objective
+from app.tasks.crud import crud_instantiations as taskinstantiation
+from app.tasks.crud import crud_tasks as task
+from app.assets.crud import exportCrud as asset

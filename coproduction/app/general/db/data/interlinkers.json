@@ -1,0 +1,16 @@
+[
+    {
+        "name": "Skeleton to guide the description of the main aim of the collaborative project",
+        "type": "KN",
+        "pre": "DIGITAL TEMPLATE",
+        "path": "static/demodata/interlinkers/doc.docx",
+        "id": 1
+    },
+    {
+        "name": "Collaborative editor",
+        "type": "SW",
+        "pre": "SOFTWARE",
+        "path": "http://localhost",
+        "id": 2
+    }
+]
