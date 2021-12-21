@@ -13,8 +13,8 @@ python /app/app/pre_start.py
 # alembic upgrade head
 # echo MIGRATIONS DONE
 
-# Create initial data in DB
-python /app/app/initial_data.py
+# If not migrations, create models in DB automatically
+python /app/app/create_models.py
 
 # Start Uvicorn with live reload IF DEVELOPMENT
 exec uvicorn --reload --host $HOST --port $PORT --log-level $LOG_LEVEL "app.main:app"

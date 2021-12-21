@@ -13,9 +13,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.coproduction
-      target: coproduction
-      args:
-        INSTALL_DEV: ${INSTALL_DEV-true}
+      target: apidev
     labels:
       - traefik.enable=true
       - traefik.docker.network=traefik-public
@@ -36,6 +34,4 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.coproduction
-      target: coproductionworker
-      args:
-        INSTALL_DEV: ${INSTALL_DEV-true}
+      target: workerdev

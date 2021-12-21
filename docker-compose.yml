@@ -1,7 +1,7 @@
 version: "3.3"
 services:
   redis:
-    container_name: backend-redis
+    container_name: coproduction-redis
     image: redis:6-alpine
     networks:
       - default
@@ -39,12 +39,12 @@ services:
       - PORT=${PORT}
       # Allow explicit env var override for tests
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     build:
       context: .
       dockerfile: Dockerfile.coproduction
-      args:
-        INSTALL_DEV: ${INSTALL_DEV-false}
+      target: apiprod
     deploy:
       labels:
         - traefik.enable=true
@@ -71,9 +71,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.coproduction
-      target: coproductionworker
-      args:
-        INSTALL_DEV: ${INSTALL_DEV-false}
+      target: workerprod
     networks:
       - default
 

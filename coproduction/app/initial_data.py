@@ -5,26 +5,13 @@ import requests
 
 from app import crud, schemas
 from app.config import settings
-from app.general.db import base  # noqa: F401
-# make sure all SQL Alchemy models are imported (app.general.db.base) before initializing DB
-# otherwise, SQL Alchemy might fail to initialize relationships properly
-# for more details: https://github.com/tiangolo/full-stack-fastapi-postgresql/issues/28
-from app.general.db.base_class import Base as BaseModel
-from app.general.db.session import SessionLocal, engine
-from app.general.db.diagram import create_diagram
+from app.general.db.session import SessionLocal
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-#TODO remove suffixes
-
-def init() -> None:
-    # Tables should be created with Alembic migrations
-    # But if you don't want to use migrations, create
-    # the tables un-commenting the next line
-    BaseModel.metadata.create_all(bind=engine)
-    create_diagram()
-
+def main() -> None:
+    logger.info("Creating initial data")
     db = SessionLocal()
 
     print("WAIT UNTIL ALL DEMO DATA IS CREATED")
@@ -106,11 +93,6 @@ def init() -> None:
     )
 
     db.close()
-
-
-def main() -> None:
-    logger.info("Creating initial data")
-    init()
     logger.info("Initial data created")
 
 

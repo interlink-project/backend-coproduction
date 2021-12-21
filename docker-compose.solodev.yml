@@ -12,9 +12,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.coproduction
-      target: coproduction
-      args:
-        INSTALL_DEV: ${INSTALL_DEV-true}
+      target: apidev
     ports:
       - "${SOLODEVPORT}:${PORT}"
     networks:
@@ -32,6 +30,4 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.coproduction
-      target: coproductionworker
-      args:
-        INSTALL_DEV: ${INSTALL_DEV-true}
+      target: workerdev
