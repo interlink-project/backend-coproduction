@@ -59,6 +59,10 @@ class BaseConfig(BaseSettings):
     AUTH_PORT: int
     AUTH_SERVICE: str = os.getenv("AUTH_SERVICE_NAME") + ":" + os.getenv("AUTH_PORT")
 
+    ACL_SERVICE_NAME: str
+    ACL_PORT: int
+    ACL_SERVICE: str = os.getenv("ACL_SERVICE_NAME") + ":" + os.getenv("ACL_PORT")
+
     TEAMMANAGEMENT_SERVICE_NAME: str
     TEAMMANAGEMENT_PORT: int
     TEAMMANAGEMENT_SERVICE: str = os.getenv("TEAMMANAGEMENT_SERVICE_NAME") + ":" + os.getenv("TEAMMANAGEMENT_PORT")

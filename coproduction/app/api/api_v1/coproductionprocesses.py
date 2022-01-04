@@ -3,7 +3,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app import crud, models, schemas
+from app import crud, schemas
 from app.general import deps
 
 router = APIRouter()
@@ -55,7 +55,7 @@ def update_coproductionprocess(
     coproductionprocess = crud.coproductionprocess.get(db=db, id=id)
     if not coproductionprocess:
         raise HTTPException(status_code=404, detail="CoproductionProcess not found")
-    if not crud.coproductionprocess.can_update(current_user, coproductionprocess):
+    if not crud.coproductionprocess.can_update(db=db, user=current_user, object=coproductionprocess):
         raise HTTPException(status_code=403, detail="Not enough permissions")
     coproductionprocess = crud.coproductionprocess.update(db=db, db_obj=coproductionprocess, obj_in=coproductionprocess_in)
     return coproductionprocess
@@ -74,7 +74,7 @@ def read_coproductionprocess(
     coproductionprocess = crud.coproductionprocess.get(db=db, id=id)
     if not coproductionprocess:
         raise HTTPException(status_code=404, detail="CoproductionProcess not found")
-    if not crud.coproductionprocess.can_read(current_user, coproductionprocess):
+    if not crud.coproductionprocess.can_read(db=db, user=current_user, object=coproductionprocess):
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return coproductionprocess
 
@@ -92,7 +92,7 @@ def delete_coproductionprocess(
     coproductionprocess = crud.coproductionprocess.get(db=db, id=id)
     if not coproductionprocess:
         raise HTTPException(status_code=404, detail="CoproductionProcess not found")
-    if not crud.coproductionprocess.can_remove(current_user, coproductionprocess):
+    if not crud.coproductionprocess.can_remove(db=db, user=current_user, object=coproductionprocess):
         raise HTTPException(status_code=403, detail="Not enough permissions")
     crud.coproductionprocess.remove(db=db, id=id)
     return None
@@ -129,6 +129,6 @@ def get_coproductionprocess_tree(
     coproductionprocess = crud.coproductionprocess.get(db=db, id=id)
     if not coproductionprocess:
         raise HTTPException(status_code=404, detail="CoproductionProcess not found")
-    if not crud.coproductionprocess.can_remove(current_user, coproductionprocess):
+    if not crud.coproductionprocess.can_read(db=db, user=current_user, object=coproductionprocess):
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return coproductionprocess.phaseinstantiations

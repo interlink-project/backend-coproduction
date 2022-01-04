@@ -41,10 +41,6 @@ def healthcheck():
 #app.add_middleware(SessionMiddleware, secret_key="some-random-string")
 #app.add_middleware(AuthMiddleware)
 
-# from app.initial_data import create_diagram
-# print("CREATING DIAGRAM")
-# create_diagram()
-
 ###################
 # Staticfiles
 ###################

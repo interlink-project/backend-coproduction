@@ -78,19 +78,6 @@ def main() -> None:
             coproductionschema=SCHEMA,
             phase=phase
         )
-    response = requests.get(f"http://{settings.TEAMMANAGEMENT_SERVICE}/api/v1/teams/")
-    teams_data = response.json()
-    crud.coproductionprocess.create(
-        db=db,
-        coproductionprocess=schemas.CoproductionProcessCreate(
-            # artefact_id=interlinker.id,
-            name="Example",
-            logotype="/static/demodata/interlinkers/slack.png",
-            team_id=teams_data[0]["id"],
-            description="This is a demo process 2",
-        ),
-        schema=SCHEMA
-    )
 
     db.close()
     logger.info("Initial data created")
