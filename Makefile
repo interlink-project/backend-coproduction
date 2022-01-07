@@ -12,5 +12,9 @@ up: down ## Run containers (restarts them if already running)
 build: ## Build containers
 	docker-compose -f docker-compose.yml -f docker-compose.solodev.yml build
 
+.PHONY: seed
+seed: ## Seed data
+	docker-compose exec coproduction python /app/app/initial_data.py
+
 .PHONY: upb
 upb: down build up ## Build and run containers
