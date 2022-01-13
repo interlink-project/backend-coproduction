@@ -12,7 +12,7 @@ COPY ./coproduction/pyproject.toml ./coproduction/poetry.lock* /app/
 COPY ./coproduction /app
 ENV PYTHONPATH=/app
 
-FROM builder as apidev
+FROM builder as dev
 
 RUN poetry install --no-root
 RUN apt-get update \
@@ -22,33 +22,26 @@ RUN apt-get update \
 EXPOSE 80
 
 COPY ./coproduction/start-dev.sh ./start-dev.sh
-RUN chmod +x ./start-dev.sh
+COPY ./coproduction/worker-start.sh worker-start.sh
+
+# this will only matter for celery
+ENV C_FORCE_ROOT=1
+
+RUN chmod +x ./start-dev.sh ./worker-start.sh
 CMD ["bash", "./start-dev.sh"]
 
-FROM builder as apiprod
+FROM builder as prod
 
 RUN poetry install --no-root --no-dev
 EXPOSE 80
 
 COPY ./coproduction/start-prod.sh ./start-prod.sh
-RUN chmod +x ./start-prod.sh
+# add also worker start script
+COPY ./coproduction/worker-start.sh worker-start.sh
+
+RUN chmod +x ./start-prod.sh ./worker-start.sh
+
+# this will only matter for celery
+ENV C_FORCE_ROOT=1
+
 CMD ["bash", "./start-prod.sh"]
-
-# CELERYWORKER
-FROM builder as workerdev
-RUN poetry install --no-root
-
-ENV C_FORCE_ROOT=1
-
-COPY  ./coproduction/worker-start.sh worker-start.sh
-RUN chmod +x worker-start.sh
-CMD ["bash", "./worker-start.sh"]
-
-FROM builder as workerprod
-RUN poetry install --no-root --no-dev
-
-ENV C_FORCE_ROOT=1
-
-COPY  ./coproduction/worker-start.sh worker-start.sh
-RUN chmod +x worker-start.sh
-CMD ["bash", "./worker-start.sh"]
