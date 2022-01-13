@@ -23,7 +23,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: {context}/Dockerfile.coproduction
+          file: Dockerfile.coproduction
           push: true
           tags: interlinkproject/backend-coproduction:latest
           cache-from: type=registry,ref=interlinkproject/backend-coproduction:buildcache
