@@ -4,8 +4,7 @@ on:
   push:
     branches:
       - "unify_images_and_github_action"
-    paths:
-      - docker/postgres/**
+
 jobs:
   docker:
     runs-on: ubuntu-latest
