@@ -1,0 +1,65 @@
+version: "3.3"
+services:
+  redis:
+    container_name: coproduction-redis
+    image: redis:6-alpine
+
+  coproduction:
+    image: 'coproductiondev:${TAG-latest}'
+    container_name: coproduction-solo
+    volumes:
+      - ./coproduction:/app
+    env_file:
+      - .env
+      - .env.solo
+    environment:
+      - SERVER_NAME=${DOMAIN?Variable not set}
+      - SERVER_HOST=http://${DOMAIN?Variable not set}:${SOLODEVPORT}
+      - PORT
+      - BASE_PATH=
+    build:
+      context: .
+      dockerfile: Dockerfile.coproduction
+      target: apidev
+    ports:
+      - "${SOLODEVPORT}:${PORT}"
+
+  coproductionworker:
+    image: 'coproductionworkerdev:${TAG-latest}'
+    container_name: coproductionworker-solo
+    volumes:
+      - ./coproduction:/app
+    env_file:
+      - .env
+      - .env.solo
+    environment:
+      - SERVER_NAME=${DOMAIN?Variable not set}
+      - RUN=celery worker -A app.worker -l info -Q main-queue -c 1
+      - SERVER_HOST=http://${DOMAIN?Variable not set}
+      - BASE_PATH=
+    build:
+      context: .
+      dockerfile: Dockerfile.coproduction
+      target: workerdev
+
+  db:
+    container_name: db
+    image: postgres:12
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
+    #volumes:
+    #  - app-db-data:/var/lib/postgresql/data/pgdata
+    env_file:
+      - .env.solo
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      placement:
+        constraints:
+          - node.labels.${STACK_NAME?Variable not set}.app-db-data == true

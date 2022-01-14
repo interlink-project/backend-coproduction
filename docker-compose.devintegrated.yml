@@ -1,12 +1,21 @@
 version: "3.3"
 services:
+  redis:
+    container_name: coproduction-redis
+    image: redis:6-alpine
+    networks:
+      - default
 
   coproduction:
     image: 'coproductiondev:${TAG-latest}'
     container_name: coproduction-integrated
     volumes:
       - ./coproduction:/app
+    env_file:
+      - .env
+      - .env.integrated
     environment:
+      - SERVER_NAME=${DOMAIN?Variable not set}
       - SERVER_HOST=http://${DOMAIN?Variable not set}/coproduction
       - PORT=${PORT}
       # behind proxy
@@ -22,13 +31,20 @@ services:
       - traefik.http.services.${STACK_NAME?Variable not set}-coproduction.loadbalancer.server.port=${PORT}
       - traefik.http.routers.${STACK_NAME?Variable not set}-coproduction-http.middlewares=coproduction-stripprefix
       - traefik.http.middlewares.coproduction-stripprefix.stripprefix.prefixes=/coproduction
+    networks:
+      - traefik-public
+      - default
 
   coproductionworker:
     image: 'coproductionworkerdev:${TAG-latest}'
     container_name: coproductionworker-integrated
     volumes:
       - ./coproduction:/app
+    env_file:
+      - .env
+      - .env.integrated
     environment:
+      - SERVER_NAME=${DOMAIN?Variable not set}
       - RUN=celery worker -A app.worker -l info -Q main-queue -c 1
       - SERVER_HOST=http://${DOMAIN?Variable not set}
       # behind proxy
@@ -37,3 +53,10 @@ services:
       context: .
       dockerfile: Dockerfile.coproduction
       target: workerdev
+    networks:
+      - traefik-public
+      - default
+
+networks:
+  traefik-public:
+    external: true
