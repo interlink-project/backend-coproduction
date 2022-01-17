@@ -9,8 +9,7 @@ RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-
 
 # Copy poetry.lock* in case it doesn't exist in the repo
 COPY ./coproduction/pyproject.toml ./coproduction/poetry.lock* /app/
-
-COPY ./coproduction/app /app
+COPY ./coproduction /app
 ENV PYTHONPATH=/app
 
 RUN pip install --no-cache-dir redis

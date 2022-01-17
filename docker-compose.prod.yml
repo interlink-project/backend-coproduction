@@ -15,7 +15,7 @@ services:
       - SERVER_NAME=${DOMAIN?Variable not set}
       - SERVER_HOST=https://${DOMAIN?Variable not set}
       - PORT=${PORT}
-      # Allow explicit env var override for tests
+      - BASE_PATH=/coproduction
     build:
       context: .
       dockerfile: Dockerfile.coproduction
@@ -42,11 +42,13 @@ services:
     environment:
       - SERVER_NAME=${DOMAIN?Variable not set}
       - SERVER_HOST=https://${DOMAIN?Variable not set}
+      - BASE_PATH=/coproduction
     build:
       context: .
       dockerfile: Dockerfile.coproduction
       target: workerprod
     networks:
+      - traefik-public
       - default
 
 networks:

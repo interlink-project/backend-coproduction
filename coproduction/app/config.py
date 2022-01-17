@@ -61,24 +61,11 @@ class Settings(BaseSettings):
     ACL_PORT: int
     ACL_SERVICE: str = os.getenv("ACL_SERVICE_NAME") + ":" + os.getenv("ACL_PORT")
 
-    TEAMMANAGEMENT_SERVICE_NAME: str
-    TEAMMANAGEMENT_PORT: int
-    TEAMMANAGEMENT_SERVICE: str = os.getenv("TEAMMANAGEMENT_SERVICE_NAME") + ":" + os.getenv("TEAMMANAGEMENT_PORT")
-    
     CATALOGUE_SERVICE_NAME: str
     CATALOGUE_PORT: int
     CATALOGUE_SERVICE: str = os.getenv("CATALOGUE_SERVICE_NAME") + ":" + os.getenv("CATALOGUE_PORT")
 
     # file backend interlinkers
-
-    GOOGLEDRIVE_SERVICE_NAME: str
-    GOOGLEDRIVE_PORT: int
-    GOOGLEDRIVE_SERVICE: str = os.getenv("GOOGLEDRIVE_SERVICE_NAME") + ":" + os.getenv("GOOGLEDRIVE_PORT")
-
-    FILEMANAGER_SERVICE_NAME: str
-    FILEMANAGER_PORT: int
-    FILEMANAGER_SERVICE: str = os.getenv("FILEMANAGER_SERVICE_NAME") + ":" + os.getenv("FILEMANAGER_PORT")
-
     API_V1_STR: str = "/api/v1"
     PROJECT_NAME = "Coproduction API"
     BASE_PATH: str
