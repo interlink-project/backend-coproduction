@@ -8,3 +8,5 @@ from app.tasks.crud import crud_instantiations as taskinstantiation
 from app.tasks.crud import crud_tasks as task
 from app.assets.crud import exportCrud as asset
 from app.roles.crud import exportCrud as role
+from app.teams.crud import exportCrud as team
+from app.memberships.crud import exportCrud as membership

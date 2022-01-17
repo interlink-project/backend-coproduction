@@ -3,27 +3,28 @@ from typing import Any, Dict, Optional, Union
 
 import requests
 from sqlalchemy.orm import Session
+from fastapi.exceptions import HTTPException
 
 from app import crud, schemas
 from app.config import settings
 from app.general.utils.CRUDBase import CRUDBase
-from app.models import CoproductionProcess, CoproductionSchema
+from app.models import CoproductionProcess, CoproductionSchema, Team
 from app.schemas import CoproductionProcessCreate, CoproductionProcessPatch
 from app.extern import acl
-from app.extern import teams
 from app.schemas import RoleCreate, RolePatch
 
 class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessCreate, CoproductionProcessPatch]):
     def get_by_artefact(self, db: Session, artefact_id: uuid.UUID) -> Optional[CoproductionProcess]:
         return db.query(CoproductionProcess).filter(CoproductionProcess.artefact_id == artefact_id).first()
 
-    def create(self, db: Session, *, coproductionprocess: CoproductionProcessCreate, schema: Optional[CoproductionSchema] = None) -> CoproductionProcess:
+    def create(self, db: Session, *, coproductionprocess: CoproductionProcessCreate) -> CoproductionProcess:
         aclobj = acl.create_acl()
-        team = teams.get_team(coproductionprocess.team_id)
+
+        team = crud.team.get(db=db, id=coproductionprocess.team_id)
+        schema = crud.coproductionschema.get(db=db, id=coproductionprocess.schema_id)
         db_obj = CoproductionProcess(
             artefact_id=coproductionprocess.artefact_id,
             # uses postgres
-            team_id=team["id"],
             name=coproductionprocess.name,
             logotype=coproductionprocess.logotype,
             description=coproductionprocess.description,
@@ -31,6 +32,8 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
             idea=coproductionprocess.idea,
             organization=coproductionprocess.organization,
             challenges=coproductionprocess.challenges,
+            #relations
+            team=team,
             # uses mongo
             acl_id=aclobj["_id"]
         )
@@ -39,12 +42,12 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         db.refresh(db_obj)
 
         # Create all roles
-        for i in team["memberships"]:
+        for membership in team.memberships:
             role = RoleCreate(**{
                 "role": "admin",
                 "type": "team_member",
                 "coproductionprocess_id": db_obj.id,
-                "user_id": i["user_id"],
+                "user_id": membership.user_id,
             })
             crud.role.create(db=db, role=role)
 
@@ -76,8 +79,12 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
     def check_perm(self, db: Session, user, object, perm):
         role = crud.role.get_user_role_for_process(db=db, user_id=user["email"], coproductionprocess_id=object.id)
         if not role:
-            raise Exception("Role do not exist")
-        return acl.check_permissions_for_action(object.acl_id, perm, role.role)
+            role = "anonymous"
+        else:
+            role = role.role
+            # raise HTTPException(status_code=403, detail="Role do not exist")
+        return True
+        return acl.check_permissions_for_action(object.acl_id, perm, role)
 
     def can_read(self, db: Session, user, object):
         return self.check_perm(db=db, user=user, object=object, perm="retrieve")

@@ -49,7 +49,7 @@ prod: down ## Starts production containers
 .PHONY: tests
 tests: ## Starts test container
 	#docker-compose exec coproduction pytest --cov=app --cov-report=term-missing app/tests
-	docker-compose exec -T coproduction pytest app/tests
+	docker-compose -f docker-compose.devintegrated.yml exec -T coproduction pytest app/tests
 
 .PHONY: testing
 testing: devbuild solo tests down ## Builds containers, runs them, runs test container and deletes all containers
@@ -60,4 +60,4 @@ testing: devbuild solo tests down ## Builds containers, runs them, runs test con
 
 .PHONY: seed
 seed: ## Seed data
-	docker-compose exec coproduction python /app/app/initial_data.py
+	docker-compose -f docker-compose.devintegrated.yml exec coproduction python /app/app/initial_data.py

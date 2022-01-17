@@ -7,6 +7,9 @@ from app.coproductionschemas.schemas import *
 from app.phases.schemas import *
 from app.tasks.schemas import *
 from app.roles.schemas import *
+from app.teams.schemas import *
+from app.memberships.schemas import *
+
 
 class BaseORM(BaseModel):
     class Config:
@@ -47,3 +50,10 @@ class CoproductionProcessOutFull(CoproductionProcessOut):
 
 class RoleOutFull(RoleOut):
     pass
+
+
+class MembershipOutFull(MembershipOut):
+    pass
+
+class TeamOutFull(TeamOut):
+    memberships: Optional[List[MembershipOutFull]]

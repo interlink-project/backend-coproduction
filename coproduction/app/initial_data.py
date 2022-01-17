@@ -157,6 +157,7 @@ def main() -> None:
                                 if interlinker["id"] == interlinkerId:
                                     response = requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/get_by_name/{interlinkerName}".replace(" ", "%20"))
                                     interlinker_data = response.json()
+                                    print(interlinker_data["id"])
                                     crud.task.add_recommended_interlinker(
                                         db=db,
                                         task=task,
@@ -167,6 +168,25 @@ def main() -> None:
             coproductionschema=SCHEMA,
             phase=phase
         )
+    TEAM = crud.team.create(
+        db=db,
+        team=schemas.TeamCreate(
+            name="Example team",
+            description="Good team",
+            logotype=""
+        )
+    )
+    crud.coproductionprocess.create(
+        db=db,
+        coproductionprocess=schemas.CoproductionProcessCreate(
+            # artefact_id=interlinker.id,
+            name="Example",
+            logotype="/static/demodata/interlinkers/slack.png",
+            description="This is a demo process 2",
+            team_id=TEAM.id,
+            schema_id=SCHEMA.id
+        ),
+    )
 
     db.close()
     logger.info("Initial data created")

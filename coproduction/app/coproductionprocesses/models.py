@@ -1,7 +1,6 @@
 import uuid
 from datetime import datetime
 
-from app.general.db.base_class import Base as BaseModel
 from sqlalchemy import (
     ARRAY,
     Boolean,
@@ -13,12 +12,13 @@ from sqlalchemy import (
     Table,
     Text,
 )
-from sqlalchemy.dialects.postgresql import UUID, HSTORE
+from sqlalchemy.dialects.postgresql import HSTORE, UUID
 from sqlalchemy.orm import relationship
-import uuid
-from app.general.utils.DatabaseLocalization import translation_hybrid
 
 from app.extern import acl
+from app.general.db.base_class import Base as BaseModel
+from app.general.utils.DatabaseLocalization import translation_hybrid
+
 
 class CoproductionProcess(BaseModel):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -35,11 +35,15 @@ class CoproductionProcess(BaseModel):
     organization = Column(Text, nullable=True)
     challenges = Column(Text, nullable=True)
 
-    phaseinstantiations = relationship("PhaseInstantiation", back_populates="coproductionprocess")
+    phaseinstantiations = relationship(
+        "PhaseInstantiation", back_populates="coproductionprocess")
     roles = relationship("Role", back_populates="coproductionprocess")
 
     artefact_id = Column(UUID(as_uuid=True))
-    team_id = Column(UUID(as_uuid=True))
+    team_id = Column(
+        UUID(as_uuid=True), ForeignKey("team.id")
+    )
+    team = relationship("Team", back_populates="coproductionprocesses")
 
     acl_id = Column(Text)
 

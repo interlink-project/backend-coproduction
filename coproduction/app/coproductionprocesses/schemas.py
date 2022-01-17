@@ -18,6 +18,7 @@ class CoproductionProcessBase(BaseModel):
 
 class CoproductionProcessCreate(CoproductionProcessBase):
     artefact_id: Optional[uuid.UUID]
+    schema_id: Optional[uuid.UUID]
     team_id: uuid.UUID
 
 
