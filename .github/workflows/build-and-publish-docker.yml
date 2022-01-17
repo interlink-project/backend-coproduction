@@ -27,4 +27,4 @@ jobs:
           push: true
           tags: interlinkproject/backend-coproduction:latest
           cache-from: type=registry,ref=interlinkproject/backend-coproduction:buildcache
-          cache-to: type=registry,ref=interlinkproject/backend-coproduction,mode=max
+          cache-to: type=registry,ref=interlinkproject/backend-coproduction:buildcache,mode=max
