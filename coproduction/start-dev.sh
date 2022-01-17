@@ -8,11 +8,8 @@ LOG_LEVEL=${LOG_LEVEL:-info}
 # Let the DB start
 python /app/app/pre_start.py
 
-# If not migrations, create models in DB automatically
+# If not migrations, create models in DB automatically without migrations
 python /app/app/create_models.py
 
-# Start Uvicorn with live reload IF DEVELOPMENT
+# Start Uvicorn with live reload
 exec uvicorn --reload --host $HOST --port $PORT --log-level $LOG_LEVEL "app.main:app"
-
-# Start Gunicorn if PRODUCTION 
-# exec gunicorn -k "uvicorn.workers.UvicornWorker" -c "app/gunicorn_conf.py" "app.main:app"

@@ -12,8 +12,6 @@ COPY ./coproduction/pyproject.toml ./coproduction/poetry.lock* /app/
 COPY ./coproduction /app
 ENV PYTHONPATH=/app
 
-RUN pip install --no-cache-dir redis
-
 FROM builder as apidev
 
 RUN poetry install --no-root

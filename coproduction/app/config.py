@@ -21,14 +21,6 @@ class Settings(BaseSettings):
             return v
         raise ValueError(v)
 
-    SENTRY_DSN: Optional[HttpUrl] = None
-
-    @validator("SENTRY_DSN", pre=True)
-    def sentry_dsn_can_be_blank(cls, v: str) -> Optional[str]:
-        if len(v) == 0:
-            return None
-        return v
-
     POSTGRES_SERVER: str
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
@@ -46,10 +38,6 @@ class Settings(BaseSettings):
             host=values.get("POSTGRES_SERVER"),
             path=f"/{values.get('POSTGRES_DB') or ''}",
         )
-
-    CLIENT_ID: str
-    CLIENT_SECRET: str
-    SERVER_METADATA_URL: str
 
     # OTHER MICROS
     
