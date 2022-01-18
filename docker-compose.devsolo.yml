@@ -5,7 +5,7 @@ services:
     image: redis:6-alpine
 
   coproduction:
-    image: 'coproductiondev:${TAG-latest}'
+    image: "coproductiondev:${TAG-latest}"
     container_name: coproduction-solo
     volumes:
       - ./coproduction:/app
@@ -20,12 +20,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.coproduction
-      target: apidev
+      target: dev
     ports:
       - "${SOLODEVPORT}:${PORT}"
 
   coproductionworker:
-    image: 'coproductionworkerdev:${TAG-latest}'
+    image: "coproductionworkerdev:${TAG-latest}"
     container_name: coproductionworker-solo
     volumes:
       - ./coproduction:/app
@@ -40,7 +40,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.coproduction
-      target: workerdev
+      target: dev
+    command: ["bash", "./worker-start.sh"]
 
   db:
     container_name: db

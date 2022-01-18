@@ -7,7 +7,7 @@ services:
       - default
 
   coproduction:
-    image: 'coproductiondev:${TAG-latest}'
+    image: "coproductiondev:${TAG-latest}"
     container_name: coproduction-integrated
     volumes:
       - ./coproduction:/app
@@ -23,7 +23,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.coproduction
-      target: apidev
+      target: dev
     labels:
       - traefik.enable=true
       - traefik.docker.network=traefik-public
@@ -36,7 +36,7 @@ services:
       - default
 
   coproductionworker:
-    image: 'coproductionworkerdev:${TAG-latest}'
+    image: "coproductionworkerdev:${TAG-latest}"
     container_name: coproductionworker-integrated
     volumes:
       - ./coproduction:/app
@@ -52,7 +52,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.coproduction
-      target: workerdev
+      target: dev
+    command: ["bash", "./worker-start.sh"]
     networks:
       - traefik-public
       - default
