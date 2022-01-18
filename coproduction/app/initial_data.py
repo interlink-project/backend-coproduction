@@ -10,14 +10,16 @@ from app.general.db.session import SessionLocal
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+"""
+{
+    "name": "Skeleton to guide the description of the main aim of the collaborative project",
+    "id": 1
+},
+"""
 interlinkers = [
     {
-        "name": "Skeleton to guide the description of the main aim of the collaborative project",
-        "id": 1
-    },
-    {
         "name": "Google Drive",
-        "id": 2
+        "id": 1
     }
 ]
 data = {
@@ -104,21 +106,22 @@ data = {
         }
     }
 }
+
+
 def main() -> None:
     logger.info("Creating initial data")
     db = SessionLocal()
 
     print("WAIT UNTIL ALL DEMO DATA IS CREATED")
     SCHEMA = crud.coproductionschema.create(
-            db=db,
-            coproductionschema=schemas.CoproductionSchemaCreate(
-                name="MAIN_SCHEMA",
-                description="desc",
-                is_public=True
-            )
+        db=db,
+        coproductionschema=schemas.CoproductionSchemaCreate(
+            name="MAIN_SCHEMA",
+            description="desc",
+            is_public=True
         )
+    )
 
-    
     for phaseName in data["phases"]:
         phase = crud.phases.create(
             db=db,
@@ -155,7 +158,8 @@ def main() -> None:
                             for interlinker in interlinkers:
                                 interlinkerName = interlinker["name"]
                                 if interlinker["id"] == interlinkerId:
-                                    response = requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/get_by_name/{interlinkerName}".replace(" ", "%20"))
+                                    response = requests.get(
+                                        f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/get_by_name/{interlinkerName}".replace(" ", "%20"))
                                     interlinker_data = response.json()
                                     print(interlinker_data["id"])
                                     crud.task.add_recommended_interlinker(
