@@ -3,7 +3,7 @@ name: build-and-publish-docker
 on:
   push:
     branches:
-      - "unify_images_and_github_action"
+      - "master"
 
 jobs:
   docker:
