@@ -7,7 +7,7 @@ services:
       - default
 
   coproduction:
-    image: 'coproductionprod:${TAG-latest}'
+    image: "coproductionprod:${TAG-latest}"
     container_name: coproduction-prod
     env_file:
       - .env
@@ -19,7 +19,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.coproduction
-      target: apiprod
+      target: prod
     deploy:
       labels:
         - traefik.enable=true
@@ -33,7 +33,7 @@ services:
       - default
 
   coproductionworker:
-    image: 'coproductionworkerprod:${TAG-latest}'
+    image: "coproductionworkerprod:${TAG-latest}"
     container_name: coproductionworker-prod
     depends_on:
       - redis
@@ -46,7 +46,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.coproduction
-      target: workerprod
+      target: prod
+    command: ["bash", "./worker-start.sh"]
     networks:
       - traefik-public
       - default
