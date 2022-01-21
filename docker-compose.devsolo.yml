@@ -43,8 +43,8 @@ services:
       target: workerdev
 
   db:
-    container_name: db
-    image: postgres:12
+    container_name: db-solo
+    image: postgres-solo
     build:
       context: .
       dockerfile: Dockerfile.postgres
@@ -59,7 +59,3 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    deploy:
-      placement:
-        constraints:
-          - node.labels.${STACK_NAME?Variable not set}.app-db-data == true
