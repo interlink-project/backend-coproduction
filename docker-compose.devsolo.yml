@@ -44,7 +44,7 @@ services:
     command: ["bash", "./worker-start.sh"]
 
   db:
-    container_name: db-solo
+    container_name: coproduction-postgres
     image: postgres-solo
     build:
       context: .

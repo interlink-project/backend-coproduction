@@ -56,8 +56,8 @@ def wait_for_catalogue() -> None:
 def main() -> None:
     logger.info("Initializing service")
     wait_for_database()
-    wait_for_ACL()
-    wait_for_catalogue()
+    # wait_for_ACL()
+    # wait_for_catalogue()
     logger.info("Services finished initializing")
 
 
