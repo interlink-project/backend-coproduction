@@ -2,12 +2,22 @@ from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from starlette.middleware.cors import CORSMiddleware
 
-from app.api.api_v1 import api_router
+from app.api.api_v1 import api_router, team_management_router
 from app.config import settings
 
 app = FastAPI(
     title=settings.PROJECT_NAME, docs_url="/docs", openapi_url=f"{settings.API_V1_STR}/openapi.json", root_path=settings.BASE_PATH
 )
+
+
+@app.get("/")
+def main():
+    return RedirectResponse(url=f"{settings.BASE_PATH}/docs")
+
+
+@app.get("/healthcheck/")
+def healthcheck():
+    return True
 
 # Set all CORS enabled origins
 if settings.BACKEND_CORS_ORIGINS:
@@ -22,15 +32,8 @@ if settings.BACKEND_CORS_ORIGINS:
 
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+app.include_router(team_management_router, prefix=settings.API_V1_STR)
 
-@app.get("/")
-def main():
-    return RedirectResponse(url=f"{settings.BASE_PATH}/docs")
-
-
-@app.get("/healthcheck/")
-def healthcheck():
-    return True
 
 ###################
 # we need this to save temporary code & state in session (authentication)

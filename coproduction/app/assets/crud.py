@@ -7,7 +7,7 @@ from app import models
 import uuid
 
 class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
-    def create(self, db: Session, asset: AssetCreate, external_id: uuid.UUID) -> Asset:
+    def create(self, db: Session, asset: AssetCreate, external_id: str) -> Asset:
         db_obj = Asset(
             taskinstantiation_id=asset.taskinstantiation_id,
             interlinker_id=asset.interlinker_id,

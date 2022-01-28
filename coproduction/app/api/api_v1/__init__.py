@@ -8,6 +8,8 @@ from app.api.api_v1 import (
     taskinstantiations, 
     objectiveinstantiations, 
     assets,
+    teams,
+    memberships
 )
 
 
@@ -25,6 +27,13 @@ api_router.include_router(taskinstantiations.router,
                           prefix="/taskinstantiations", tags=["coproduction"])
 api_router.include_router(assets.router,
                           prefix="/assets", tags=["coproduction"])
+
+team_management_router = APIRouter()
+team_management_router.include_router(teams.router,
+                          prefix="/teams", tags=["teammanagement"])
+
+team_management_router.include_router(memberships.router,
+                          prefix="/memberships", tags=["teammanagement"])
 
 @api_router.get("/")
 def main():

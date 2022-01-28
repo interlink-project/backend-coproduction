@@ -8,6 +8,7 @@ from pydantic import BaseModel
 class AssetBase(BaseModel):
     taskinstantiation_id: uuid.UUID
     interlinker_id: uuid.UUID
+    external_id: str
     
 class AssetCreate(AssetBase):
     pass

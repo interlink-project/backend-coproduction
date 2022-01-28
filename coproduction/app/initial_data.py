@@ -10,6 +10,19 @@ from app.general.db.session import SessionLocal
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+DEFAULT_SCHEMA_NAME = "default"
+
+class bcolors:
+    HEADER = "\033[95m"
+    OKBLUE = "\033[94m"
+    OKCYAN = "\033[96m"
+    OKGREEN = "\033[92m"
+    WARNING = "\033[93m"
+    FAIL = "\033[91m"
+    ENDC = "\033[0m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
+
 """
 {
     "name": "Skeleton to guide the description of the main aim of the collaborative project",
@@ -80,7 +93,7 @@ data = {
                 "refine_the_preliminary_business_model": [1]
             }
         },
-        "codelivery": {
+        "build": {
             "technical_implementation": {
                 "some task": [1]
             },
@@ -112,11 +125,11 @@ def main() -> None:
     logger.info("Creating initial data")
     db = SessionLocal()
 
-    print("WAIT UNTIL ALL DEMO DATA IS CREATED")
+    
     SCHEMA = crud.coproductionschema.create(
         db=db,
         coproductionschema=schemas.CoproductionSchemaCreate(
-            name="MAIN_SCHEMA",
+            name=DEFAULT_SCHEMA_NAME,
             description="desc",
             is_public=True
         )
@@ -131,6 +144,7 @@ def main() -> None:
                 description="demo description"
             )
         )
+        print(f"\n{bcolors.WARNING}PHASE: {phaseName}{bcolors.ENDC}")
         for objectiveName in data["phases"][phaseName]:
             if objectiveName:
                 objective = crud.objective.create(
@@ -142,6 +156,7 @@ def main() -> None:
                         phase_id=phase.id
                     )
                 )
+                print(f"  {bcolors.OKCYAN}OBJECTIVE: {objectiveName}{bcolors.ENDC}")
                 for taskName in data["phases"][phaseName][objectiveName]:
                     if taskName:
                         task = crud.task.create(
@@ -153,6 +168,7 @@ def main() -> None:
                                 objective_id=objective.id
                             )
                         )
+                        print(f"    {bcolors.HEADER}TASK: {taskName}{bcolors.ENDC}")
 
                         for interlinkerId in data["phases"][phaseName][objectiveName][taskName]:
                             for interlinker in interlinkers:
@@ -160,13 +176,18 @@ def main() -> None:
                                 if interlinker["id"] == interlinkerId:
                                     response = requests.get(
                                         f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/get_by_name/{interlinkerName}".replace(" ", "%20"))
+                                    if response.status_code != 200:
+                                        print(f"      {bcolors.FAIL}INTERLINKER: '{interlinkerName}' named interlinker is not accessible")
                                     interlinker_data = response.json()
-                                    print(interlinker_data["id"])
                                     crud.task.add_recommended_interlinker(
                                         db=db,
                                         task=task,
                                         interlinker_id=interlinker_data["id"]
                                     )
+                                    name = interlinker_data["name"]
+                                    print(f"      {bcolors.ENDC}INTERLINKER: '{name}' as recommended interlinker")
+
+        print(f"{bcolors.OKGREEN}'{phaseName}' phase successfully added to '{DEFAULT_SCHEMA_NAME}' schema{bcolors.ENDC}")
         crud.coproductionschema.add_phase(
             db=db,
             coproductionschema=SCHEMA,
@@ -180,17 +201,20 @@ def main() -> None:
             logotype=""
         )
     )
+
+    COPRODUCTION_PROCESS_NAME = "Example"
     crud.coproductionprocess.create(
         db=db,
         coproductionprocess=schemas.CoproductionProcessCreate(
             # artefact_id=interlinker.id,
-            name="Example",
+            name=COPRODUCTION_PROCESS_NAME,
             logotype="/static/demodata/interlinkers/slack.png",
             description="This is a demo process 2",
             team_id=TEAM.id,
             schema_id=SCHEMA.id
         ),
     )
+    print(f"\n{bcolors.OKGREEN}'{COPRODUCTION_PROCESS_NAME}' coproduction process created{bcolors.ENDC}")
 
     db.close()
     logger.info("Initial data created")

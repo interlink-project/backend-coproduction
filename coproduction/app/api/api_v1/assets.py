@@ -61,11 +61,9 @@ def create_asset(
         raise HTTPException(status_code=403, detail="Interlinker not found")
 
     try:
-        response = requests.post(f"http://{backend}/api/v1/assets/")
-        external_asset = response.json()
-        external_id = external_asset["id"]
-
-        asset = crud.asset.create(db=db, asset=asset_in, external_id=external_id)
+        print(f"http://{backend}/api/v1/assets/{asset_in.external_id}")
+        assert requests.get(f"http://{backend}/api/v1/assets/{asset_in.external_id}").status_code == 200
+        asset = crud.asset.create(db=db, asset=asset_in, external_id=asset_in.external_id)
         return asset
     except:
         raise HTTPException(status_code=403, detail="Error in interlinker")

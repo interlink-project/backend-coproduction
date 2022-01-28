@@ -12,6 +12,7 @@ from app.models import CoproductionProcess, CoproductionSchema, Team
 from app.schemas import CoproductionProcessCreate, CoproductionProcessPatch
 from app.extern import acl
 from app.schemas import RoleCreate, RolePatch
+from app.initial_data import DEFAULT_SCHEMA_NAME
 
 class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessCreate, CoproductionProcessPatch]):
     def get_by_artefact(self, db: Session, artefact_id: uuid.UUID) -> Optional[CoproductionProcess]:
@@ -53,7 +54,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
         # Create all phaseinstantiations
         if not schema:
-            schema = crud.coproductionschema.get_by_name(db=db, name="MAIN_SCHEMA")
+            schema = crud.coproductionschema.get_by_name(db=db, name=DEFAULT_SCHEMA_NAME)
         if hasattr(schema, "phases"):
             for ph in schema.phases:
                 crud.phaseinstantiation.create(
