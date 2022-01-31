@@ -9,6 +9,8 @@ class AssetBase(BaseModel):
     taskinstantiation_id: uuid.UUID
     interlinker_id: uuid.UUID
     external_id: str
+    icon: Optional[str]
+    name: Optional[str]
     
 class AssetCreate(AssetBase):
     pass
@@ -27,4 +29,4 @@ class Asset(AssetBase):
 
 
 class AssetOut(Asset):
-    file_metadata: Optional[dict]
+    link: str

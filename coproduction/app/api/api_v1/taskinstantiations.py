@@ -78,6 +78,22 @@ def read_taskinstantiation(
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return taskinstantiation
 
+@router.get("/{id}/assets", response_model=List[schemas.AssetOutFull])
+def read_taskinstantiation(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: uuid.UUID,
+    current_user: Optional[dict] = Depends(deps.get_current_user),
+) -> Any:
+    """
+    Get taskinstantiation by ID.
+    """
+    taskinstantiation = crud.taskinstantiation.get(db=db, id=id)
+    if not taskinstantiation:
+        raise HTTPException(status_code=404, detail="TaskInstantiation not found")
+    if not crud.taskinstantiation.can_read(current_user, taskinstantiation):
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    return taskinstantiation.assets
 
 @router.delete("/{id}", response_model=schemas.TaskInstantiationOutFull)
 def delete_taskinstantiation(

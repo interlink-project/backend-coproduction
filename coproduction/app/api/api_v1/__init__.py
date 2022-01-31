@@ -19,12 +19,12 @@ api_router.include_router(coproductionschemas.router,
 
 api_router.include_router(coproductionprocesses.router,
                           prefix="/coproductionprocesses", tags=["coproduction"])
-api_router.include_router(phaseinstantiations.router,
-                          prefix="/phaseinstantiations", tags=["coproduction"])
+# api_router.include_router(phaseinstantiations.router,
+#                           prefix="/phaseinstantiations", tags=["coproduction"])
 api_router.include_router(objectiveinstantiations.router,
                           prefix="/objectiveinstantiations", tags=["coproduction"])
-api_router.include_router(taskinstantiations.router,
-                          prefix="/taskinstantiations", tags=["coproduction"])
+# api_router.include_router(taskinstantiations.router,
+#                           prefix="/taskinstantiations", tags=["coproduction"])
 api_router.include_router(assets.router,
                           prefix="/assets", tags=["coproduction"])
 

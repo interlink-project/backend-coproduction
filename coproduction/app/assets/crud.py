@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import List
 from app.models import Asset
 from app.schemas import AssetCreate, AssetPatch
 from app.general.utils.CRUDBase import CRUDBase
@@ -7,11 +7,18 @@ from app import models
 import uuid
 
 class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
+    def get_multi_by_taskinstantiation_id(
+        self, db: Session, taskinstantiation_id: uuid.UUID, skip: int = 0, limit: int = 100
+    ) -> List[Asset]:
+        return db.query(Asset).filter(taskinstantiation_id=taskinstantiation_id).offset(skip).limit(limit).all()
+
     def create(self, db: Session, asset: AssetCreate, external_id: str) -> Asset:
         db_obj = Asset(
             taskinstantiation_id=asset.taskinstantiation_id,
             interlinker_id=asset.interlinker_id,
             external_id=external_id,
+            icon=asset.icon,
+            name=asset.name,
         )
         
         db.add(db_obj)

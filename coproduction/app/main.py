@@ -15,7 +15,7 @@ def main():
     return RedirectResponse(url=f"{settings.BASE_PATH}/docs")
 
 
-@app.get("/healthcheck/")
+@app.get("/healthcheck")
 def healthcheck():
     return True
 

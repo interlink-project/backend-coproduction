@@ -23,7 +23,8 @@ class TaskOutFull(TaskOut):
     pass
 
 class TaskInstantiationOutFull(TaskInstantiationOut):
-    assets: Optional[List[AssetOutFull]]
+    # assets: Optional[List[AssetOutFull]]
+    pass
 
 
 class ObjectiveOutFull(ObjectiveOut):
