@@ -7,21 +7,34 @@ logger = logging.getLogger(__name__)
 
 def create_acl(data={
     "scope": {
-        "create": [],
-        "delete": [],
-        "retrieve": [
-            "editor",
-            "commenter",
-            "reader"
-        ],
-        "update": [
-            "editor"
-        ],
-        "comment": [
-            "editor",
-            "commenter"
-        ]
-    }
+      "admin": [
+        "create",
+        "delete",
+        "retrieve",
+        "update",
+        "comment"
+      ],
+      "moderator": [
+        "create",
+        "delete",
+        "retrieve",
+        "update",
+        "comment"
+      ],
+      "editor": [
+        "create",
+        "retrieve",
+        "update",
+        "comment"
+      ],
+      "commenter": [
+        "retrieve",
+        "comment"
+      ],
+      "reader": [
+        "retrieve"
+      ]
+    },
 }):
     logger.debug(f"Call to an external service: http://{settings.ACL_SERVICE}/api/v1/resources/")
     response = requests.post(f"http://{settings.ACL_SERVICE}/api/v1/resources/",

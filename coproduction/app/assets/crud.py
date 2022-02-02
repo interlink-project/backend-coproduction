@@ -17,8 +17,6 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
             taskinstantiation_id=asset.taskinstantiation_id,
             interlinker_id=asset.interlinker_id,
             external_id=external_id,
-            icon=asset.icon,
-            name=asset.name,
         )
         
         db.add(db_obj)

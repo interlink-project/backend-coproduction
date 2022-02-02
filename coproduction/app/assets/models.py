@@ -23,9 +23,6 @@ from app.general.db.base_class import Base as BaseModel
 
 class Asset(BaseModel):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    icon = Column(String, nullable=True)
-    name = Column(String, nullable=True)
-    
     external_id = Column(String)
     interlinker_id = Column(UUID(as_uuid=True))
 
@@ -39,6 +36,6 @@ class Asset(BaseModel):
     
     @property
     def link(self):
-        response = requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{self.interlinker_id}").json()
+        response = requests.get(f"{settings.PROTOCOL}{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{self.interlinker_id}").json()
         backend = response["backend"]
-        return f"{backend}/assets/{self.external_id}/view"
+        return f"{backend}/assets/{self.external_id}"

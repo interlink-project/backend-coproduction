@@ -53,6 +53,7 @@ class Settings(BaseSettings):
     PROJECT_NAME = "Coproduction API"
     BASE_PATH: str
 
+    PROTOCOL: str = "https://" if "https://" in os.getenv("SERVER_HOST", "") else "http://"
     class Config:
         case_sensitive = True
 
