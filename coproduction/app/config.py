@@ -6,13 +6,7 @@ import os
 
 class Settings(BaseSettings):
     SECRET_KEY: str = secrets.token_urlsafe(32)
-    # 60 minutes * 24 hours * 8 days = 8 days
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
-    SERVER_NAME: str
-    SERVER_HOST: AnyHttpUrl
-    # BACKEND_CORS_ORIGINS is a JSON-formatted list of origins
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
-
     @validator("BACKEND_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
         if isinstance(v, str) and not v.startswith("["):
@@ -20,6 +14,13 @@ class Settings(BaseSettings):
         elif isinstance(v, (list, str)):
             return v
         raise ValueError(v)
+
+    PROTOCOL: str
+    SERVER_NAME: str
+    BASE_PATH: str
+    COMPLETE_SERVER_NAME: AnyHttpUrl = os.getenv("PROTOCOL") + os.getenv("SERVER_NAME") + os.getenv("BASE_PATH")
+    API_V1_STR: str = "/api/v1"
+    PROJECT_NAME = "Coproduction API"
 
     POSTGRES_SERVER: str
     POSTGRES_USER: str
@@ -48,12 +49,6 @@ class Settings(BaseSettings):
     CATALOGUE_PORT: int
     CATALOGUE_SERVICE: str = os.getenv("CATALOGUE_SERVICE_NAME") + ":" + os.getenv("CATALOGUE_PORT")
 
-    # file backend interlinkers
-    API_V1_STR: str = "/api/v1"
-    PROJECT_NAME = "Coproduction API"
-    BASE_PATH: str
-
-    PROTOCOL: str = "https://" if "https://" in os.getenv("SERVER_HOST", "") else "http://"
     class Config:
         case_sensitive = True
 

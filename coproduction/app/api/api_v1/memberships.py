@@ -24,7 +24,7 @@ def list_memberships(
     if not crud.membership.can_list(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
     
-    if not user_id or team_id:
+    if not user_id and not team_id:
         raise HTTPException(status_code=403, detail="Please, specify user_id or team_id")
     
     if user_id:

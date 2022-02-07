@@ -36,6 +36,6 @@ class Asset(BaseModel):
     
     @property
     def link(self):
-        response = requests.get(f"{settings.PROTOCOL}{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{self.interlinker_id}").json()
+        response = requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{self.interlinker_id}").json()
         backend = response["backend"]
         return f"{backend}/assets/{self.external_id}"

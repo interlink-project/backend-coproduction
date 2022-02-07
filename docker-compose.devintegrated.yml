@@ -15,10 +15,9 @@ services:
       - .env
       - .env.integrated
     environment:
+      - PROTOCOL=http://
       - SERVER_NAME=${DOMAIN?Variable not set}
-      - SERVER_HOST=http://${DOMAIN?Variable not set}/coproduction
       - PORT=${PORT}
-      # behind proxy
       - BASE_PATH=/coproduction
     build:
       context: .
@@ -44,10 +43,9 @@ services:
       - .env
       - .env.integrated
     environment:
-      - SERVER_NAME=${DOMAIN?Variable not set}
       - RUN=celery worker -A app.worker -l info -Q main-queue -c 1
-      - SERVER_HOST=http://${DOMAIN?Variable not set}
-      # behind proxy
+      - PROTOCOL=http://
+      - SERVER_NAME=${DOMAIN?Variable not set}
       - BASE_PATH=/coproduction
     build:
       context: .

@@ -13,8 +13,8 @@ services:
       - .env
       - .env.solo
     environment:
+      - PROTOCOL=http://
       - SERVER_NAME=${DOMAIN?Variable not set}
-      - SERVER_HOST=http://${DOMAIN?Variable not set}:${SOLODEVPORT}
       - PORT
       - BASE_PATH=
     build:
@@ -33,9 +33,9 @@ services:
       - .env
       - .env.solo
     environment:
+      - PROTOCOL=http://
       - SERVER_NAME=${DOMAIN?Variable not set}
       - RUN=celery worker -A app.worker -l info -Q main-queue -c 1
-      - SERVER_HOST=http://${DOMAIN?Variable not set}
       - BASE_PATH=
     build:
       context: .
