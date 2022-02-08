@@ -6,12 +6,13 @@ from app.general.utils.AllOptional import AllOptional
 from pydantic import BaseModel
 
 class CoproductionSchemaBase(BaseModel):
-    name: str
     is_public: bool
-    description: str
+    licence: str
+    author: str
 
 class CoproductionSchemaCreate(CoproductionSchemaBase):
-    pass
+    name_translations: dict
+    description_translations: dict
 
 
 class CoproductionSchemaPatch(CoproductionSchemaBase, metaclass=AllOptional):
@@ -23,6 +24,8 @@ class CoproductionSchema(CoproductionSchemaBase):
     created_at: datetime
     updated_at: Optional[datetime]
     
+    name: str
+    description: str
     class Config:
         orm_mode = True
 

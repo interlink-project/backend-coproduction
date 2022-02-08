@@ -1,18 +1,16 @@
-from typing import TypedDict
+import uuid
+from sqlalchemy import (
+    Boolean,
+    Column,
+    String
+)
+from sqlalchemy.dialects.postgresql import HSTORE, UUID
+from sqlalchemy.orm import relationship
 
 from app.general.db.base_class import Base as BaseModel
-from sqlalchemy import Boolean
-from sqlalchemy import Column
-from sqlalchemy import DateTime
-from sqlalchemy import ForeignKey
-from sqlalchemy import Integer
-from sqlalchemy import String
-from sqlalchemy import Table
-from sqlalchemy import Text
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
 from app.tables import coproductionschema_phase_association_table
-import uuid
+from app.translations import translation_hybrid
+
 
 class CoproductionSchema(BaseModel):
     """
@@ -20,9 +18,14 @@ class CoproductionSchema(BaseModel):
     """
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     is_public = Column(Boolean)
-    name = Column(String)
-    description = Column(String)
-    
+    name_translations = Column(HSTORE)
+    description_translations = Column(HSTORE)
+
+    name = translation_hybrid(name_translations)
+    description = translation_hybrid(description_translations)
+    author = Column(String, nullable=True)
+    licence = Column(String, nullable=True)
+
     phases = relationship(
         "Phase",
         secondary=coproductionschema_phase_association_table,

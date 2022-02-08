@@ -12,9 +12,11 @@ class CRUDCoproductionSchema(CRUDBase[CoproductionSchema, CoproductionSchemaCrea
 
     def create(self, db: Session, *, coproductionschema: CoproductionSchemaCreate) -> CoproductionSchema:
         db_obj = CoproductionSchema(
-            name=coproductionschema.name,
-            description=coproductionschema.description,
+            name_translations=coproductionschema.name_translations,
+            description_translations=coproductionschema.description_translations,
             is_public=coproductionschema.is_public,
+            author=coproductionschema.author,
+            licence=coproductionschema.licence,
         )
         db.add(db_obj)
         db.commit()

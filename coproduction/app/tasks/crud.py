@@ -23,13 +23,6 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
         db.refresh(db_obj)
         return db_obj
 
-    def add_recommended_interlinker(self, db: Session, *, task: Task, interlinker_id: uuid.UUID) -> Task:            
-        interlinkers = task.recommended_interlinkers or []
-        task.recommended_interlinkers = interlinkers.append(interlinker_id)
-        db.commit()
-        db.refresh(task)
-        return task
-
     # CRUD Permissions
     def can_create(self, user):
         return True

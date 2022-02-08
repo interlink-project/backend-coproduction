@@ -4,10 +4,12 @@ from starlette.middleware.cors import CORSMiddleware
 
 from app.api.api_v1 import api_router, team_management_router
 from app.config import settings
+from app.translations import RequestContextMiddleware
 
 app = FastAPI(
     title=settings.PROJECT_NAME, docs_url="/docs", openapi_url=f"{settings.API_V1_STR}/openapi.json", root_path=settings.BASE_PATH
 )
+app.add_middleware(RequestContextMiddleware)
 
 
 @app.get("/")

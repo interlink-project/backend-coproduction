@@ -25,8 +25,6 @@ class Task(BaseModel):
 
     instantiations = relationship("TaskInstantiation", back_populates="task")
     
-    recommended_interlinkers = Column(ARRAY(UUID(as_uuid=True)))
-    
     def __repr__(self):
         return "<Task %r>" % self.name
 
@@ -51,10 +49,6 @@ class TaskInstantiation(BaseModel):
     @property
     def description(self) -> str:
         return self.task.description
-
-    @property
-    def recommended_interlinkers(self):
-        return self.task.recommended_interlinkers
 
     def __repr__(self):
         return "<TaskInstatiation %r>" % self.task.name

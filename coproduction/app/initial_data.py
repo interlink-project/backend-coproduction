@@ -120,30 +120,49 @@ data = {
     }
 }
 
+import os
+from pathlib import Path
 
 def main() -> None:
     logger.info("Creating initial data")
     db = SessionLocal()
 
-    
-    SCHEMA = crud.coproductionschema.create(
-        db=db,
-        coproductionschema=schemas.CoproductionSchemaCreate(
-            name=DEFAULT_SCHEMA_NAME,
-            description="desc",
-            is_public=True
-        )
-    )
-
-    for phaseName in data["phases"]:
-        phase = crud.phases.create(
+    for schema_metadata_path in Path("/app/interlinkers-data/schemas").glob("**/metadata.json"):
+        with open(str(schema_metadata_path)) as json_file:
+            print(f"{bcolors.OKBLUE}## PROCESSING {bcolors.ENDC}{schema_metadata_path}{bcolors.OKBLUE}")
+            parent = str(schema_metadata_path.parents[0])
+            phases = os.listdir(parent + "/phases")
+            schema_data = json.loads(json_file.read())
+        
+        schema_data["is_public"] = True
+        schema_data["name_translations"] = schema_data["name"]
+        schema_data["description_translations"] = schema_data["description"]
+        SCHEMA = crud.coproductionschema.create(
             db=db,
-            phase=schemas.PhaseCreate(
-                name=phaseName,
-                is_public=True,
-                description="demo description"
+            coproductionschema=schemas.CoproductionSchemaCreate(
+                **schema_data
             )
         )
+
+        for phase in phases:
+            with open(parent + "/phases/" + phase) as json_file:
+                phase_data = json.loads(json_file.read())
+            print(phase_data)
+            """phase = crud.phases.create(
+                db=db,
+                phase=schemas.PhaseCreate(
+                    name=phaseName,
+                    is_public=True,
+                    description="demo description"
+                )
+            )"""
+
+
+    """
+    
+
+    for phaseName in data["phases"]:
+        
         print(f"\n{bcolors.WARNING}PHASE: {phaseName}{bcolors.ENDC}")
         for objectiveName in data["phases"][phaseName]:
             if objectiveName:
@@ -178,14 +197,6 @@ def main() -> None:
                                         f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/get_by_name/{interlinkerName}".replace(" ", "%20"))
                                     if response.status_code != 200:
                                         print(f"      {bcolors.FAIL}INTERLINKER: '{interlinkerName}' named interlinker is not accessible")
-                                    interlinker_data = response.json()
-                                    crud.task.add_recommended_interlinker(
-                                        db=db,
-                                        task=task,
-                                        interlinker_id=interlinker_data["id"]
-                                    )
-                                    name = interlinker_data["name"]
-                                    print(f"      {bcolors.ENDC}INTERLINKER: '{name}' as recommended interlinker")
 
         print(f"{bcolors.OKGREEN}'{phaseName}' phase successfully added to '{DEFAULT_SCHEMA_NAME}' schema{bcolors.ENDC}")
         crud.coproductionschema.add_phase(
@@ -215,7 +226,7 @@ def main() -> None:
         ),
     )
     print(f"\n{bcolors.OKGREEN}'{COPRODUCTION_PROCESS_NAME}' coproduction process created{bcolors.ENDC}")
-
+    """
     db.close()
     logger.info("Initial data created")
 

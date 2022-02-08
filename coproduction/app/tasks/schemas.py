@@ -58,4 +58,3 @@ class TaskInstantiationOut(TaskInstantiation):
     task: TaskOut
     name: str
     description: str
-    recommended_interlinkers: Optional[List[uuid.UUID]]
