@@ -7,13 +7,12 @@ from datetime import datetime
 
 
 class TeamBase(BaseModel):
-    name: str
-    description: str
     logotype: str
 
 
 class TeamCreate(TeamBase):
-    pass
+    name_translations: dict
+    description_translations: dict
 
 
 class TeamPatch(TeamBase, metaclass=AllOptional):
@@ -25,6 +24,9 @@ class Team(TeamBase):
     created_at: datetime
     updated_at: Optional[datetime]
 
+    name: str
+    description: str
+    
     class Config:
         orm_mode = True
 

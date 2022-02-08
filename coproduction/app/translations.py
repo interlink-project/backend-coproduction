@@ -4,6 +4,7 @@ from sqlalchemy_utils import TranslationHybrid
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 
+POSSIBLE_LOCALES = ["en", "eu", "es"]
 DEFAULT_LOCALE = "en"
 
 _lang: ContextVar[str] = ContextVar(DEFAULT_LOCALE, default=None)
@@ -23,9 +24,12 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
     async def dispatch(
         self, request: Request, call_next: RequestResponseEndpoint
     ):
-        
-        user_language = request.headers["accept-language"].split(",")[1].split(";")[0]
-        user_language = "en"
+        try:
+            lang = request.headers["accept-language"]
+            print(lang)
+            user_language = lang if lang in POSSIBLE_LOCALES else DEFAULT_LOCALE
+        except:
+            user_language = DEFAULT_LOCALE
         language = _lang.set(user_language)
 
         response = await call_next(request)

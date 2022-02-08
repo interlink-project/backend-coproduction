@@ -17,7 +17,8 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
             description_translations=task.description_translations,
             is_public=task.is_public,
             objective_id=task.objective_id,
-            parent_id=task.parent_id
+            parent_id=task.parent_id,
+            problem_profiles=task.problem_profiles
         )
         db.add(db_obj)
         db.commit()

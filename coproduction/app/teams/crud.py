@@ -13,8 +13,8 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
 
     def create(self, db: Session, *, team: TeamCreate) -> Team:
         db_obj = Team(
-            name=team.name,
-            description=team.description,
+            name_translations=team.name_translations,
+            description_translations=team.description_translations,
             logotype=team.logotype,
         )
         db.add(db_obj)

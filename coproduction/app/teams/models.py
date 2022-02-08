@@ -3,13 +3,18 @@ from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 import uuid
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import HSTORE
+from app.translations import translation_hybrid
 
 class Team(BaseModel):
     """Team Class contains standard information for a Team."""
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
-    name = Column(String)
-    description = Column(String)
+    name_translations = Column(HSTORE)
+    description_translations = Column(HSTORE)
+
+    name = translation_hybrid(name_translations)
+    description = translation_hybrid(description_translations)
     logotype = Column(String)
 
     memberships = relationship("Membership", back_populates="team")

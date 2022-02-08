@@ -80,7 +80,9 @@ def main() -> None:
                     task_data["name_translations"] = task_data["name"]
                     task_data["description_translations"] = task_data["description"]
                     task_data["objective_id"] = db_objective.id
-
+                    sum = list(task_data["problem_profiles"]) + list(objective_data["problem_profiles"])
+                    task_data["problem_profiles"] = list(set(sum))
+                    print(task_data["problem_profiles"])                    
                     db_task = crud.task.create(
                         db=db,
                         task=schemas.TaskCreate(
@@ -91,9 +93,9 @@ def main() -> None:
     TEAM = crud.team.create(
         db=db,
         team=schemas.TeamCreate(
-            name="Example team",
-            description="Good team",
-            logotype=""
+            name_translations={"en": "Example team", "es": "Equipo de ejemplo"},
+            description_translations={"en": "Good team", "es": "Muy buen equipo"},
+            logotype="/static/demodata/example.png"
         )
     )
 

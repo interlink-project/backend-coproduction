@@ -2,13 +2,16 @@ import uuid
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel
+import requests
+from pydantic import BaseModel, validator
 
+from app.config import settings
 from app.general.utils.AllOptional import AllOptional
 
 
 class TaskBase(BaseModel):
     is_public: bool = True
+    problem_profiles: list
 
     objective_id: uuid.UUID
     parent_id: Optional[uuid.UUID]
@@ -17,6 +20,15 @@ class TaskBase(BaseModel):
 class TaskCreate(TaskBase):
     name_translations: dict
     description_translations: dict
+
+    @validator('problem_profiles')
+    def problem_profiles_valid(cls, v, values, **kwargs):
+        problem_profiles_ids = requests.get(
+            f"http://{settings.CATALOGUE_SERVICE_NAME}/api/v1/problemprofiles/ids").json()
+        for id in v:
+            if id not in problem_profiles_ids:
+                raise ValueError(f'Invalid problem profile id {id}')
+        return v
 
 
 class TaskPatch(TaskBase, metaclass=AllOptional):

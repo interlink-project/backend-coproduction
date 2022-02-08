@@ -40,6 +40,7 @@ class Task(BaseModel):
         "Task", backref=backref("parent", remote_side=[id])
     )
 
+    problem_profiles = Column(ARRAY(String), default=list)
     assets = relationship("Asset", back_populates="task")
 
     def __repr__(self):
