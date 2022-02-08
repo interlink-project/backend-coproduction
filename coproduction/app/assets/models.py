@@ -26,10 +26,10 @@ class Asset(BaseModel):
     external_id = Column(String)
     interlinker_id = Column(UUID(as_uuid=True))
 
-    taskinstantiation_id = Column(
-        UUID(as_uuid=True), ForeignKey("taskinstantiation.id", ondelete='CASCADE')
+    task_id = Column(
+        UUID(as_uuid=True), ForeignKey("task.id", ondelete='CASCADE')
     )
-    taskinstantiation = relationship("TaskInstantiation", back_populates="assets")
+    task = relationship("Task", back_populates="assets")
 
     def __repr__(self):
         return "<Asset %r>" % self.id

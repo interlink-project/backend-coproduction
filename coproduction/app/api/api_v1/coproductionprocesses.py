@@ -101,22 +101,22 @@ def delete_coproductionprocess(
 # specific
 
 
-@router.get("/{id}/phaseinstantiations/", response_model=List[schemas.PhaseInstantiationOut])
-def list_related_phaseinstantiations(
+@router.get("/{id}/phases/", response_model=List[schemas.PhaseOut])
+def list_related_phases(
     id: uuid.UUID,
     db: Session = Depends(deps.get_db),
     current_user: Optional[dict] = Depends(deps.get_current_user),
 ) -> Any:
     """
-    Retrieve related phaseinstantiations.
+    Retrieve related phases.
     """
     coproductionprocess = crud.coproductionprocess.get(db, id=id)
     if not coproductionprocess:
         raise HTTPException(status_code=400, detail="CoproductionProcess not found")
-    return coproductionprocess.phaseinstantiations
+    return coproductionprocess.phases
 
 
-@router.get("/{id}/tree", response_model=List[schemas.PhaseInstantiationOutFull])
+@router.get("/{id}/tree", response_model=List[schemas.PhaseOutFull])
 def get_coproductionprocess_tree(
     *,
     db: Session = Depends(deps.get_db),
@@ -131,4 +131,4 @@ def get_coproductionprocess_tree(
         raise HTTPException(status_code=404, detail="CoproductionProcess not found")
     if not crud.coproductionprocess.can_read(db=db, user=current_user, object=coproductionprocess):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    return coproductionprocess.phaseinstantiations
+    return coproductionprocess.phases

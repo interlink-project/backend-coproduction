@@ -1,85 +1,83 @@
+import uuid
 from datetime import datetime, timedelta
 from typing import TypedDict
 
-from app.general.db.base_class import Base as BaseModel
-from sqlalchemy import Boolean
-from sqlalchemy import Column
-from sqlalchemy import DateTime
-from sqlalchemy import ForeignKey
-from sqlalchemy import Integer
-from sqlalchemy import String
-from sqlalchemy import Table
-from sqlalchemy import Text
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Table,
+    Text,
+)
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
-from app.tables import coproductionschema_phase_association_table
-import uuid
+from sqlalchemy.orm import backref, relationship
+
+from app.general.db.base_class import Base as BaseModel
+from sqlalchemy.dialects.postgresql import HSTORE
+from app.translations import translation_hybrid
+
 
 class Phase(BaseModel):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    is_public = Column(Boolean)
-    name = Column(String)
-    description = Column(String)
-    instantiations = relationship("PhaseInstantiation", back_populates="phase")
-    objectives = relationship("Objective", back_populates="phase")
+    is_public = Column(Boolean, default=True)
+    name_translations = Column(HSTORE)
+    description_translations = Column(HSTORE)
 
-    schemas = relationship(
-        "CoproductionSchema",
-        secondary=coproductionschema_phase_association_table,
-        back_populates="phases",
-    )
-    def __repr__(self):
-        return "<Phase %r>" % self.name
+    name = translation_hybrid(name_translations)
+    description = translation_hybrid(description_translations)
 
-class PhaseInstantiation(BaseModel):
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-
+    # can belong to a process
     coproductionprocess_id = Column(
         UUID(as_uuid=True), ForeignKey("coproductionprocess.id", ondelete='CASCADE')
     )
-    coproductionprocess = relationship("CoproductionProcess", back_populates="phaseinstantiations")
+    coproductionprocess = relationship("CoproductionProcess", back_populates="phases")
 
-    phase_id = Column(
-        UUID(as_uuid=True), ForeignKey("phase.id", ondelete='CASCADE')
+    # or can belong to an schema
+    coproductionschema_id = Column(
+        UUID(as_uuid=True), ForeignKey("coproductionschema.id", ondelete='CASCADE')
     )
-    phase = relationship("Phase", back_populates="instantiations")
+    coproductionschema = relationship("CoproductionSchema", back_populates="phases")
 
-    objectiveinstantiations = relationship("ObjectiveInstantiation", back_populates="phaseinstantiation")
+    # save from where has been forked
+    parent_id = Column(UUID(as_uuid=True), ForeignKey("phase.id"))
+    children = relationship(
+        "Phase", backref=backref("parent", remote_side=[id])
+    )
 
-    @property
-    def name(self) -> str:
-        return self.phase.name
-
-    @property
-    def description(self) -> str:
-        return self.phase.description
+    objectives = relationship("Objective", back_populates="phase")
 
     def __repr__(self):
-        return "<PhaseInstatiation %r>" % self.phase.name
+        return "<Phase %r>" % self.name
 
     @property
     def progress(self):
         fin = 0
         tot = 0
-        for objective in self.objectiveinstantiations:
+        for objective in self.objectives:
             fin += objective.progress
             tot += 1
-        return int(fin / tot)
+        try:
+            return int(fin / tot)
+        except:
+            return 0
 
     @property
     def start_date(self):
         lowest = None
-        for objective in self.objectiveinstantiations:
+        for objective in self.objectives:
             if objective.start_date:
                 var = datetime.strptime(objective.start_date, "%Y-%m-%d")
                 if not lowest or var < lowest:
                     lowest = var
         return lowest
-    
+
     @property
     def end_date(self):
         greatest = None
-        for objective in self.objectiveinstantiations:
+        for objective in self.objectives:
             if objective.end_date:
                 var = datetime.strptime(objective.end_date, "%Y-%m-%d")
                 if not greatest or var > greatest:

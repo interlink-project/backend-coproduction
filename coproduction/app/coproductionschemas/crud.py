@@ -23,18 +23,6 @@ class CRUDCoproductionSchema(CRUDBase[CoproductionSchema, CoproductionSchemaCrea
         db.refresh(db_obj)
         return db_obj
 
-    def add_phase(self, db: Session, *, coproductionschema: CoproductionSchema, phase: Phase) -> CoproductionSchema:            
-        coproductionschema.phases.append(phase)
-        db.commit()
-        db.refresh(coproductionschema)
-        return coproductionschema
-
-    def remove_phase(self, db: Session, *, coproductionschema: CoproductionSchema, phase: Phase) -> CoproductionSchema:            
-        coproductionschema.phases.remove(phase)
-        db.commit()
-        db.refresh(coproductionschema)
-        return coproductionschema
-
     # CRUD Permissions
     def can_create(self, user):
         return True

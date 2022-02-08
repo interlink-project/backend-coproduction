@@ -6,7 +6,7 @@ from app.general.utils.AllOptional import AllOptional
 from pydantic import BaseModel
 
 class CoproductionSchemaBase(BaseModel):
-    is_public: bool
+    is_public: bool = True
     licence: str
     author: str
 
@@ -26,6 +26,7 @@ class CoproductionSchema(CoproductionSchemaBase):
     
     name: str
     description: str
+
     class Config:
         orm_mode = True
 

@@ -14,6 +14,13 @@ from app.extern import acl
 from app.schemas import RoleCreate, RolePatch
 from app.initial_data import DEFAULT_SCHEMA_NAME
 
+def row2dict(row):
+    d = {}
+    for column in row.__table__.columns:
+        d[column.name] = getattr(row, column.name)
+
+    return d
+
 class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessCreate, CoproductionProcessPatch]):
     def get_by_artefact(self, db: Session, artefact_id: uuid.UUID) -> Optional[CoproductionProcess]:
         return db.query(CoproductionProcess).filter(CoproductionProcess.artefact_id == artefact_id).first()
@@ -22,7 +29,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         aclobj = acl.create_acl()
 
         team = crud.team.get(db=db, id=coproductionprocess.team_id)
-        schema = crud.coproductionschema.get(db=db, id=coproductionprocess.schema_id)
+        coproductionschema = crud.coproductionschema.get(db=db, id=coproductionprocess.coproductionschema_id)
         db_obj = CoproductionProcess(
             artefact_id=coproductionprocess.artefact_id,
             # uses postgres
@@ -35,6 +42,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
             challenges=coproductionprocess.challenges,
             #relations
             team=team,
+            coproductionschema=coproductionschema,
             # uses mongo
             acl_id=aclobj["_id"]
         )
@@ -52,18 +60,51 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
             })
             crud.role.create(db=db, role=role)
 
-        # Create all phaseinstantiations
-        if not schema:
-            schema = crud.coproductionschema.get_by_name(db=db, name=DEFAULT_SCHEMA_NAME)
-        if hasattr(schema, "phases"):
-            for ph in schema.phases:
-                crud.phaseinstantiation.create(
+        # Copy the tree of the schema
+        if not coproductionschema:
+            coproductionschema = crud.coproductionschema.get_by_name(db=db, name=DEFAULT_SCHEMA_NAME)
+
+        if hasattr(coproductionschema, "phases") and coproductionschema.phases:
+            for phase in coproductionschema.phases:
+                print(phase)
+                clone = row2dict(phase)
+                clone["coproductionprocess_id"] = db_obj.id
+                clone["parent_id"] = phase.id
+                del clone["coproductionschema_id"]
+                del clone["created_at"]
+                del clone["updated_at"]
+                db_phase = crud.phase.create(
                     db=db,
-                    phaseinstantiation=schemas.PhaseInstantiationCreate(
-                        coproductionprocess_id=db_obj.id,
-                        phase_id=ph.id
-                    )
+                    phase=schemas.PhaseCreate(**clone)
                 )
+                if hasattr(phase, "objectives") and phase.objectives:
+                    for objective in phase.objectives:
+                        clone = row2dict(objective)
+                        clone["phase_id"] = db_phase.id
+                        clone["parent_id"] = objective.id
+                        del clone["created_at"]
+                        del clone["updated_at"]
+                        print(objective)
+                        db_objective = crud.objective.create(
+                            db=db,
+                            objective=schemas.ObjectiveCreate(**clone)
+                        )
+                        if hasattr(objective, "tasks") and objective.tasks:
+                            for task in objective.tasks:
+                                clone = row2dict(task)
+                                clone["objective_id"] = db_objective.id
+                                clone["parent_id"] = task.id
+                                del clone["created_at"]
+                                del clone["updated_at"]
+                                print(task)
+                                db_task = crud.task.create(
+                                    db=db,
+                                    task=schemas.TaskCreate(**clone)
+                                )
+                        else:
+                            print("OBJECTIVE HAS NO TASKS")
+                else:
+                    print("PHASE HAS NO OBJECTIVES")
         else:
             print("SCHEMA HAS NO PHASES")
 

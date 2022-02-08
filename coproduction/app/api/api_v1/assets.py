@@ -44,13 +44,13 @@ def create_asset(
     if not crud.asset.can_create(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
-    # first check if taskinstantiation exists
-    taskinstantiation = crud.taskinstantiation.get(
+    # first check if task exists
+    task = crud.task.get(
         db=db,
-        id=asset_in.taskinstantiation_id
+        id=asset_in.task_id
     )
-    if not taskinstantiation:
-        raise HTTPException(status_code=403, detail="Taskinstantiation not found")
+    if not task:
+        raise HTTPException(status_code=403, detail="Task not found")
 
     try:
         response = requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.interlinker_id}")

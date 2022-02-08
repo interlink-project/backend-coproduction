@@ -6,7 +6,7 @@ from app.general.utils.AllOptional import AllOptional
 from pydantic import BaseModel
 
 class AssetBase(BaseModel):
-    taskinstantiation_id: uuid.UUID
+    task_id: uuid.UUID
     interlinker_id: uuid.UUID
     external_id: str
     

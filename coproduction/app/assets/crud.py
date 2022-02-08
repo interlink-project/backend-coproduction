@@ -7,14 +7,14 @@ from app import models
 import uuid
 
 class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
-    def get_multi_by_taskinstantiation_id(
-        self, db: Session, taskinstantiation_id: uuid.UUID, skip: int = 0, limit: int = 100
+    def get_multi_by_task_id(
+        self, db: Session, task_id: uuid.UUID, skip: int = 0, limit: int = 100
     ) -> List[Asset]:
-        return db.query(Asset).filter(taskinstantiation_id=taskinstantiation_id).offset(skip).limit(limit).all()
+        return db.query(Asset).filter(task_id=task_id).offset(skip).limit(limit).all()
 
     def create(self, db: Session, asset: AssetCreate, external_id: str) -> Asset:
         db_obj = Asset(
-            taskinstantiation_id=asset.taskinstantiation_id,
+            task_id=asset.task_id,
             interlinker_id=asset.interlinker_id,
             external_id=external_id,
         )

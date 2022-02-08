@@ -96,3 +96,18 @@ def delete_coproductionschema(
         raise HTTPException(status_code=403, detail="Not enough permissions")
     crud.coproductionschema.remove(db=db, id=id)
     return None
+
+@router.get("/{id}/tree", response_model=List[schemas.PhaseOutFull])
+def get_coproductionprocess_tree(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: uuid.UUID,
+    current_user: dict = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Get coproduction schema tree.
+    """
+    coproductionschema = crud.coproductionschema.get(db=db, id=id)
+    if not coproductionschema:
+        raise HTTPException(status_code=404, detail="CoproductionSchema not found")
+    return coproductionschema.phases

@@ -16,10 +16,12 @@ class CoproductionProcessBase(BaseModel):
     organization: Optional[str]
     challenges: Optional[str]
 
-class CoproductionProcessCreate(CoproductionProcessBase):
     artefact_id: Optional[uuid.UUID]
-    schema_id: Optional[uuid.UUID]
+    coproductionschema_id: Optional[uuid.UUID]
     team_id: uuid.UUID
+
+class CoproductionProcessCreate(CoproductionProcessBase):
+    pass
 
 
 class CoproductionProcessPatch(CoproductionProcessCreate, metaclass=AllOptional):
@@ -36,5 +38,4 @@ class CoproductionProcess(CoproductionProcessBase):
 
 
 class CoproductionProcessOut(CoproductionProcess):
-    artefact_id: Optional[uuid.UUID]
-    team_id: uuid.UUID
+    pass

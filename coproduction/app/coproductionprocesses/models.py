@@ -35,21 +35,24 @@ class CoproductionProcess(BaseModel):
     organization = Column(Text, nullable=True)
     challenges = Column(Text, nullable=True)
 
-    phaseinstantiations = relationship(
-        "PhaseInstantiation", back_populates="coproductionprocess")
+    phases = relationship(
+        "Phase", back_populates="coproductionprocess")
     roles = relationship("Role", back_populates="coproductionprocess")
-
     artefact_id = Column(UUID(as_uuid=True))
+
+    # created from schema
+    coproductionschema_id = Column(
+        UUID(as_uuid=True), ForeignKey("coproductionschema.id")
+    )
+    coproductionschema = relationship("CoproductionSchema", back_populates="coproductionprocesses")
+
+    # worked by
     team_id = Column(
         UUID(as_uuid=True), ForeignKey("team.id")
     )
     team = relationship("Team", back_populates="coproductionprocesses")
 
     acl_id = Column(Text)
-
-    @property
-    def phaseinstantiations_ids(self):
-        return [p.id for p in self.phaseinstantiations]
 
     def current_user_permissions(self, role):
         return acl.get_permissions_for_role(self.acl_id, role=role)

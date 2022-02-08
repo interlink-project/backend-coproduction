@@ -50,7 +50,7 @@ def get_current_active_user(
     current_user: dict = Depends(get_current_user),
 ) -> dict:
     # calls get_current_user, and if nothing is returned, raises Not authenticated exception
-    if not current_user:
+    if current_user:
         raise HTTPException(status_code=403, detail="Not authenticated")
     return current_user
 
