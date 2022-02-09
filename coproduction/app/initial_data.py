@@ -91,37 +91,6 @@ def main() -> None:
                             **task_data
                         )
                     )
-
-    TEAM_NAME = "Example team"
-    if (team := crud.team.get_by_name(db=db, name=TEAM_NAME)):
-        crud.team.remove(db=db, id=team.id)
-        print("Team removed")
-    TEAM = crud.team.create(
-        db=db,
-        team=schemas.TeamCreate(
-            name=TEAM_NAME,
-            description="Good team",
-            logotype="/static/demodata/example.png"
-        )
-    )
-
-    COPRODUCTION_PROCESS_NAME = "Example"
-    if (process := crud.coproductionprocess.get_by_name(db=db, name=COPRODUCTION_PROCESS_NAME)):
-        crud.coproductionprocess.remove(db=db, id=process.id)
-        print("Coproduction process removed")
-    crud.coproductionprocess.create(
-        db=db,
-        coproductionprocess=schemas.CoproductionProcessCreate(
-            # artefact_id=interlinker.id,
-            name=COPRODUCTION_PROCESS_NAME,
-            logotype="/static/demodata/interlinkers/slack.png",
-            description="This is a demo process 2",
-            team_id=TEAM.id,
-            coproductionschema_id=SCHEMA.id
-        ),
-    )
-    print(f"\n{bcolors.OKGREEN}'{COPRODUCTION_PROCESS_NAME}' coproduction process created{bcolors.ENDC}")
-    
     db.close()
     logger.info("Initial data created")
 
