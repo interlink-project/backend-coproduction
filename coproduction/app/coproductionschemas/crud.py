@@ -7,8 +7,8 @@ from app import crud
 
 class CRUDCoproductionSchema(CRUDBase[CoproductionSchema, CoproductionSchemaCreate, CoproductionSchemaPatch]):
 
-    def get_by_name(self, db: Session, name: str) -> Optional[CoproductionSchema]:
-        return db.query(CoproductionSchema).filter(CoproductionSchema.name == name).first()
+    def get_by_name(self, db: Session, name: str, locale: str) -> Optional[CoproductionSchema]:
+        return db.query(CoproductionSchema).filter(CoproductionSchema.name_translations[locale] == name).first()
 
     def create(self, db: Session, *, coproductionschema: CoproductionSchemaCreate) -> CoproductionSchema:
         db_obj = CoproductionSchema(

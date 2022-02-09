@@ -9,7 +9,7 @@ from app.general import deps
 router = APIRouter()
 
 
-@router.get("/", response_model=List[schemas.TaskOut])
+@router.get("", response_model=List[schemas.TaskOut])
 def list_tasks(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
@@ -25,7 +25,7 @@ def list_tasks(
     return tasks
 
 
-@router.post("/", response_model=schemas.TaskOutFull)
+@router.post("", response_model=schemas.TaskOutFull)
 def create_task(
     *,
     db: Session = Depends(deps.get_db),

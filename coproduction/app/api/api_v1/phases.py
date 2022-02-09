@@ -9,7 +9,7 @@ from app.general import deps
 router = APIRouter()
 
 
-@router.get("/", response_model=List[schemas.PhaseOut])
+@router.get("", response_model=List[schemas.PhaseOut])
 def list_phases(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
@@ -25,7 +25,7 @@ def list_phases(
     return phases
 
 
-@router.post("/", response_model=schemas.PhaseOutFull)
+@router.post("", response_model=schemas.PhaseOutFull)
 def create_phase(
     *,
     db: Session = Depends(deps.get_db),
@@ -39,6 +39,22 @@ def create_phase(
         raise HTTPException(status_code=403, detail="Not enough permissions")
     phase = crud.phase.create(db=db, phase=phase_in)
     return phase
+
+
+
+@router.get("/{id}/objectives", response_model=List[schemas.ObjectiveOut])
+def list_related_objectives(
+    id: uuid.UUID,
+    db: Session = Depends(deps.get_db),
+    current_user: Optional[dict] = Depends(deps.get_current_user),
+) -> Any:
+    """
+    Retrieve related objectives.
+    """
+    phase = crud.phase.get(db, id=id)
+    if not phase:
+        raise HTTPException(status_code=400, detail="Phase not found")
+    return phase.objectives
 
 
 @router.put("/{id}", response_model=schemas.PhaseOutFull)
@@ -96,18 +112,3 @@ def delete_phase(
         raise HTTPException(status_code=403, detail="Not enough permissions")
     crud.phase.remove(db=db, id=id)
     return None
-
-
-@router.get("/{id}/objectives/", response_model=List[schemas.ObjectiveOut])
-def list_related_objectives(
-    id: uuid.UUID,
-    db: Session = Depends(deps.get_db),
-    current_user: Optional[dict] = Depends(deps.get_current_user),
-) -> Any:
-    """
-    Retrieve related objectives.
-    """
-    phase = crud.phase.get(db, id=id)
-    if not phase:
-        raise HTTPException(status_code=400, detail="Phase not found")
-    return phase.objectives

@@ -29,7 +29,9 @@ class CoproductionProcess(BaseModel):
     name = translation_hybrid(name_translations)
     description = translation_hybrid(description_translations)
 
-    logotype = Column(Text, nullable=True)
+    logotype = Column(String, nullable=True)
+    created_by = Column(String, nullable=False)
+
     aim = Column(Text, nullable=True)
     idea = Column(Text, nullable=True)
     organization = Column(Text, nullable=True)

@@ -13,6 +13,7 @@ from app.schemas import CoproductionProcessCreate, CoproductionProcessPatch
 from app.extern import acl
 from app.schemas import RoleCreate, RolePatch
 from app.initial_data import DEFAULT_SCHEMA_NAME
+from app.memberships.models import Membership
 
 def row2dict(row):
     d = {}
@@ -22,25 +23,39 @@ def row2dict(row):
     return d
 
 class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessCreate, CoproductionProcessPatch]):
+    def get_by_name(self, db: Session, name: str) -> Optional[Team]:
+        return db.query(CoproductionProcess).filter(CoproductionProcess.name == name).first()
+        
     def get_by_artefact(self, db: Session, artefact_id: uuid.UUID) -> Optional[CoproductionProcess]:
         return db.query(CoproductionProcess).filter(CoproductionProcess.artefact_id == artefact_id).first()
 
-    def create(self, db: Session, *, coproductionprocess: CoproductionProcessCreate) -> CoproductionProcess:
+    def get_multi_by_user(self, db: Session, user_id: str) -> Optional[Team]:
+        return db.query(
+            CoproductionProcess
+        ).filter(
+            CoproductionProcess.team_id == Team.id,
+        ).filter(
+            Team.id == Membership.team_id,
+        ).filter(
+            Membership.user_id == user_id,
+        ).all()
+
+    def create(self, db: Session, *, coproductionprocess: CoproductionProcessCreate, creator: dict) -> CoproductionProcess:
         aclobj = acl.create_acl()
 
         team = crud.team.get(db=db, id=coproductionprocess.team_id)
-        coproductionschema = crud.coproductionschema.get(db=db, id=coproductionprocess.coproductionschema_id)
+        coproductionschema = crud.coproductionschema.get(db=db, id=coproductionprocess.coproductionschema_id) or crud.coproductionschema.get_by_name(db=db, name=DEFAULT_SCHEMA_NAME, locale="en")
         db_obj = CoproductionProcess(
             artefact_id=coproductionprocess.artefact_id,
             # uses postgres
             name=coproductionprocess.name,
-            logotype=coproductionprocess.logotype,
             description=coproductionprocess.description,
             aim=coproductionprocess.aim,
             idea=coproductionprocess.idea,
             organization=coproductionprocess.organization,
             challenges=coproductionprocess.challenges,
             #relations
+            created_by=creator["sub"],
             team=team,
             coproductionschema=coproductionschema,
             # uses mongo
@@ -61,10 +76,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
             crud.role.create(db=db, role=role)
 
         # Copy the tree of the schema
-        if not coproductionschema:
-            coproductionschema = crud.coproductionschema.get_by_name(db=db, name=DEFAULT_SCHEMA_NAME)
-
-        if hasattr(coproductionschema, "phases") and coproductionschema.phases:
+        if coproductionschema and hasattr(coproductionschema, "phases"):
             for phase in coproductionschema.phases:
                 print(phase)
                 clone = row2dict(phase)

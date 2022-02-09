@@ -9,7 +9,7 @@ from app.general import deps
 router = APIRouter()
 
 
-@router.get("/", response_model=List[schemas.MembershipOut])
+@router.get("", response_model=List[schemas.MembershipOut])
 def list_memberships(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
@@ -36,7 +36,7 @@ def list_memberships(
     return memberships
 
 
-@router.post("/", response_model=schemas.MembershipOutFull)
+@router.post("", response_model=schemas.MembershipOutFull)
 def create_membership(
     *,
     db: Session = Depends(deps.get_db),
@@ -52,7 +52,7 @@ def create_membership(
     return membership
 
 
-@router.put("/{id}/", response_model=schemas.MembershipOutFull)
+@router.put("/{id}", response_model=schemas.MembershipOutFull)
 def update_membership(
     *,
     db: Session = Depends(deps.get_db),
@@ -72,7 +72,7 @@ def update_membership(
     return membership
 
 
-@router.get("/{id}/", response_model=schemas.MembershipOutFull)
+@router.get("/{id}", response_model=schemas.MembershipOutFull)
 def read_membership(
     *,
     db: Session = Depends(deps.get_db),
@@ -90,7 +90,7 @@ def read_membership(
     return membership
 
 
-@router.delete("/{id}/", response_model=schemas.MembershipOutFull)
+@router.delete("/{id}", response_model=schemas.MembershipOutFull)
 def delete_membership(
     *,
     db: Session = Depends(deps.get_db),

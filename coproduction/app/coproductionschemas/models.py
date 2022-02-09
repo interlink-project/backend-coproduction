@@ -16,7 +16,7 @@ class CoproductionSchema(BaseModel):
     """
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     is_public = Column(Boolean, default=True)
-    name_translations = Column(HSTORE)
+    name_translations = Column(HSTORE, unique=True)
     description_translations = Column(HSTORE)
 
     name = translation_hybrid(name_translations)

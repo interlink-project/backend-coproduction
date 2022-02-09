@@ -1,5 +1,5 @@
 import uuid
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel
 from app.general.utils.AllOptional import AllOptional
@@ -7,25 +7,23 @@ from datetime import datetime
 
 
 class TeamBase(BaseModel):
-    logotype: str
-
-
+    name: str
+    description: str
+    
 class TeamCreate(TeamBase):
-    name_translations: dict
-    description_translations: dict
+    user_ids: List[str]
 
 
 class TeamPatch(TeamBase, metaclass=AllOptional):
-    pass
+    logotype: Optional[str]
 
 
 class Team(TeamBase):
     id: uuid.UUID
     created_at: datetime
     updated_at: Optional[datetime]
-
-    name: str
-    description: str
+    logotype: Optional[str]
+    created_by: str
     
     class Config:
         orm_mode = True

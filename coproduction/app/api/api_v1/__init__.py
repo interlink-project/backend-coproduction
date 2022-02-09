@@ -15,18 +15,18 @@ from app.api.api_v1 import (
 
 api_router = APIRouter()
 api_router.include_router(coproductionschemas.router,
-                          prefix="/coproductionschemas", tags=["coproduction"])
+                          prefix="/coproductionschemas", tags=["coproductionschemas"])
 
 api_router.include_router(coproductionprocesses.router,
-                          prefix="/coproductionprocesses", tags=["coproduction"])
+                          prefix="/coproductionprocesses", tags=["coproductionprocesses"])
 # api_router.include_router(phases.router,
 #                           prefix="/phases", tags=["coproduction"])
 api_router.include_router(objectives.router,
-                          prefix="/objectives", tags=["coproduction"])
+                          prefix="/objectives", tags=["tree"])
 api_router.include_router(tasks.router,
-                          prefix="/tasks", tags=["coproduction"])
+                          prefix="/tasks", tags=["tree"])
 api_router.include_router(assets.router,
-                          prefix="/assets", tags=["coproduction"])
+                          prefix="/assets", tags=["assets"])
 
 team_management_router = APIRouter()
 team_management_router.include_router(teams.router,

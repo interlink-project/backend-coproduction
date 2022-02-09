@@ -9,7 +9,7 @@ from app.general import deps
 router = APIRouter()
 
 
-@router.get("/", response_model=List[schemas.CoproductionSchemaOut])
+@router.get("", response_model=List[schemas.CoproductionSchemaOut])
 def list_coproductionschemas(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
@@ -25,7 +25,7 @@ def list_coproductionschemas(
     return coproductionschemas
 
 
-@router.post("/", response_model=schemas.CoproductionSchemaOutFull)
+@router.post("", response_model=schemas.CoproductionSchemaOutFull)
 def create_coproductionschema(
     *,
     db: Session = Depends(deps.get_db),
@@ -40,6 +40,21 @@ def create_coproductionschema(
     coproductionschema = crud.coproductionschema.create(db=db, coproductionschema=coproductionschema_in)
     return coproductionschema
 
+
+@router.get("/{id}/tree", response_model=List[schemas.PhaseOutFull])
+def get_coproductionprocess_tree(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: uuid.UUID,
+    current_user: dict = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Get coproduction schema tree.
+    """
+    coproductionschema = crud.coproductionschema.get(db=db, id=id)
+    if not coproductionschema:
+        raise HTTPException(status_code=404, detail="CoproductionSchema not found")
+    return coproductionschema.phases
 
 @router.put("/{id}", response_model=schemas.CoproductionSchemaOutFull)
 def update_coproductionschema(
@@ -96,18 +111,3 @@ def delete_coproductionschema(
         raise HTTPException(status_code=403, detail="Not enough permissions")
     crud.coproductionschema.remove(db=db, id=id)
     return None
-
-@router.get("/{id}/tree", response_model=List[schemas.PhaseOutFull])
-def get_coproductionprocess_tree(
-    *,
-    db: Session = Depends(deps.get_db),
-    id: uuid.UUID,
-    current_user: dict = Depends(deps.get_current_active_user),
-) -> Any:
-    """
-    Get coproduction schema tree.
-    """
-    coproductionschema = crud.coproductionschema.get(db=db, id=id)
-    if not coproductionschema:
-        raise HTTPException(status_code=404, detail="CoproductionSchema not found")
-    return coproductionschema.phases

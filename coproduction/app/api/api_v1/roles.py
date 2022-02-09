@@ -10,7 +10,7 @@ from app.extern import acl
 router = APIRouter()
 
 
-@router.get("/", response_model=List[schemas.RoleOut])
+@router.get("", response_model=List[schemas.RoleOut])
 def list_roles(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
@@ -26,7 +26,7 @@ def list_roles(
     return roles
 
 
-@router.post("/", response_model=schemas.RoleOutFull)
+@router.post("", response_model=schemas.RoleOutFull)
 def create_role(
     *,
     db: Session = Depends(deps.get_db),

@@ -15,7 +15,7 @@ from app.config import settings
 router = APIRouter()
 
 
-@router.get("/", response_model=List[schemas.AssetOutFull])
+@router.get("", response_model=List[schemas.AssetOutFull])
 def list_assets(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
@@ -31,7 +31,7 @@ def list_assets(
     return assets
 
 
-@router.post("/", response_model=schemas.AssetOutFull)
+@router.post("", response_model=schemas.AssetOutFull)
 def create_asset(
     *,
     db: Session = Depends(deps.get_db),

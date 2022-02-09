@@ -26,7 +26,9 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
     ):
         try:
             lang = request.headers["accept-language"]
+            print("LANGUAGE")
             print(lang)
+            # print(request.headers)
             user_language = lang if lang in POSSIBLE_LOCALES else DEFAULT_LOCALE
         except:
             user_language = DEFAULT_LOCALE

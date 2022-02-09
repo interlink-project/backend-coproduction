@@ -10,7 +10,6 @@ from app.general.utils.AllOptional import AllOptional
 class CoproductionProcessBase(BaseModel):
     name: str
     description: Optional[str]
-    logotype: Optional[str]
     aim: Optional[str]
     idea: Optional[str]
     organization: Optional[str]
@@ -23,9 +22,8 @@ class CoproductionProcessBase(BaseModel):
 class CoproductionProcessCreate(CoproductionProcessBase):
     pass
 
-
 class CoproductionProcessPatch(CoproductionProcessCreate, metaclass=AllOptional):
-    pass
+    logotype: Optional[str]
 
 
 class CoproductionProcess(CoproductionProcessBase):
@@ -33,6 +31,9 @@ class CoproductionProcess(CoproductionProcessBase):
     created_at: datetime
     updated_at: Optional[datetime]
 
+    logotype: Optional[str]
+    created_by: str
+    
     class Config:
         orm_mode = True
 

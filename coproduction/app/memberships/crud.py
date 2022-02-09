@@ -15,7 +15,7 @@ class CRUDMembership(CRUDBase[Membership, MembershipCreate, MembershipPatch]):
     def get_by_team_id(self, db: Session, team_id: uuid.UUID, skip: int = 0, limit: int = 100) -> Optional[Membership]:
         return db.query(Membership).filter(Membership.team_id == team_id).offset(skip).limit(limit).all()
 
-    def create(self, db: Session, *, membership: MembershipCreate) -> Membership:            
+    def create(self, db: Session, membership: MembershipCreate) -> Membership:            
         db_obj = Membership(
             user_id=membership.user_id,
             team_id=membership.team_id,

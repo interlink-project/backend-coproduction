@@ -9,7 +9,7 @@ from app.general import deps
 router = APIRouter()
 
 
-@router.get("/", response_model=List[schemas.ObjectiveOut])
+@router.get("", response_model=List[schemas.ObjectiveOut])
 def list_objectives(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
@@ -25,7 +25,7 @@ def list_objectives(
     return objectives
 
 
-@router.post("/", response_model=schemas.ObjectiveOutFull)
+@router.post("", response_model=schemas.ObjectiveOutFull)
 def create_objective(
     *,
     db: Session = Depends(deps.get_db),
@@ -39,6 +39,21 @@ def create_objective(
         raise HTTPException(status_code=403, detail="Not enough permissions")
     objective = crud.objective.create(db=db, objective=objective_in)
     return objective
+
+
+@router.get("/{id}/tasks", response_model=List[schemas.TaskOut])
+def list_related_tasks(
+    id: uuid.UUID,
+    db: Session = Depends(deps.get_db),
+    current_user: Optional[dict] = Depends(deps.get_current_user),
+) -> Any:
+    """
+    Retrieve related tasks.
+    """
+    objective = crud.objective.get(db, id=id)
+    if not objective:
+        raise HTTPException(status_code=400, detail="Objective not found")
+    return objective.tasks
 
 
 @router.put("/{id}", response_model=schemas.ObjectiveOutFull)
@@ -97,17 +112,3 @@ def delete_objective(
     crud.objective.remove(db=db, id=id)
     return None
 
-
-@router.get("/{id}/tasks/", response_model=List[schemas.TaskOut])
-def list_related_tasks(
-    id: uuid.UUID,
-    db: Session = Depends(deps.get_db),
-    current_user: Optional[dict] = Depends(deps.get_current_user),
-) -> Any:
-    """
-    Retrieve related tasks.
-    """
-    objective = crud.objective.get(db, id=id)
-    if not objective:
-        raise HTTPException(status_code=400, detail="Objective not found")
-    return objective.tasks

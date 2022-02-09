@@ -31,13 +31,17 @@ def main() -> None:
     logger.info("Creating initial data")
     db = SessionLocal()
 
-    for schema_metadata_path in Path("/app/interlinkers-data/schemas").glob("**/metadata.json"):
-        with open(str(schema_metadata_path)) as json_file:
-            print(
-                f"{bcolors.OKBLUE}## PROCESSING {bcolors.ENDC}{schema_metadata_path}{bcolors.OKBLUE}")
-            parent = str(schema_metadata_path.parents[0])
-            phases = os.listdir(parent + "/phases")
-            schema_data = json.loads(json_file.read())
+    if (sc := crud.coproductionschema.get_by_name(db=db, locale="en", name="Default schema")):
+        crud.coproductionschema.remove(db=db, id=sc.id)
+        print("Schema removed")
+
+    data = requests.get("https://raw.githubusercontent.com/interlink-project/interlinkers-data/master/all.json").json()
+    # with open("/app/interlinkers-data/all.json") as json_file:
+    #     data = json.load(json_file)
+
+    for schema_data in data["schemas"]:
+        name = schema_data["name"]["en"]
+        print(f"{bcolors.OKBLUE}## PROCESSING {bcolors.ENDC}{name}{bcolors.OKBLUE}")
 
         schema_data["name_translations"] = schema_data["name"]
         schema_data["description_translations"] = schema_data["description"]
@@ -48,9 +52,7 @@ def main() -> None:
             )
         )
 
-        for phase in phases:
-            with open(parent + "/phases/" + phase) as json_file:
-                phase_data = json.loads(json_file.read())
+        for phase_data in schema_data["phases"]:
             phase_data["name_translations"] = phase_data["name"]
             phase_data["description_translations"] = phase_data["description"]
             phase_data["coproductionschema_id"] = SCHEMA.id
@@ -90,16 +92,23 @@ def main() -> None:
                         )
                     )
 
+    TEAM_NAME = "Example team"
+    if (team := crud.team.get_by_name(db=db, name=TEAM_NAME)):
+        crud.team.remove(db=db, id=team.id)
+        print("Team removed")
     TEAM = crud.team.create(
         db=db,
         team=schemas.TeamCreate(
-            name_translations={"en": "Example team", "es": "Equipo de ejemplo"},
-            description_translations={"en": "Good team", "es": "Muy buen equipo"},
+            name=TEAM_NAME,
+            description="Good team",
             logotype="/static/demodata/example.png"
         )
     )
 
     COPRODUCTION_PROCESS_NAME = "Example"
+    if (process := crud.coproductionprocess.get_by_name(db=db, name=COPRODUCTION_PROCESS_NAME)):
+        crud.coproductionprocess.remove(db=db, id=process.id)
+        print("Coproduction process removed")
     crud.coproductionprocess.create(
         db=db,
         coproductionprocess=schemas.CoproductionProcessCreate(
