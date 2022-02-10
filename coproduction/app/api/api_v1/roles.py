@@ -15,7 +15,7 @@ def list_roles(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
     limit: int = 100,
-    current_user: Optional[dict] = Depends(deps.get_current_user),
+    current_user: Optional[models.User] = Depends(deps.get_current_user),
 ) -> Any:
     """
     Retrieve roles.
@@ -68,7 +68,7 @@ def read_role(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
-    current_user: Optional[dict] = Depends(deps.get_current_user),
+    current_user: Optional[models.User] = Depends(deps.get_current_user),
 ) -> Any:
     """
     Get role by ID.

@@ -1,19 +1,30 @@
-from fastapi import APIRouter
+from typing import Any, List, Optional
+
+from fastapi import APIRouter, Depends
 from fastapi.responses import RedirectResponse
+from sqlalchemy.orm import Session
 
+from app import models, schemas
 from app.api.api_v1 import (
-    coproductionschemas,
-    coproductionprocesses, 
-    phases, 
-    tasks, 
-    objectives, 
     assets,
+    coproductionprocesses,
+    coproductionschemas,
+    memberships,
+    objectives,
+    phases,
+    tasks,
     teams,
-    memberships
 )
-
+from app.config import settings
+from app.general import deps
 
 api_router = APIRouter()
+@api_router.get("/me", response_model=schemas.UserOutFull)
+def list_assets(
+    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
+) -> Any:
+    return current_user
+
 api_router.include_router(coproductionschemas.router,
                           prefix="/coproductionschemas", tags=["coproductionschemas"])
 

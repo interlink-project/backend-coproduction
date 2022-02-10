@@ -12,13 +12,13 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
     ) -> List[Asset]:
         return db.query(Asset).filter(task_id=task_id).offset(skip).limit(limit).all()
 
-    def create(self, db: Session, asset: AssetCreate, external_id: str) -> Asset:
+    def create(self, db: Session, asset: AssetCreate, external_id: str, creator: models.User) -> Asset:
         db_obj = Asset(
             task_id=asset.task_id,
             interlinker_id=asset.interlinker_id,
             external_id=external_id,
+            creator=creator
         )
-        
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)

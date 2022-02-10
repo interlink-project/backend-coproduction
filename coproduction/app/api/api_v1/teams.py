@@ -18,7 +18,7 @@ def list_teams(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
     limit: int = 100,
-    current_user: Optional[dict] = Depends(deps.get_current_user),
+    current_user: Optional[models.User] = Depends(deps.get_current_user),
 ) -> Any:
     """
     Retrieve teams.
@@ -31,12 +31,12 @@ def list_teams(
 @router.get("/mine", response_model=List[schemas.TeamOutFull])
 def list_my_teams(
     db: Session = Depends(deps.get_db),
-    current_user: Optional[dict] = Depends(deps.get_current_active_user),
+    current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Retrieve teams.
     """
-    return crud.team.get_multi_by_user(db, user_id=current_user["sub"])
+    return crud.team.get_multi_by_user(db, user_id=current_user.id)
 
 @router.post("", response_model=schemas.TeamOutFull)
 async def create_team(
@@ -50,7 +50,7 @@ async def create_team(
     """
     if not crud.team.get_by_name(db=db, name=team_in.name):
         return crud.team.create(db=db, team=team_in, creator=current_user)
-    raise HTTPException(status_code=404, detail="Team already exists")
+    raise HTTPException(status_code=400, detail="Team already exists")
 
 
 @router.post("/{id}/logotype", response_model=schemas.TeamOutFull)
@@ -101,7 +101,7 @@ def read_team(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
-    current_user: Optional[dict] = Depends(deps.get_current_user),
+    current_user: Optional[models.User] = Depends(deps.get_current_user),
 ) -> Any:
     """
     Get team by ID.

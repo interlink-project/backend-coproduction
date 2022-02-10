@@ -7,3 +7,4 @@ from app.assets.crud import exportCrud as asset
 from app.roles.crud import exportCrud as role
 from app.teams.crud import exportCrud as team
 from app.memberships.crud import exportCrud as membership
+from app.users.crud import exportCrud as user

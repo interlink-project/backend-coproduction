@@ -14,7 +14,7 @@ def list_coproductionschemas(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
     limit: int = 100,
-    current_user: Optional[dict] = Depends(deps.get_current_user),
+    current_user: Optional[models.User] = Depends(deps.get_current_user),
 ) -> Any:
     """
     Retrieve coproductionschemas.
@@ -81,7 +81,7 @@ def read_coproductionschema(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
-    current_user: Optional[dict] = Depends(deps.get_current_user),
+    current_user: Optional[models.User] = Depends(deps.get_current_user),
 ) -> Any:
     """
     Get coproductionschema by ID.

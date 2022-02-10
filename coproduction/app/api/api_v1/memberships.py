@@ -16,7 +16,7 @@ def list_memberships(
     limit: int = 100,
     user_id: str = None,
     team_id: Optional[uuid.UUID] = None,
-    current_user: Optional[dict] = Depends(deps.get_current_user),
+    current_user: Optional[models.User] = Depends(deps.get_current_user),
 ) -> Any:
     """
     Retrieve memberships.
@@ -77,7 +77,7 @@ def read_membership(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
-    current_user: Optional[dict] = Depends(deps.get_current_user),
+    current_user: Optional[models.User] = Depends(deps.get_current_user),
 ) -> Any:
     """
     Get membership by ID.

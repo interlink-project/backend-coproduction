@@ -14,6 +14,8 @@ from app.extern import acl
 from app.schemas import RoleCreate, RolePatch
 from app.initial_data import DEFAULT_SCHEMA_NAME
 from app.memberships.models import Membership
+from app import models
+
 
 def row2dict(row):
     d = {}
@@ -22,10 +24,11 @@ def row2dict(row):
 
     return d
 
+
 class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessCreate, CoproductionProcessPatch]):
     def get_by_name(self, db: Session, name: str) -> Optional[Team]:
         return db.query(CoproductionProcess).filter(CoproductionProcess.name == name).first()
-        
+
     def get_by_artefact(self, db: Session, artefact_id: uuid.UUID) -> Optional[CoproductionProcess]:
         return db.query(CoproductionProcess).filter(CoproductionProcess.artefact_id == artefact_id).first()
 
@@ -40,11 +43,14 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
             Membership.user_id == user_id,
         ).all()
 
-    def create(self, db: Session, *, coproductionprocess: CoproductionProcessCreate, creator: dict) -> CoproductionProcess:
+    def create(self, db: Session, *, coproductionprocess: CoproductionProcessCreate, creator: models.User) -> CoproductionProcess:
         aclobj = acl.create_acl()
 
         team = crud.team.get(db=db, id=coproductionprocess.team_id)
-        coproductionschema = crud.coproductionschema.get(db=db, id=coproductionprocess.coproductionschema_id) or crud.coproductionschema.get_by_name(db=db, name=DEFAULT_SCHEMA_NAME, locale="en")
+        coproductionschema = crud.coproductionschema.get(
+            db=db, id=coproductionprocess.coproductionschema_id) or crud.coproductionschema.get_by_name(db=db, name=DEFAULT_SCHEMA_NAME, locale="en")
+        if not coproductionschema:
+            raise Exception("No coproductionschema")
         db_obj = CoproductionProcess(
             artefact_id=coproductionprocess.artefact_id,
             # uses postgres
@@ -54,8 +60,8 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
             idea=coproductionprocess.idea,
             organization=coproductionprocess.organization,
             challenges=coproductionprocess.challenges,
-            #relations
-            created_by=creator["sub"],
+            # relations
+            creator=creator,
             team=team,
             coproductionschema=coproductionschema,
             # uses mongo
@@ -131,7 +137,8 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         return True
 
     def check_perm(self, db: Session, user, object, perm):
-        role = crud.role.get_user_role_for_process(db=db, user_id=user["email"], coproductionprocess_id=object.id)
+        role = crud.role.get_user_role_for_process(
+            db=db, user_id=user["email"], coproductionprocess_id=object.id)
         if not role:
             role = "anonymous"
         else:

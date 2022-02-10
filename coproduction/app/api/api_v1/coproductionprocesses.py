@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from slugify import slugify
 from sqlalchemy.orm import Session
 
-from app import crud, schemas
+from app import crud, schemas, models
 from app.general import deps
 
 router = APIRouter()
@@ -18,7 +18,7 @@ def list_coproductionprocesses(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
     limit: int = 100,
-    current_user: Optional[dict] = Depends(deps.get_current_user),
+    current_user: Optional[models.User] = Depends(deps.get_current_user),
 ) -> Any:
     """
     Retrieve coproductionprocesses.
@@ -33,14 +33,14 @@ def list_coproductionprocesses(
 @router.get("/mine", response_model=List[schemas.CoproductionProcessOut])
 def list_my_coproductionprocesses(
     db: Session = Depends(deps.get_db),
-    current_user: Optional[dict] = Depends(deps.get_current_user),
+    current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Retrieve coproductionprocesses.
     """
     if not crud.coproductionprocess.can_list(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    return crud.coproductionprocess.get_multi_by_user(db, user_id=current_user["sub"])
+    return crud.coproductionprocess.get_multi_by_user(db, user_id=current_user.id)
 
 
 @router.post("", response_model=schemas.CoproductionProcessOutFull)
@@ -106,7 +106,7 @@ def read_coproductionprocess(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
-    current_user: Optional[dict] = Depends(deps.get_current_user),
+    current_user: Optional[models.User] = Depends(deps.get_current_user),
 ) -> Any:
     """
     Get coproductionprocess by ID.
@@ -145,7 +145,7 @@ def delete_coproductionprocess(
 def list_related_phases(
     id: uuid.UUID,
     db: Session = Depends(deps.get_db),
-    current_user: Optional[dict] = Depends(deps.get_current_user),
+    current_user: Optional[models.User] = Depends(deps.get_current_user),
 ) -> Any:
     """
     Retrieve related phases.

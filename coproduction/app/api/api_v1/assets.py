@@ -20,7 +20,7 @@ def list_assets(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
     limit: int = 100,
-    current_user: Optional[dict] = Depends(deps.get_current_user),
+    current_user: Optional[models.User] = Depends(deps.get_current_user),
 ) -> Any:
     """
     Retrieve assets.
@@ -63,7 +63,7 @@ def create_asset(
     try:
         print(f"http://{path}/api/v1/assets/{asset_in.external_id}")
         assert requests.get(f"http://{path}/assets/{asset_in.external_id}").status_code == 200
-        asset = crud.asset.create(db=db, asset=asset_in, external_id=asset_in.external_id)
+        asset = crud.asset.create(db=db, asset=asset_in, external_id=asset_in.external_id, creator=current_user)
         return asset
     except Exception as e:
         raise e
@@ -95,7 +95,7 @@ def read_asset(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
-    current_user: Optional[dict] = Depends(deps.get_current_user),
+    current_user: Optional[models.User] = Depends(deps.get_current_user),
 ) -> Any:
     """
     Get asset by ID.

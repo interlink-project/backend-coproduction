@@ -11,7 +11,10 @@ import requests
 class Membership(BaseModel):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
-    user_id = Column(String)
+    user_id = Column(
+        String, ForeignKey("user.id")
+    )
+    user = relationship("User", back_populates="memberships")
     team_id = Column(
         UUID(as_uuid=True), ForeignKey("team.id")
     )

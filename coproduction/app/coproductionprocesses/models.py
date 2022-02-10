@@ -30,8 +30,6 @@ class CoproductionProcess(BaseModel):
     description = translation_hybrid(description_translations)
 
     logotype = Column(String, nullable=True)
-    created_by = Column(String, nullable=False)
-
     aim = Column(Text, nullable=True)
     idea = Column(Text, nullable=True)
     organization = Column(Text, nullable=True)
@@ -41,6 +39,12 @@ class CoproductionProcess(BaseModel):
         "Phase", back_populates="coproductionprocess")
     roles = relationship("Role", back_populates="coproductionprocess")
     artefact_id = Column(UUID(as_uuid=True))
+
+    # created by
+    creator_id = Column(
+        String, ForeignKey("user.id")
+    )
+    creator = relationship("User", back_populates="created_coproductionprocesses")
 
     # created from schema
     coproductionschema_id = Column(

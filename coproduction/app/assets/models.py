@@ -31,6 +31,12 @@ class Asset(BaseModel):
     )
     task = relationship("Task", back_populates="assets")
 
+    # created by
+    creator_id = Column(
+        String, ForeignKey("user.id")
+    )
+    creator = relationship("User", back_populates="created_assets")
+
     def __repr__(self):
         return "<Asset %r>" % self.id
     

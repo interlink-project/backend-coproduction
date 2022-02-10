@@ -5,7 +5,7 @@ from app.general.utils.CRUDBase import CRUDBase
 from app.models import Team
 from app.schemas import TeamCreate, TeamPatch
 import uuid
-from app.memberships.models import Membership
+from app import models
 from app.memberships.crud import exportCrud as memberships_crud
 from app import schemas
 
@@ -17,16 +17,18 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
         return db.query(
             Team,
         ).filter(
-            Team.id == Membership.team_id,
+            Team.id == models.Membership.team_id,
         ).filter(
-            Membership.user_id == user_id,
+            models.Membership.user_id == models.User.id,
+        ).filter(
+            models.User.id == user_id,
         ).all()
 
-    def create(self, db: Session, team: TeamCreate, creator: dict) -> Team:
+    def create(self, db: Session, team: TeamCreate, creator: models.User) -> Team:
         db_obj = Team(
             name=team.name,
             description=team.description,
-            created_by=creator["sub"]
+            creator=creator
         )
         db.add(db_obj)
         db.commit()

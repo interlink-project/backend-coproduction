@@ -7,3 +7,4 @@ from app.tasks.models import *
 from app.roles.models import *
 from app.teams.models import *
 from app.memberships.models import *
+from app.users.models import *

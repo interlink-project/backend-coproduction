@@ -23,7 +23,8 @@ class Team(TeamBase):
     created_at: datetime
     updated_at: Optional[datetime]
     logotype: Optional[str]
-    created_by: str
+    
+    #creator: str
     
     class Config:
         orm_mode = True

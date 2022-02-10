@@ -9,11 +9,16 @@ from app.phases.schemas import *
 from app.roles.schemas import *
 from app.tasks.schemas import *
 from app.teams.schemas import *
+from app.users.schemas import *
 
 
 class BaseORM(BaseModel):
     class Config:
         orm_mode = True
+
+
+class UserOutFull(UserOut):
+    pass
 
 
 class AssetOutFull(AssetOut):

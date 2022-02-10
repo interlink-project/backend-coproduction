@@ -41,6 +41,10 @@ class Settings(BaseSettings):
         )
 
     # OTHER MICROS
+    AUTH_SERVICE_NAME: str = "auth"
+    AUTH_PORT: int = 80
+    AUTH_SERVICE: str = "auth:80"
+
     ACL_SERVICE_NAME: str
     ACL_PORT: int
     ACL_SERVICE: str = os.getenv("ACL_SERVICE_NAME") + ":" + os.getenv("ACL_PORT")
