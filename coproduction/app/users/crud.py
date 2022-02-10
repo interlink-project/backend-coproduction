@@ -11,28 +11,25 @@ from sqlalchemy.exc import IntegrityError
 from psycopg2.errors import UniqueViolation
 
 class CRUDUser(CRUDBase[User, UserCreate, UserPatch]):
-    def get(self, db: Session, search: str) -> Optional[User]:
-        return db.query(User).filter(
-            or_(User.id == search, User.email == search)).first()
+    def get(self, db: Session, id: str) -> Optional[User]:
+        return db.query(User).filter(User.id == id).first()
 
     def get_or_create(self, db: Session, token_data: dict):
-        email = token_data["email"]
-        print(f"GET OR CREATING USER {email}")
-        if (user := self.get(db=db, search=token_data["sub"])):
+        print(f"GET OR CREATING USER")
+        if (user := self.get(db=db, id=token_data["sub"])):
             return user
         else:
             try:
                 response = requests.post(f"http://{settings.AUTH_SERVICE}/auth/api/v1/users", json=token_data).json()
-                return self.create(db=db, user=UserCreate(id=response["sub"], email=response["email"]))
+                return self.create(db=db, user=UserCreate(id=response["sub"]))
             except IntegrityError as e:
                 assert isinstance(e.orig, UniqueViolation)
-                return self.get(db=db, search=token_data["sub"])
+                return self.get(db=db, id=token_data["sub"])
 
     def create(self, db: Session, user: UserCreate) -> User:
-        print(f"CREATING USER {user.email}")
+        print(f"CREATING USER {user.id}")
         db_obj = User(
             id=user.id,
-            email=user.email,
         )
         db.add(db_obj)
         db.commit()

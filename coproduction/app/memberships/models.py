@@ -1,12 +1,14 @@
 import uuid
 
+import requests
 from sqlalchemy import Column, DateTime, ForeignKey, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
+
 from app.general.db.base_class import Base as BaseModel
-import requests
+
 
 class Membership(BaseModel):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -25,4 +27,4 @@ class Membership(BaseModel):
     )
 
     def __repr__(self) -> str:
-        return f"<Membership {self.user.given_name} - {self.team.name}>"
+        return f"<Membership {self.user.id} - {self.team.name}>"

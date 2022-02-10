@@ -84,7 +84,6 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         # Copy the tree of the schema
         if coproductionschema and hasattr(coproductionschema, "phases"):
             for phase in coproductionschema.phases:
-                print(phase)
                 clone = row2dict(phase)
                 clone["coproductionprocess_id"] = db_obj.id
                 clone["parent_id"] = phase.id
@@ -102,7 +101,6 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                         clone["parent_id"] = objective.id
                         del clone["created_at"]
                         del clone["updated_at"]
-                        print(objective)
                         db_objective = crud.objective.create(
                             db=db,
                             objective=schemas.ObjectiveCreate(**clone)
@@ -114,7 +112,6 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                                 clone["parent_id"] = task.id
                                 del clone["created_at"]
                                 del clone["updated_at"]
-                                print(task)
                                 db_task = crud.task.create(
                                     db=db,
                                     task=schemas.TaskCreate(**clone)
@@ -136,9 +133,9 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
     def can_list(self, user):
         return True
 
-    def check_perm(self, db: Session, user, object, perm):
+    def check_perm(self, db: Session, user: models.User, object, perm):
         role = crud.role.get_user_role_for_process(
-            db=db, user_id=user["email"], coproductionprocess_id=object.id)
+            db=db, user_id=user.id, coproductionprocess_id=object.id)
         if not role:
             role = "anonymous"
         else:

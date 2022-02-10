@@ -7,13 +7,12 @@ from datetime import datetime
 
 
 class UserBase(BaseModel):
-    id: str
-    email: str
+    pass
     
 class UserCreate(UserBase):
-    pass
+    id: str
 
-class UserPatch(UserBase, metaclass=AllOptional):
+class UserPatch(UserCreate, metaclass=AllOptional):
     pass
 
 class User(UserBase):
