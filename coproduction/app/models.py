@@ -4,7 +4,7 @@ from app.coproductionschemas.models import *
 from app.phases.models import *
 from app.objectives.models import *
 from app.tasks.models import *
-from app.roles.models import *
 from app.teams.models import *
 from app.memberships.models import *
 from app.users.models import *
+from app.acl.models import *

@@ -6,10 +6,10 @@ from app.coproductionschemas.schemas import *
 from app.memberships.schemas import *
 from app.objectives.schemas import *
 from app.phases.schemas import *
-from app.roles.schemas import *
 from app.tasks.schemas import *
 from app.teams.schemas import *
 from app.users.schemas import *
+from app.acl.schemas import *
 
 
 class BaseORM(BaseModel):
@@ -43,11 +43,7 @@ class CoproductionSchemaOutFull(CoproductionSchemaOut):
 
 
 class CoproductionProcessOutFull(CoproductionProcessOut):
-    pass
-
-
-class RoleOutFull(RoleOut):
-    pass
+    acl: ACLOut
 
 
 class MembershipOutFull(MembershipOut):

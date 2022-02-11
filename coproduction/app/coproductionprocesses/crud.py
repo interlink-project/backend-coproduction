@@ -10,11 +10,9 @@ from app.config import settings
 from app.general.utils.CRUDBase import CRUDBase
 from app.models import CoproductionProcess, CoproductionSchema, Team
 from app.schemas import CoproductionProcessCreate, CoproductionProcessPatch
-from app.extern import acl
-from app.schemas import RoleCreate, RolePatch
 from app.initial_data import DEFAULT_SCHEMA_NAME
 from app.memberships.models import Membership
-from app import models
+from app import models, schemas
 
 
 def row2dict(row):
@@ -44,7 +42,6 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         ).all()
 
     def create(self, db: Session, *, coproductionprocess: CoproductionProcessCreate, creator: models.User) -> CoproductionProcess:
-        aclobj = acl.create_acl()
 
         team = crud.team.get(db=db, id=coproductionprocess.team_id)
         coproductionschema = crud.coproductionschema.get(
@@ -64,22 +61,12 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
             creator=creator,
             team=team,
             coproductionschema=coproductionschema,
-            # uses mongo
-            acl_id=aclobj["_id"]
         )
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
 
-        # Create all roles
-        for membership in team.memberships:
-            role = RoleCreate(**{
-                "role": "admin",
-                "type": "team_member",
-                "coproductionprocess_id": db_obj.id,
-                "user_id": membership.user_id,
-            })
-            crud.role.create(db=db, role=role)
+        crud.acl.create(db=db, acl=schemas.ACLCreate(coproductionprocess_id=db_obj.id, type="process"))
 
         # Copy the tree of the schema
         if coproductionschema and hasattr(coproductionschema, "phases"):
@@ -134,16 +121,8 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         return True
 
     def check_perm(self, db: Session, user: models.User, object, perm):
-        role = crud.role.get_user_role_for_process(
-            db=db, user_id=user.id, coproductionprocess_id=object.id)
-        if not role:
-            role = "anonymous"
-        else:
-            role = role.role
-            # raise HTTPException(status_code=403, detail="Role do not exist")
         return True
-        return acl.check_permissions_for_action(object.acl_id, perm, role)
-
+        
     def can_read(self, db: Session, user, object):
         return self.check_perm(db=db, user=user, object=object, perm="retrieve")
 

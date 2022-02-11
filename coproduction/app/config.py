@@ -45,10 +45,6 @@ class Settings(BaseSettings):
     AUTH_PORT: int = 80
     AUTH_SERVICE: str = "auth:80"
 
-    ACL_SERVICE_NAME: str
-    ACL_PORT: int
-    ACL_SERVICE: str = os.getenv("ACL_SERVICE_NAME") + ":" + os.getenv("ACL_PORT")
-
     CATALOGUE_SERVICE_NAME: str
     CATALOGUE_PORT: int
     CATALOGUE_SERVICE: str = os.getenv("CATALOGUE_SERVICE_NAME") + ":" + os.getenv("CATALOGUE_PORT")

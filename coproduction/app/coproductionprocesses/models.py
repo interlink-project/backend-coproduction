@@ -15,7 +15,6 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import HSTORE, UUID
 from sqlalchemy.orm import relationship
 
-from app.extern import acl
 from app.general.db.base_class import Base as BaseModel
 from app.general.utils.DatabaseLocalization import translation_hybrid
 
@@ -37,7 +36,6 @@ class CoproductionProcess(BaseModel):
 
     phases = relationship(
         "Phase", back_populates="coproductionprocess")
-    roles = relationship("Role", back_populates="coproductionprocess")
     artefact_id = Column(UUID(as_uuid=True))
 
     # created by
@@ -58,7 +56,5 @@ class CoproductionProcess(BaseModel):
     )
     team = relationship("Team", back_populates="coproductionprocesses")
 
-    acl_id = Column(Text)
-
-    def current_user_permissions(self, role):
-        return acl.get_permissions_for_role(self.acl_id, role=role)
+    # ACL
+    acl = relationship("ACL", back_populates="coproductionprocess", uselist=False)
