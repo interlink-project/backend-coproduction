@@ -8,3 +8,4 @@ from app.teams.crud import exportCrud as team
 from app.memberships.crud import exportCrud as membership
 from app.users.crud import exportCrud as user
 from app.acl.crud import exportCrud as acl
+from app.acl.crud import exportRoleCrud as role

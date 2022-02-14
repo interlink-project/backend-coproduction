@@ -1,8 +1,11 @@
-from app.general.db.base_class import Base as BaseModel
-from sqlalchemy import Column, String, ForeignKey
-from sqlalchemy.orm import relationship
 import uuid
+
+from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
+
+from app.general.db.base_class import Base as BaseModel
+
 
 class Team(BaseModel):
     """Team Class contains standard information for a Team."""
@@ -11,7 +14,7 @@ class Team(BaseModel):
     name = Column(String, unique=True, nullable=False)
     description = Column(String, nullable=False)
     logotype = Column(String, nullable=True)
-    
+
     # created by
     creator_id = Column(
         String, ForeignKey("user.id")

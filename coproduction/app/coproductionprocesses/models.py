@@ -22,11 +22,8 @@ from app.general.utils.DatabaseLocalization import translation_hybrid
 class CoproductionProcess(BaseModel):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
-    name_translations = Column(HSTORE)
-    description_translations = Column(HSTORE, nullable=True)
-
-    name = translation_hybrid(name_translations)
-    description = translation_hybrid(description_translations)
+    name = Column(String)
+    description = Column(String)
 
     logotype = Column(String, nullable=True)
     aim = Column(Text, nullable=True)
@@ -58,3 +55,7 @@ class CoproductionProcess(BaseModel):
 
     # ACL
     acl = relationship("ACL", back_populates="coproductionprocess", uselist=False)
+
+    @property
+    def acl_id(self):
+        return self.acl.id

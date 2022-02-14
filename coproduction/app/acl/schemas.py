@@ -35,19 +35,24 @@ class ExceptionOut(Exception):
 
 class RoleBase(BaseModel):
     name: str
+    description: str
     permissions: List[Any]
 
 class RoleCreate(RoleBase):
     acl_id: uuid.UUID
 
-class RolePatch(RoleCreate, metaclass=AllOptional):
-    pass
-
+class RolePatch(BaseModel):
+    name: Optional[str]
+    description: Optional[str]
+    permissions: Optional[List[Any]]
 
 class Role(RoleBase):
     id: uuid.UUID
     created_at: datetime
     updated_at: Optional[datetime]
+    team_ids: List[uuid.UUID]
+    perms_editable: bool
+    name_editable: bool
 
     class Config:
         orm_mode = True
@@ -83,3 +88,4 @@ class ACL(ACLBase):
 class ACLOut(ACL):
     roles: List[RoleOut]
     exceptions: List[ExceptionOut]
+    permissions: list

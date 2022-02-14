@@ -1,5 +1,6 @@
 from typing import List, Optional
 
+from app.acl.schemas import *
 from app.assets.schemas import *
 from app.coproductionprocesses.schemas import *
 from app.coproductionschemas.schemas import *
@@ -9,7 +10,6 @@ from app.phases.schemas import *
 from app.tasks.schemas import *
 from app.teams.schemas import *
 from app.users.schemas import *
-from app.acl.schemas import *
 
 
 class BaseORM(BaseModel):
@@ -42,13 +42,18 @@ class CoproductionSchemaOutFull(CoproductionSchemaOut):
     phases: List[PhaseOutFull]
 
 
-class CoproductionProcessOutFull(CoproductionProcessOut):
-    acl: ACLOut
-
-
 class MembershipOutFull(MembershipOut):
     pass
 
 
 class TeamOutFull(TeamOut):
     memberships: Optional[List[MembershipOutFull]]
+
+
+class ACLOutFull(ACLOut):
+    teams: List[TeamOutFull]
+
+
+class CoproductionProcessOutFull(CoproductionProcessOut):
+    # acl: ACLOutFull
+    pass

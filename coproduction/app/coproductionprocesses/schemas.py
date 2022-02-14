@@ -39,4 +39,4 @@ class CoproductionProcess(CoproductionProcessBase):
 
 
 class CoproductionProcessOut(CoproductionProcess):
-    pass
+    acl_id: uuid.UUID

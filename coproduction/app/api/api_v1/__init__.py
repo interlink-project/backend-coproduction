@@ -14,6 +14,7 @@ from app.api.api_v1 import (
     phases,
     tasks,
     teams,
+    acls
 )
 from app.config import settings
 from app.general import deps
@@ -30,6 +31,8 @@ api_router.include_router(coproductionschemas.router,
 
 api_router.include_router(coproductionprocesses.router,
                           prefix="/coproductionprocesses", tags=["coproductionprocesses"])
+api_router.include_router(acls.router,
+                          prefix="/acl", tags=["coproductionprocesses"])
 # api_router.include_router(phases.router,
 #                           prefix="/phases", tags=["coproduction"])
 api_router.include_router(objectives.router,

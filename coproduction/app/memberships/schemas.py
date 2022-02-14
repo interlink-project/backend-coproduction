@@ -8,12 +8,11 @@ import requests
 from app.config import settings
 
 class MembershipBase(BaseModel):
-    team_id: uuid.UUID
     user_id: str
 
 
 class MembershipCreate(MembershipBase):
-    pass
+    team_id: uuid.UUID
 
 
 class MembershipPatch(MembershipBase, metaclass=AllOptional):
@@ -32,6 +31,7 @@ class Membership(MembershipBase):
 class MembershipOut(Membership):
     picture: str
     email: str
+    
     @root_validator(pre=True)
     def get_user_data_from_auth_microservice(cls, values):
         id = values["user_id"]
