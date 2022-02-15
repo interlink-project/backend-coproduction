@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.general import deps
 from app.config import settings
+from pydantic import BaseModel
 
 router = APIRouter()
 
@@ -116,13 +117,38 @@ def acl_roles(
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return acl.roles
 
+@router.post("/{id}/check/{action}/{user_id}")
+def check_action(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: uuid.UUID,
+    action: str,
+    user_id: str,
+) -> Any:
+    """
+    Check action for user in acl
+    """
+    acl = crud.acl.get(db=db, id=id)
+    if not acl:
+        raise HTTPException(status_code=404, detail="Acl not found")
+    user = crud.user.get(db=db, id=user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return crud.acl.check_action(db=db, user=user, action=action)
+
+
+class RoleSwitch(BaseModel):
+    new_role: uuid.UUID
+    old_role: uuid.UUID
+    membership_id: uuid.UUID
 
 @router.post("/{id}/switch_membership_role")
 def switch_membership_role(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
-    switch_in: schemas.RoleSwitch,
+    switch_in: RoleSwitch,
     current_user: dict = Depends(deps.get_current_active_user),
 ) -> Any:
     """
@@ -132,25 +158,25 @@ def switch_membership_role(
     if not acl:
         raise HTTPException(status_code=404, detail="Acl not found")
     
-    print("llega")
     membership = crud.membership.get(db=db, id=switch_in.membership_id)
     if not membership:
         raise HTTPException(status_code=400, detail="Membership not found")
     
-    print("llega 2")
     if acl.coproductionprocess.creator_id == membership.user_id:
         raise HTTPException(status_code=400, detail="Creator role can not be modified")
 
-    
     new_role = crud.role.get(db=db, id=switch_in.new_role)
     old_role = crud.role.get(db=db, id=switch_in.old_role)
     if not old_role or not new_role:
         raise HTTPException(status_code=400, detail="At least one of the roles does not exist")
     
     # TODO: acl_perm
-    if new_role in acl.roles and old_role in acl.roles:
+    if new_role not in acl.roles or old_role not in acl.roles:
+        raise HTTPException(status_code=400, detail="At least one of the roles does not belong to the specified ACL")
+
+    if not old_role.id == acl.default_role_id:
         membership.roles.remove(old_role)
-        membership.roles.append(new_role)
-        db.commit()
-        return True
-    raise HTTPException(status_code=400, detail="At least one of the roles does not belong to the specified ACL")
+    membership.roles.append(new_role)
+    db.commit()
+    return True
+    

@@ -3,7 +3,7 @@ import uuid
 
 from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, String, Table, Text
 from sqlalchemy.dialects.postgresql import ARRAY, UUID
-from sqlalchemy.orm import object_session, relationship
+from sqlalchemy.orm import object_session, relationship, backref
 
 from app.general.db.base_class import Base as BaseModel
 from app.memberships.models import Membership
@@ -11,11 +11,8 @@ from app.teams.models import Team
 from app import schemas
 
 association_table = Table('association_membership_role', BaseModel.metadata,
-                          Column('membership_id', ForeignKey(
-                              'membership.id'), primary_key=True),
-                          Column('role_id', ForeignKey('role.id'), primary_key=True)
-                          )
-
+                          Column('membership_id', ForeignKey('membership.id'), primary_key=True),
+                          Column('role_id', ForeignKey('role.id'), primary_key=True))
 
 class Permissions(enum.Enum):
     assets_create = "assets_create"
@@ -30,15 +27,22 @@ permissions_list = [e.value for e in Permissions]
 
 AdministratorRole = schemas.RoleBase(**{
     "name": "Administrator",
-    "description": "Default role for coproduction processes",
+    "description": "Administrator rights for the project",
     "permissions": permissions_list
+})
+
+DefaultRole = schemas.RoleBase(**{
+    "name": "Default",
+    "description": "When users or teams added, these are the rights by default",
+    "permissions": []
 })
 
 UnauthenticatedRole = schemas.RoleBase(**{
     "name": "Unauthenticated",
-    "description": "Default role for coproduction processes",
+    "description": "Rights for unauthenticated users in case the process is public",
     "permissions": []
 })
+
 
 class ACL(BaseModel):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -49,10 +53,13 @@ class ACL(BaseModel):
     coproductionprocess = relationship(
         "CoproductionProcess", back_populates="acl")
 
-    roles = relationship(
-        "Role", back_populates="acl")
-    exceptions = relationship(
-        "Exception", back_populates="acl")
+    default_role_id = Column(
+        UUID(as_uuid=True), ForeignKey("role.id", ondelete='SET NULL')
+    )
+    default_role = relationship(
+        "Role", foreign_keys=[default_role_id], backref='acl_defaulton')
+
+    exceptions = relationship("Exception", back_populates="acl")
 
     def __repr__(self):
         return "<Acl %r>" % self.id
@@ -61,14 +68,14 @@ class ACL(BaseModel):
     def permissions(self):
         return permissions_list
 
-    @property
+    """@property
     def teams(self):
-        ids = [role.id for role in self.roles]
+       ids = [role.id for role in self.roles]
         return object_session(self).query(Team).join(
             Team, Membership.team
         ).filter(
             Membership.roles.any(Role.id.in_(ids))
-        ).all()
+        ).all()"""
 
 
 class Role(BaseModel):
@@ -89,7 +96,7 @@ class Role(BaseModel):
     acl_id = Column(
         UUID(as_uuid=True), ForeignKey("acl.id", ondelete='CASCADE')
     )
-    acl = relationship("ACL", back_populates="roles")
+    acl = relationship("ACL", foreign_keys=[acl_id], backref="roles")
 
     memberships = relationship(
         "Membership",

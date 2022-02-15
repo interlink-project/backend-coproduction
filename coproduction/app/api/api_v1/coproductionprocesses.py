@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app import crud, schemas, models
 from app.general import deps
+from pydantic import BaseModel
 
 router = APIRouter()
 
@@ -172,3 +173,28 @@ def get_coproductionprocess_tree(
     if not crud.coproductionprocess.can_read(db=db, user=current_user, object=coproductionprocess):
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return coproductionprocess.phases
+
+
+class TeamIn(BaseModel):
+    team_id: uuid.UUID
+
+@router.post("/{id}/add_team")
+def add_team(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: uuid.UUID,
+    team_in: TeamIn,
+    current_user: dict = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Add roles for team
+    """
+    coproductionprocess = crud.coproductionprocess.get(db=db, id=id)
+    if not coproductionprocess:
+        raise HTTPException(status_code=404, detail="CoproductionProcess not found")
+    
+    team = crud.team.get(db=db, id=team_in.team_id)
+    if not team:
+        raise HTTPException(status_code=400, detail="Membership not found")
+    
+    return crud.coproductionprocess.add_team(db=db, coproductionprocess=coproductionprocess, team=team)

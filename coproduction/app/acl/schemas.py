@@ -32,11 +32,6 @@ class ExceptionOut(Exception):
     pass
 
 ###
-
-class RoleSwitch(BaseModel):
-    new_role: uuid.UUID
-    old_role: uuid.UUID
-    membership_id: uuid.UUID
     
 class RoleBase(BaseModel):
     name: str

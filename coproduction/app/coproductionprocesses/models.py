@@ -18,7 +18,10 @@ from sqlalchemy.orm import relationship
 from app.general.db.base_class import Base as BaseModel
 from app.general.utils.DatabaseLocalization import translation_hybrid
 
-
+association_table = Table('association_team_process', BaseModel.metadata,
+                          Column('team_id', ForeignKey('team.id'), primary_key=True),
+                          Column('coproductionprocess_id', ForeignKey('coproductionprocess.id'), primary_key=True))
+                  
 class CoproductionProcess(BaseModel):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
@@ -48,10 +51,7 @@ class CoproductionProcess(BaseModel):
     coproductionschema = relationship("CoproductionSchema", back_populates="coproductionprocesses")
 
     # worked by
-    team_id = Column(
-        UUID(as_uuid=True), ForeignKey("team.id")
-    )
-    team = relationship("Team", back_populates="coproductionprocesses")
+    teams = relationship("Team", secondary=association_table, back_populates="coproductionprocesses")
 
     # ACL
     acl = relationship("ACL", back_populates="coproductionprocess", uselist=False)

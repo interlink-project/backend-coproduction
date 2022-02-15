@@ -1,5 +1,5 @@
 import uuid
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, List
 
 import requests
 from sqlalchemy.orm import Session
@@ -30,17 +30,26 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
     def get_by_artefact(self, db: Session, artefact_id: uuid.UUID) -> Optional[CoproductionProcess]:
         return db.query(CoproductionProcess).filter(CoproductionProcess.artefact_id == artefact_id).first()
 
-    def get_multi_by_user(self, db: Session, user_id: str) -> Optional[Team]:
+    def get_multi_by_user(self, db: Session, user_id: str) -> Optional[List[CoproductionProcess]]:
         return db.query(
             CoproductionProcess
-        ).filter(
-            CoproductionProcess.team_id == Team.id,
+        ).join(
+            CoproductionProcess.teams
         ).filter(
             Team.id == Membership.team_id,
         ).filter(
             Membership.user_id == user_id,
         ).all()
 
+
+    def add_team(self, db: Session, coproductionprocess: CoproductionProcess, team: models.Team):
+        coproductionprocess.teams.append(team)
+        # set the default role to all members of the team
+        # exportRoleCrud.set_role_to_team(db=db, role=acl.default_role, team=team)
+        db.commit()
+        db.refresh(coproductionprocess)
+        return coproductionprocess
+        
     def create(self, db: Session, *, coproductionprocess: CoproductionProcessCreate, creator: models.User) -> CoproductionProcess:
 
         team = crud.team.get(db=db, id=coproductionprocess.team_id)
@@ -59,14 +68,12 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
             challenges=coproductionprocess.challenges,
             # relations
             creator=creator,
-            team=team,
             coproductionschema=coproductionschema,
         )
+        db_obj.teams.append(team)
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
-
-        crud.acl.create(db=db, acl=schemas.ACLCreate(coproductionprocess_id=db_obj.id, type="process"))
 
         # Copy the tree of the schema
         if coproductionschema and hasattr(coproductionschema, "phases"):
@@ -109,6 +116,8 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                     print("PHASE HAS NO OBJECTIVES")
         else:
             print("SCHEMA HAS NO PHASES")
+
+        crud.acl.create(db=db, acl=schemas.ACLCreate(coproductionprocess_id=db_obj.id))
 
         db.refresh(db_obj)
         return db_obj

@@ -38,10 +38,6 @@ class PhaseOutFull(PhaseOut):
     objectives: List[ObjectiveOutFull]
 
 
-class CoproductionSchemaOutFull(CoproductionSchemaOut):
-    phases: List[PhaseOutFull]
-
-
 class MembershipOutFull(MembershipOut):
     pass
 
@@ -51,9 +47,12 @@ class TeamOutFull(TeamOut):
 
 
 class ACLOutFull(ACLOut):
-    teams: Optional[List[TeamOutFull]]
+    default_role_id: uuid.UUID
+
+
+class CoproductionSchemaOutFull(CoproductionSchemaOut):
+    phases: List[PhaseOutFull]
 
 
 class CoproductionProcessOutFull(CoproductionProcessOut):
-    # acl: ACLOutFull
-    pass
+    teams: Optional[List[TeamOutFull]]

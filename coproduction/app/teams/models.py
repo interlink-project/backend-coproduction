@@ -5,7 +5,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from app.general.db.base_class import Base as BaseModel
-
+from app.coproductionprocesses.models import association_table
 
 class Team(BaseModel):
     """Team Class contains standard information for a Team."""
@@ -22,4 +22,4 @@ class Team(BaseModel):
     creator = relationship("User", back_populates="created_teams")
 
     memberships = relationship("Membership", back_populates="team")
-    coproductionprocesses = relationship("CoproductionProcess", back_populates="team")
+    coproductionprocesses = relationship("CoproductionProcess", secondary=association_table, back_populates="teams")
