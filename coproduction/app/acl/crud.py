@@ -6,37 +6,36 @@ from app.schemas import ACLCreate, ACLPatch
 from app.general.utils.CRUDBase import CRUDBase
 from app import models, schemas
 import uuid
-from app.acl.models import get_default_roles, Role
+from app.acl.models import Role, AdministratorRole, UnauthenticatedRole
 from app.coproductionprocesses.crud import exportCrud as coroductionprocesses_crud
 
 class CRUDACL(CRUDBase[ACL, ACLCreate, ACLPatch]):
     def create(self, db: Session, acl: ACLCreate) -> ACL:
-        db_obj = ACL(
+        db_acl = ACL(
             coproductionprocess_id=acl.coproductionprocess_id,
         )
         
-        db.add(db_obj)
+        db.add(db_acl)
         db.commit()
 
         # Add default roles
-        roles = acl.roles or [schemas.RoleBase(**data) for data in get_default_roles()]
-        role : schemas.RoleBase
-        for role in roles:
-            data = role.dict()
-            data["acl_id"] = db_obj.id
-            
-            if role.name == "Unauthenticated":
-                db_role = models.Role(**data, perms_editable=True, name_editable=False)
-            # Set the main team as admin
-            if role.name == "Administrator":
-                db_role = models.Role(**data, perms_editable=False, name_editable=False)
-                cp = coroductionprocesses_crud.get(db=db, id=acl.coproductionprocess_id)
-                db_role.teams.append(cp.team)
-            db.add(db_role)
+        data = AdministratorRole.dict()
+        data["acl_id"] = db_acl.id
+        admin_role = models.Role(**data, perms_editable=False, meta_editable=False, deletable=False, selectable=True)
+        db.add(admin_role)
+        
+        # Set the main membership as admin
+        data = UnauthenticatedRole.dict()
+        data["acl_id"] = db_acl.id
+        db_role = models.Role(**data, perms_editable=True, meta_editable=False, deletable=False, selectable=False)
+        db.add(db_role)
+         
+        cp = coroductionprocesses_crud.get(db=db, id=acl.coproductionprocess_id)
+        exportRoleCrud.set_role_to_team(db=db, role=admin_role, team=cp.team)
 
         db.commit()
-        db.refresh(db_obj)
-        return db_obj
+        db.refresh(db_acl)
+        return db_acl
         
     def remove(self, db: Session, *, id: uuid.UUID) -> ACL:
         obj = db.query(ACL).get(id)
@@ -44,7 +43,7 @@ class CRUDACL(CRUDBase[ACL, ACLCreate, ACLPatch]):
         db.commit()
         # TODO: remove from external microservice
         return obj
-        
+    
     # CRUD Permissions
     def can_create(self, user):
         return True
@@ -72,7 +71,14 @@ class CRUDRole(CRUDBase[Role, schemas.RoleCreate, schemas.RolePatch]):
         db.commit()
         db.refresh(db_role)
         return db_role
-        
+    
+    def set_role_to_team(self, db: Session, team: models.Team, role: Role):
+        for membership in team.memberships:
+            role.memberships.append(membership)
+        db.commit()
+        db.refresh(team)
+        return team
+
     # CRUD Permissions
     def can_create(self, user):
         return True
@@ -87,6 +93,8 @@ class CRUDRole(CRUDBase[Role, schemas.RoleCreate, schemas.RolePatch]):
         return True
 
     def can_remove(self, user, object):
+        if not object.editable:
+            return False
         return True
 
 exportRoleCrud = CRUDRole(Role)

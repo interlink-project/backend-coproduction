@@ -6,10 +6,13 @@ from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from sqlalchemy.orm import object_session, relationship
 
 from app.general.db.base_class import Base as BaseModel
+from app.memberships.models import Membership
 from app.teams.models import Team
+from app import schemas
 
-association_table = Table('association_team_role', BaseModel.metadata,
-                          Column('team_id', ForeignKey('team.id'), primary_key=True),
+association_table = Table('association_membership_role', BaseModel.metadata,
+                          Column('membership_id', ForeignKey(
+                              'membership.id'), primary_key=True),
                           Column('role_id', ForeignKey('role.id'), primary_key=True)
                           )
 
@@ -25,20 +28,17 @@ class Permissions(enum.Enum):
 permissions_list = [e.value for e in Permissions]
 
 
-def get_default_roles():
-    return [
-        {
-            "name": "Administrator",
-            "description": "Default role for coproduction processes",
-            "permissions": permissions_list
-        },
-        {
-            "name": "Unauthenticated",
-            "description": "Default role for coproduction processes",
-            "permissions": []
-        }
-    ]
+AdministratorRole = schemas.RoleBase(**{
+    "name": "Administrator",
+    "description": "Default role for coproduction processes",
+    "permissions": permissions_list
+})
 
+UnauthenticatedRole = schemas.RoleBase(**{
+    "name": "Unauthenticated",
+    "description": "Default role for coproduction processes",
+    "permissions": []
+})
 
 class ACL(BaseModel):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -64,15 +64,21 @@ class ACL(BaseModel):
     @property
     def teams(self):
         ids = [role.id for role in self.roles]
-        return object_session(self).query(Team).filter(Team.roles.any(Role.id.in_(ids))).all()
+        return object_session(self).query(Team).join(
+            Team, Membership.team
+        ).filter(
+            Membership.roles.any(Role.id.in_(ids))
+        ).all()
 
 
 class Role(BaseModel):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String)
     description = Column(String)
-    name_editable = Column(Boolean, default=True)
+    meta_editable = Column(Boolean, default=True)
     perms_editable = Column(Boolean, default=True)
+    deletable = Column(Boolean, default=True)
+    selectable = Column(Boolean, default=True)
 
     permissions = Column(
         ARRAY(Enum(Permissions, create_constraint=False, native_enum=False))
@@ -85,14 +91,14 @@ class Role(BaseModel):
     )
     acl = relationship("ACL", back_populates="roles")
 
-    teams = relationship(
-        "Team",
+    memberships = relationship(
+        "Membership",
         secondary=association_table,
         backref="roles")
 
     @property
-    def team_ids(self):
-        return [team.id for team in self.teams]
+    def membership_ids(self):
+        return [membership.id for membership in self.memberships]
 
     def __repr__(self):
         return "<Role %r>" % self.name

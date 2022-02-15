@@ -14,7 +14,8 @@ from app.api.api_v1 import (
     phases,
     tasks,
     teams,
-    acls
+    acls,
+    users
 )
 from app.config import settings
 from app.general import deps
@@ -48,6 +49,9 @@ team_management_router.include_router(teams.router,
 
 team_management_router.include_router(memberships.router,
                           prefix="/memberships", tags=["teammanagement"])
+
+team_management_router.include_router(users.router,
+                          prefix="/users", tags=["users"])
 
 @api_router.get("/")
 def main():

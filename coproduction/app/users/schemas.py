@@ -16,7 +16,7 @@ class UserPatch(UserCreate, metaclass=AllOptional):
     pass
 
 class User(UserBase):
-    
+    id: str
     class Config:
         orm_mode = True
 

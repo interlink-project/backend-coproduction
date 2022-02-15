@@ -33,6 +33,11 @@ class ExceptionOut(Exception):
 
 ###
 
+class RoleSwitch(BaseModel):
+    new_role: uuid.UUID
+    old_role: uuid.UUID
+    membership_id: uuid.UUID
+    
 class RoleBase(BaseModel):
     name: str
     description: str
@@ -50,16 +55,19 @@ class Role(RoleBase):
     id: uuid.UUID
     created_at: datetime
     updated_at: Optional[datetime]
-    team_ids: List[uuid.UUID]
+    membership_ids: List[uuid.UUID]
+
     perms_editable: bool
-    name_editable: bool
+    meta_editable: bool
+    deletable: bool
+    selectable: bool
 
     class Config:
         orm_mode = True
 
 
 class RoleOut(Role):
-    pass
+    acl_id: uuid.UUID
 
 #########
 

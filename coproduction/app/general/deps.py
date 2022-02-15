@@ -41,7 +41,7 @@ def get_current_user(
         token = get_token_in_cookie(request) or get_token_in_header(request)
         if token:
             token_data = decode_token(token)
-            return crud.user.get_or_create(db=db, token_data=token_data)
+            return crud.user.get(db=db, id=token_data["sub"])
         return None
     except Exception as e:
         print(str(e))

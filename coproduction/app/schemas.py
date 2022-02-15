@@ -51,7 +51,7 @@ class TeamOutFull(TeamOut):
 
 
 class ACLOutFull(ACLOut):
-    teams: List[TeamOutFull]
+    teams: Optional[List[TeamOutFull]]
 
 
 class CoproductionProcessOutFull(CoproductionProcessOut):

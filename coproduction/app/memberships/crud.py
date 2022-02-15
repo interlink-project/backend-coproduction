@@ -7,7 +7,7 @@ from app.models import Membership
 from app.schemas import MembershipCreate, MembershipPatch
 from app.users.crud import exportCrud as users_crud
 import uuid
-
+from app import models
 
 class CRUDMembership(CRUDBase[Membership, MembershipCreate, MembershipPatch]):
     def get_by_user_id(self, db: Session, user_id: str, skip: int = 0, limit: int = 100) -> Optional[Membership]:
@@ -17,7 +17,7 @@ class CRUDMembership(CRUDBase[Membership, MembershipCreate, MembershipPatch]):
         return db.query(Membership).filter(Membership.team_id == team_id).offset(skip).limit(limit).all()
 
     def create(self, db: Session, membership: MembershipCreate) -> Membership:     
-        user = users_crud.get_or_create(db=db, token_data={"sub": membership.user_id})
+        user = users_crud.get(db=db, id=membership.user_id)
         if not user:
             raise Exception("Could not retrieve user")
         db_obj = Membership(
@@ -30,8 +30,7 @@ class CRUDMembership(CRUDBase[Membership, MembershipCreate, MembershipPatch]):
         db.refresh(db_obj)
         return db_obj
 
-    def is_supermembership(self, membership: dict):
-        return True
+    # TODO: if removed, get all roles == admin and set to another user
 
     def can_create(self, membership):
         return True

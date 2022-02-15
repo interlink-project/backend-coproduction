@@ -32,7 +32,7 @@ class CoproductionProcess(CoproductionProcessBase):
     updated_at: Optional[datetime]
 
     logotype: Optional[str]
-    # creator: str
+    creator_id: str
     
     class Config:
         orm_mode = True
