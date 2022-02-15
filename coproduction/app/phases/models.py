@@ -19,6 +19,11 @@ from app.general.db.base_class import Base as BaseModel
 from sqlalchemy.dialects.postgresql import HSTORE
 from app.translations import translation_hybrid
 
+prerequisites = Table(
+    'prerequisites', BaseModel.metadata,
+    Column('phase_a_id', ForeignKey('phase.id'), primary_key=True),
+    Column('phase_b_id', ForeignKey('phase.id'), primary_key=True)
+)
 
 class Phase(BaseModel):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -28,6 +33,12 @@ class Phase(BaseModel):
 
     name = translation_hybrid(name_translations)
     description = translation_hybrid(description_translations)
+
+    # prerequisites
+    prerequisites = relationship("Phase", secondary=prerequisites, 
+                           primaryjoin=id==prerequisites.c.phase_a_id,
+                           secondaryjoin=id==prerequisites.c.phase_b_id,
+    )
 
     # can belong to a process
     coproductionprocess_id = Column(
@@ -52,6 +63,10 @@ class Phase(BaseModel):
     def __repr__(self):
         return "<Phase %r>" % self.name
 
+    @property
+    def prerequisites_ids(self):
+        return [pr.id for pr in self.prerequisites]
+        
     @property
     def progress(self):
         fin = 0

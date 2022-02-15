@@ -13,7 +13,7 @@ from app.schemas import CoproductionProcessCreate, CoproductionProcessPatch
 from app.initial_data import DEFAULT_SCHEMA_NAME
 from app.memberships.models import Membership
 from app import models, schemas
-
+from slugify import slugify
 
 def row2dict(row):
     d = {}
@@ -44,14 +44,11 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
     def add_team(self, db: Session, coproductionprocess: CoproductionProcess, team: models.Team):
         coproductionprocess.teams.append(team)
-        # set the default role to all members of the team
-        # exportRoleCrud.set_role_to_team(db=db, role=acl.default_role, team=team)
         db.commit()
         db.refresh(coproductionprocess)
         return coproductionprocess
         
     def create(self, db: Session, *, coproductionprocess: CoproductionProcessCreate, creator: models.User) -> CoproductionProcess:
-
         team = crud.team.get(db=db, id=coproductionprocess.team_id)
         coproductionschema = crud.coproductionschema.get(
             db=db, id=coproductionprocess.coproductionschema_id) or crud.coproductionschema.get_by_name(db=db, name=DEFAULT_SCHEMA_NAME, locale="en")
@@ -77,6 +74,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
         # Copy the tree of the schema
         if coproductionschema and hasattr(coproductionschema, "phases"):
+            total = {}
             for phase in coproductionschema.phases:
                 clone = row2dict(phase)
                 clone["coproductionprocess_id"] = db_obj.id
@@ -88,6 +86,14 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                     db=db,
                     phase=schemas.PhaseCreate(**clone)
                 )
+
+                ## Add new phase object and the prerequisites for later loop
+                total_key = slugify(phase.name)
+                total[total_key] = {
+                    "prerequisites": [slugify(prereq.name) for prereq in phase.prerequisites],
+                    "newObj": db_phase
+                }
+                
                 if hasattr(phase, "objectives") and phase.objectives:
                     for objective in phase.objectives:
                         clone = row2dict(objective)
@@ -114,10 +120,19 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                             print("OBJECTIVE HAS NO TASKS")
                 else:
                     print("PHASE HAS NO OBJECTIVES")
+            
+            # iterate over phases to poblate with prerequisites using total dict
+            for new_phase in db_obj.phases:
+                total_key = slugify(new_phase.name)
+                entry = total[total_key]
+                for prerequisite_name in entry["prerequisites"]:
+                    prerequisite = total[prerequisite_name]["newObj"]
+                    crud.phase.add_prerequisite(db=db, phase=new_phase, prerequisite=prerequisite)
         else:
             print("SCHEMA HAS NO PHASES")
 
-        crud.acl.create(db=db, acl=schemas.ACLCreate(coproductionprocess_id=db_obj.id))
+
+        crud.acl.create(db=db, coproductionprocess=db_obj)
 
         db.refresh(db_obj)
         return db_obj

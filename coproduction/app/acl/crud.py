@@ -10,9 +10,9 @@ from app.acl.models import Role, AdministratorRole, UnauthenticatedRole, Default
 from app.coproductionprocesses.crud import exportCrud as coroductionprocesses_crud
 
 class CRUDACL(CRUDBase[ACL, ACLCreate, ACLPatch]):
-    def create(self, db: Session, acl: ACLCreate) -> ACL:
+    def create(self, db: Session, coproductionprocess: models.CoproductionProcess) -> ACL:
         db_acl = ACL(
-            coproductionprocess_id=acl.coproductionprocess_id,
+            coproductionprocess_id=coproductionprocess.id,
         )
         db.add(db_acl)
 
@@ -30,8 +30,8 @@ class CRUDACL(CRUDBase[ACL, ACLCreate, ACLPatch]):
         db.add(default_role)
         
         # Set the main team members as admin
-        cp = coroductionprocesses_crud.get(db=db, id=acl.coproductionprocess_id)
-        exportRoleCrud.set_role_to_team(db=db, role=admin_role, team=cp.teams[0])
+        for membership in coproductionprocess.teams[0].memberships:
+            admin_role.memberships.append(membership)
 
         db_acl.default_role = default_role
         db.commit()
@@ -68,20 +68,12 @@ exportCrud = CRUDACL(ACL)
 
 
 class CRUDRole(CRUDBase[Role, schemas.RoleCreate, schemas.RolePatch]):
-    
     def create(self, db: Session, role: schemas.RoleCreate) -> Role:
         db_role = models.Role(**role.dict())
         db.add(db_role)
         db.commit()
         db.refresh(db_role)
         return db_role
-    
-    def set_role_to_team(self, db: Session, team: models.Team, role: Role):
-        for membership in team.memberships:
-            role.memberships.append(membership)
-        db.commit()
-        db.refresh(team)
-        return team
 
     # CRUD Permissions
     def can_create(self, user):

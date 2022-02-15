@@ -1,12 +1,7 @@
-import json
 import logging
-import os
-from pathlib import Path
-
 import requests
 
 from app import crud, schemas
-from app.config import settings
 from app.general.db.session import SessionLocal
 
 logging.basicConfig(level=logging.INFO)
@@ -52,6 +47,7 @@ def main() -> None:
             )
         )
 
+        resume = {}
         for phase_data in schema_data["phases"]:
             phase_data["name_translations"] = phase_data["name"]
             phase_data["description_translations"] = phase_data["description"]
@@ -63,6 +59,10 @@ def main() -> None:
                     **phase_data
                 )
             )
+            resume[phase_data["reference"]] = {
+                "id": db_phase.id,
+                "prerequisites": phase_data["prerequisites"]
+            }
 
             for objective in phase_data["objectives"]:
                 objective_data = objective
@@ -91,6 +91,15 @@ def main() -> None:
                             **task_data
                         )
                     )
+        
+        print(resume)
+        for key, phase_resume in resume.items():
+            print(phase_resume)
+            db_phase = crud.phase.get(db=db, id=phase_resume["id"])
+            for prerequisite_reference in phase_resume["prerequisites"]:
+                db_prerequisite = crud.phase.get(db=db, id=resume[prerequisite_reference]["id"])
+                print("Adding", db_prerequisite, "to", db_phase)
+                crud.phase.add_prerequisite(db=db, phase=db_phase, prerequisite=db_prerequisite)
     db.close()
     logger.info("Initial data created")
 

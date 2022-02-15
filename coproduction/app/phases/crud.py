@@ -30,6 +30,12 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
         db.refresh(db_obj)
         return db_obj
 
+    def add_prerequisite(self, db: Session, phase: Phase, prerequisite: Phase) -> Phase:
+        phase.prerequisites.append(prerequisite)
+        db.commit()
+        db.refresh(phase)
+        return phase
+
     # CRUD Permissions
     def can_create(self, user):
         return True

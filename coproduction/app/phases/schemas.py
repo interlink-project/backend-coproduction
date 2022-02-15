@@ -38,3 +38,4 @@ class PhaseOut(Phase):
     progress: int
     start_date: Optional[date]
     end_date: Optional[date]
+    prerequisites_ids: List[uuid.UUID]

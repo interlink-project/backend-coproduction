@@ -44,6 +44,33 @@ UnauthenticatedRole = schemas.RoleBase(**{
 })
 
 
+class Role(BaseModel):
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String)
+    description = Column(String)
+    meta_editable = Column(Boolean, default=True)
+    perms_editable = Column(Boolean, default=True)
+    deletable = Column(Boolean, default=True)
+    selectable = Column(Boolean, default=True)
+
+    permissions = Column(
+        ARRAY(Enum(Permissions, create_constraint=False, native_enum=False))
+    )
+    acl_id = Column(UUID(as_uuid=True), ForeignKey('acl.id'))
+    acl = relationship('ACL', foreign_keys=[acl_id], back_populates='roles')
+
+    memberships = relationship(
+        "Membership",
+        secondary=association_table,
+        backref="roles")
+
+    @property
+    def membership_ids(self):
+        return [membership.id for membership in self.memberships]
+
+    def __repr__(self):
+        return "<Role %r>" % self.name
+
 class ACL(BaseModel):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
@@ -53,13 +80,10 @@ class ACL(BaseModel):
     coproductionprocess = relationship(
         "CoproductionProcess", back_populates="acl")
 
-    default_role_id = Column(
-        UUID(as_uuid=True), ForeignKey("role.id", ondelete='SET NULL')
-    )
-    default_role = relationship(
-        "Role", foreign_keys=[default_role_id], backref='acl_defaulton')
+    roles = relationship('Role', foreign_keys=[Role.acl_id], back_populates='acl')
 
-    exceptions = relationship("Exception", back_populates="acl")
+    default_role_id = Column(UUID(as_uuid=True), ForeignKey('role.id', ondelete='SET NULL'))
+    default_role = relationship('Role', foreign_keys=[default_role_id], post_update=True)
 
     def __repr__(self):
         return "<Acl %r>" % self.id
@@ -78,39 +102,6 @@ class ACL(BaseModel):
         ).all()"""
 
 
-class Role(BaseModel):
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name = Column(String)
-    description = Column(String)
-    meta_editable = Column(Boolean, default=True)
-    perms_editable = Column(Boolean, default=True)
-    deletable = Column(Boolean, default=True)
-    selectable = Column(Boolean, default=True)
-
-    permissions = Column(
-        ARRAY(Enum(Permissions, create_constraint=False, native_enum=False))
-    )
-    exceptions = relationship(
-        "Exception", back_populates="role")
-
-    acl_id = Column(
-        UUID(as_uuid=True), ForeignKey("acl.id", ondelete='CASCADE')
-    )
-    acl = relationship("ACL", foreign_keys=[acl_id], backref="roles")
-
-    memberships = relationship(
-        "Membership",
-        secondary=association_table,
-        backref="roles")
-
-    @property
-    def membership_ids(self):
-        return [membership.id for membership in self.memberships]
-
-    def __repr__(self):
-        return "<Role %r>" % self.name
-
-
 class Exception(BaseModel):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
@@ -122,12 +113,12 @@ class Exception(BaseModel):
     acl_id = Column(
         UUID(as_uuid=True), ForeignKey("acl.id", ondelete='CASCADE')
     )
-    acl = relationship("ACL", back_populates="exceptions")
+    acl = relationship("ACL", backref="exceptions")
 
     role_id = Column(
         UUID(as_uuid=True), ForeignKey("role.id", ondelete='CASCADE')
     )
-    role = relationship("Role", back_populates="exceptions")
+    role = relationship("Role", backref="exceptions")
 
     permission = Column(Enum(Permissions, create_constraint=False, native_enum=False))
     grant = Column(Boolean)
