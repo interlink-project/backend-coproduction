@@ -82,7 +82,7 @@ class ACL(BaseModel):
 
     roles = relationship('Role', foreign_keys=[Role.acl_id], back_populates='acl')
 
-    default_role_id = Column(UUID(as_uuid=True), ForeignKey('role.id', ondelete='SET NULL'))
+    default_role_id = Column(UUID(as_uuid=True), ForeignKey('role.id', use_alter=True, ondelete='SET NULL'))
     default_role = relationship('Role', foreign_keys=[default_role_id], post_update=True)
 
     def __repr__(self):
