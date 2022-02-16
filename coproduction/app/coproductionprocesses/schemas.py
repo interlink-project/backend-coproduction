@@ -21,7 +21,9 @@ class CoproductionProcessBase(BaseModel):
 class CoproductionProcessCreate(CoproductionProcessBase):
     team_id: uuid.UUID
 
-class CoproductionProcessPatch(CoproductionProcessCreate, metaclass=AllOptional):
+class CoproductionProcessPatch(CoproductionProcessCreate):
+    name:  Optional[str]
+    team_id: Optional[uuid.UUID]
     logotype: Optional[str]
 
 

@@ -1,5 +1,6 @@
 import uuid
 from typing import TypedDict
+import enum
 
 from sqlalchemy import (
     Boolean,
@@ -8,7 +9,7 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
-    Table,
+    Enum,
     Text,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, UUID
@@ -18,6 +19,10 @@ from app.general.db.base_class import Base as BaseModel
 from sqlalchemy.dialects.postgresql import HSTORE
 from app.translations import translation_hybrid
 
+class Status(enum.Enum):
+    awaiting = "awaiting"
+    in_progress = "in_progress"
+    finished = "finished"
 
 class Task(BaseModel):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -43,5 +48,6 @@ class Task(BaseModel):
     problem_profiles = Column(ARRAY(String), default=list)
     assets = relationship("Asset", back_populates="task")
 
+    status = Column(Enum(Status, create_constraint=False, native_enum=False), default=Status.awaiting)
     def __repr__(self):
         return "<Task %r>" % self.name

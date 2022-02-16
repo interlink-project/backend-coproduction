@@ -1,3 +1,4 @@
+from enum import Enum
 import uuid
 from datetime import datetime
 from typing import List, Optional
@@ -20,7 +21,7 @@ class TaskBase(BaseModel):
 class TaskCreate(TaskBase):
     name_translations: dict
     description_translations: dict
-
+    
     @validator('problem_profiles')
     def problem_profiles_valid(cls, v, values, **kwargs):
         problem_profiles_ids = requests.get(
@@ -31,8 +32,14 @@ class TaskCreate(TaskBase):
         return v
 
 
-class TaskPatch(TaskBase, metaclass=AllOptional):
-    pass
+class TaskPatch(TaskBase):
+    is_public: Optional[bool]
+    problem_profiles: Optional[list]
+
+    objective_id: Optional[uuid.UUID]
+    name_translations: Optional[dict]
+    description_translations: Optional[dict]
+    status: Optional[str]
 
 
 class Task(TaskBase):
@@ -42,6 +49,7 @@ class Task(TaskBase):
 
     name: str
     description: str
+    status: Optional[Enum]
 
     class Config:
         orm_mode = True
