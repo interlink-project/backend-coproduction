@@ -2,7 +2,8 @@ import uuid
 from datetime import datetime
 from typing import List, Optional, Union
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, validator
+from app.config import settings
 from typing_extensions import Annotated
 
 from app.general.utils.AllOptional import AllOptional
@@ -41,3 +42,9 @@ class CoproductionProcess(CoproductionProcessBase):
 
 class CoproductionProcessOut(CoproductionProcess):
     acl_id: uuid.UUID
+
+    @validator('logotype', pre=True)
+    def set_logotype(cls, v):
+        if v:
+            return settings.COMPLETE_SERVER_NAME + v
+        return v
