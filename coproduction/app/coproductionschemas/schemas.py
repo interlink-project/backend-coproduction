@@ -6,7 +6,7 @@ from app.general.utils.AllOptional import AllOptional
 from pydantic import BaseModel
 
 class CoproductionSchemaBase(BaseModel):
-    is_public: bool = True
+    is_public: bool = False
     licence: str
     author: str
 

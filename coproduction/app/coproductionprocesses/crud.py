@@ -1,3 +1,4 @@
+from cmath import phase
 import uuid
 from typing import Any, Dict, Optional, List
 
@@ -14,14 +15,9 @@ from app.initial_data import DEFAULT_SCHEMA_NAME
 from app.memberships.models import Membership
 from app import models, schemas
 from slugify import slugify
+from app.coproductionschemas.crud import exportCrud as schemas_crud
 
-def row2dict(row):
-    d = {}
-    for column in row.__table__.columns:
-        d[column.name] = getattr(row, column.name)
-
-    return d
-
+from slugify import slugify
 
 class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessCreate, CoproductionProcessPatch]):
     def get_by_name(self, db: Session, name: str) -> Optional[Team]:
@@ -50,10 +46,6 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         
     def create(self, db: Session, *, coproductionprocess: CoproductionProcessCreate, creator: models.User) -> CoproductionProcess:
         team = crud.team.get(db=db, id=coproductionprocess.team_id)
-        coproductionschema = crud.coproductionschema.get(
-            db=db, id=coproductionprocess.coproductionschema_id) or crud.coproductionschema.get_by_name(db=db, name=DEFAULT_SCHEMA_NAME, locale="en")
-        if not coproductionschema:
-            raise Exception("No coproductionschema")
         db_obj = CoproductionProcess(
             artefact_id=coproductionprocess.artefact_id,
             # uses postgres
@@ -65,56 +57,50 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
             challenges=coproductionprocess.challenges,
             # relations
             creator=creator,
-            coproductionschema=coproductionschema,
         )
         db_obj.teams.append(team)
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
+        crud.acl.create(db=db, coproductionprocess=db_obj)
+        db.refresh(db_obj)
+        return db_obj
 
-        # Copy the tree of the schema
-        if coproductionschema and hasattr(coproductionschema, "phases"):
+    def set_schema(self, db: Session, coproductionprocess: models.CoproductionProcess, coproductionschema: models.CoproductionSchema, language: str = "en"):
+        if coproductionschema and hasattr(coproductionschema, "phasemetadatas"):
             total = {}
-            for phase in coproductionschema.phases:
-                clone = row2dict(phase)
-                clone["coproductionprocess_id"] = db_obj.id
-                clone["parent_id"] = phase.id
-                del clone["coproductionschema_id"]
-                del clone["created_at"]
-                del clone["updated_at"]
-                db_phase = crud.phase.create(
+            for phasemetadata in coproductionschema.phasemetadatas:
+                name = phasemetadata.name_translations[language]
+                db_phase = crud.phase.create_from_metadata(
                     db=db,
-                    phase=schemas.PhaseCreate(**clone)
+                    phasemetadata=phasemetadata,
+                    coproductionprocess_id=coproductionprocess.id,
+                    language=language
                 )
 
                 ## Add new phase object and the prerequisites for later loop
-                total_key = slugify(phase.name)
+                total_key = slugify(name)
                 total[total_key] = {
-                    "prerequisites": [slugify(prereq.name) for prereq in phase.prerequisites],
+                    "prerequisites": [slugify(prereq.name) for prereq in phasemetadata.prerequisites],
                     "newObj": db_phase
                 }
                 
-                if hasattr(phase, "objectives") and phase.objectives:
-                    for objective in phase.objectives:
-                        clone = row2dict(objective)
-                        clone["phase_id"] = db_phase.id
-                        clone["parent_id"] = objective.id
-                        del clone["created_at"]
-                        del clone["updated_at"]
-                        db_objective = crud.objective.create(
+                if hasattr(phasemetadata, "objectivemetadatas") and phasemetadata.objectivemetadatas:
+                    for objectivemetadata in phasemetadata.objectivemetadatas:
+                        db_obj = crud.objective.create_from_metadata(
                             db=db,
-                            objective=schemas.ObjectiveCreate(**clone)
+                            objectivemetadata=objectivemetadata,
+                            phase_id=db_phase.id,
+                            language=language
                         )
-                        if hasattr(objective, "tasks") and objective.tasks:
-                            for task in objective.tasks:
-                                clone = row2dict(task)
-                                clone["objective_id"] = db_objective.id
-                                clone["parent_id"] = task.id
-                                del clone["created_at"]
-                                del clone["updated_at"]
-                                db_task = crud.task.create(
+
+                        if hasattr(objectivemetadata, "taskmetadatas") and objectivemetadata.taskmetadatas:
+                            for taskmetadata in objectivemetadata.taskmetadatas:
+                                db_task = crud.task.create_from_metadata(
                                     db=db,
-                                    task=schemas.TaskCreate(**clone)
+                                    taskmetadata=taskmetadata,
+                                    objective_id=db_obj.id,
+                                    language=language
                                 )
                         else:
                             print("OBJECTIVE HAS NO TASKS")
@@ -122,7 +108,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                     print("PHASE HAS NO OBJECTIVES")
             
             # iterate over phases to poblate with prerequisites using total dict
-            for new_phase in db_obj.phases:
+            for new_phase in coproductionprocess.phases:
                 total_key = slugify(new_phase.name)
                 entry = total[total_key]
                 for prerequisite_name in entry["prerequisites"]:
@@ -131,11 +117,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         else:
             print("SCHEMA HAS NO PHASES")
 
-
-        crud.acl.create(db=db, coproductionprocess=db_obj)
-
-        db.refresh(db_obj)
-        return db_obj
+        return coproductionprocess
 
     # CRUD Permissions
     def can_create(self, user):

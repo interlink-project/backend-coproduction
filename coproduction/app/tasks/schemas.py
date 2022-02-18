@@ -10,15 +10,13 @@ from app.config import settings
 from app.general.utils.AllOptional import AllOptional
 
 
-class TaskBase(BaseModel):
-    is_public: bool = True
+
+class TaskMetadataBase(BaseModel):
     problem_profiles: list
-
-    objective_id: uuid.UUID
-    parent_id: Optional[uuid.UUID]
+    objectivemetadata_id: uuid.UUID
 
 
-class TaskCreate(TaskBase):
+class TaskMetadataCreate(TaskMetadataBase):
     name_translations: dict
     description_translations: dict
     
@@ -32,14 +30,49 @@ class TaskCreate(TaskBase):
         return v
 
 
-class TaskPatch(TaskBase):
-    is_public: Optional[bool]
+class TaskMetadataPatch(TaskMetadataBase):
     problem_profiles: Optional[list]
 
-    objective_id: Optional[uuid.UUID]
+    objectivemetadata_id: Optional[uuid.UUID]
     name_translations: Optional[dict]
     description_translations: Optional[dict]
+
+
+class TaskMetadata(TaskMetadataBase):
+    id: uuid.UUID
+    created_at: datetime
+    updated_at: Optional[datetime]
+
+    name: str
+    description: str
+
+    class Config:
+        orm_mode = True
+
+
+class TaskMetadataOut(TaskMetadata):
+    # parent
+    pass
+
+###
+
+class TaskBase(BaseModel):
+    problem_profiles: list
+    name: str
+    description: str
+    objective_id: uuid.UUID
+
+
+class TaskCreate(TaskBase):
+    name_translations: dict
+    description_translations: dict
+
+class TaskPatch(TaskBase):
+    problem_profiles: Optional[list]
+    objective_id: Optional[uuid.UUID]
     status: Optional[str]
+    name: Optional[str]
+    description: Optional[str]
 
 
 class Task(TaskBase):
@@ -47,8 +80,6 @@ class Task(TaskBase):
     created_at: datetime
     updated_at: Optional[datetime]
 
-    name: str
-    description: str
     status: Optional[Enum]
 
     class Config:

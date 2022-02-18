@@ -81,6 +81,24 @@ async def set_logotype(
     raise HTTPException(status_code=404, detail="Coproduction process not found")
 
 
+class CoproductionSchemaSetter(BaseModel):
+    coproductionschema_id: uuid.UUID
+
+@router.post("/{id}/set_schema", response_model=schemas.CoproductionProcessOutFull)
+async def set_schema(
+    *,
+    id: uuid.UUID,
+    db: Session = Depends(deps.get_db),
+    schema_setter: CoproductionSchemaSetter,
+    current_user: dict = Depends(deps.get_current_user),
+) -> Any:
+    if (coproductionprocess := crud.coproductionprocess.get(db=db, id=id)):
+        if (coproductionschema := crud.coproductionschema.get(db=db, id=schema_setter.coproductionschema_id)):
+            return crud.coproductionprocess.set_schema(db=db, coproductionschema=coproductionschema, coproductionprocess=coproductionprocess)
+        raise HTTPException(status_code=404, detail="Coproduction schema not found")
+    raise HTTPException(status_code=404, detail="Coproduction process not found")
+
+
 @router.put("/{id}", response_model=schemas.CoproductionProcessOutFull)
 def update_coproductionprocess(
     *,
@@ -141,31 +159,15 @@ def delete_coproductionprocess(
 
 # specific
 
-
-@router.get("/{id}/phases/", response_model=List[schemas.PhaseOut])
-def list_related_phases(
-    id: uuid.UUID,
-    db: Session = Depends(deps.get_db),
-    current_user: Optional[models.User] = Depends(deps.get_current_user),
-) -> Any:
-    """
-    Retrieve related phases.
-    """
-    coproductionprocess = crud.coproductionprocess.get(db, id=id)
-    if not coproductionprocess:
-        raise HTTPException(status_code=400, detail="CoproductionProcess not found")
-    return coproductionprocess.phases
-
-
-@router.get("/{id}/tree", response_model=List[schemas.PhaseOutFull])
-def get_coproductionprocess_tree(
+@router.get("/{id}/tree", response_model=Optional[List[schemas.PhaseOutFull]])
+def get_coproductionprocess_coproductionschema(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
     current_user: dict = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Get coproductionprocess phases tree.
+    Get coproductionprocess tree.
     """
     coproductionprocess = crud.coproductionprocess.get(db=db, id=id)
     if not coproductionprocess:

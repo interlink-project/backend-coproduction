@@ -12,12 +12,17 @@ from sqlalchemy import (
     Table,
     Text,
 )
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import HSTORE, UUID
 from sqlalchemy.orm import backref, relationship
 
 from app.general.db.base_class import Base as BaseModel
-from sqlalchemy.dialects.postgresql import HSTORE
 from app.translations import translation_hybrid
+
+prerequisites_metadata = Table(
+    'metadata_prerequisites', BaseModel.metadata,
+    Column('phasemetadata_a_id', ForeignKey('phasemetadata.id'), primary_key=True),
+    Column('phasemetadata_b_id', ForeignKey('phasemetadata.id'), primary_key=True)
+)
 
 prerequisites = Table(
     'prerequisites', BaseModel.metadata,
@@ -25,9 +30,9 @@ prerequisites = Table(
     Column('phase_b_id', ForeignKey('phase.id'), primary_key=True)
 )
 
-class Phase(BaseModel):
+
+class PhaseMetadata(BaseModel):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    is_public = Column(Boolean, default=True)
     name_translations = Column(HSTORE)
     description_translations = Column(HSTORE)
 
@@ -35,28 +40,45 @@ class Phase(BaseModel):
     description = translation_hybrid(description_translations)
 
     # prerequisites
-    prerequisites = relationship("Phase", secondary=prerequisites, 
-                           primaryjoin=id==prerequisites.c.phase_a_id,
-                           secondaryjoin=id==prerequisites.c.phase_b_id,
-    )
-
-    # can belong to a process
-    coproductionprocess_id = Column(
-        UUID(as_uuid=True), ForeignKey("coproductionprocess.id", ondelete='CASCADE')
-    )
-    coproductionprocess = relationship("CoproductionProcess", back_populates="phases")
+    prerequisites = relationship("PhaseMetadata", secondary=prerequisites_metadata,
+                                 primaryjoin=id == prerequisites_metadata.c.phasemetadata_a_id,
+                                 secondaryjoin=id == prerequisites_metadata.c.phasemetadata_b_id,
+                                 )
 
     # or can belong to an schema
     coproductionschema_id = Column(
         UUID(as_uuid=True), ForeignKey("coproductionschema.id", ondelete='CASCADE')
     )
-    coproductionschema = relationship("CoproductionSchema", back_populates="phases")
+    coproductionschema = relationship(
+        "CoproductionSchema", back_populates="phasemetadatas")
 
-    # save from where has been forked
-    parent_id = Column(UUID(as_uuid=True), ForeignKey("phase.id"))
-    children = relationship(
-        "Phase", backref=backref("parent", remote_side=[id])
+    objectivemetadatas = relationship(
+        "ObjectiveMetadata", back_populates="phasemetadata")
+
+    @property
+    def prerequisites_ids(self):
+        return [pr.id for pr in self.prerequisites]
+        
+    def __repr__(self):
+        return "<PhaseMetadata %r>" % self.name_translations["en"]
+
+
+class Phase(BaseModel):
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String)
+    description = Column(String)
+
+    # prerequisites
+    prerequisites = relationship("Phase", secondary=prerequisites,
+                                 primaryjoin=id == prerequisites.c.phase_a_id,
+                                 secondaryjoin=id == prerequisites.c.phase_b_id,
+                                 )
+
+    # they belong to a process
+    coproductionprocess_id = Column(
+        UUID(as_uuid=True), ForeignKey("coproductionprocess.id", ondelete='CASCADE')
     )
+    coproductionprocess = relationship("CoproductionProcess", back_populates="phases")
 
     objectives = relationship("Objective", back_populates="phase")
 
@@ -66,7 +88,7 @@ class Phase(BaseModel):
     @property
     def prerequisites_ids(self):
         return [pr.id for pr in self.prerequisites]
-        
+
     @property
     def progress(self):
         fin = 0

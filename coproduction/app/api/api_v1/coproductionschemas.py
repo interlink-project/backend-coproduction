@@ -24,6 +24,17 @@ def list_coproductionschemas(
     coproductionschemas = crud.coproductionschema.get_multi(db, skip=skip, limit=limit)
     return coproductionschemas
 
+@router.get("/public", response_model=List[schemas.CoproductionSchemaOutFull])
+def public_coproductionschemas(
+    db: Session = Depends(deps.get_db),
+    skip: int = 0,
+    limit: int = 100,
+) -> Any:
+    """
+    Retrieve public coproductionschemas.
+    """
+    return crud.coproductionschema.get_public(db, skip=skip, limit=limit)
+
 
 @router.post("", response_model=schemas.CoproductionSchemaOutFull)
 def create_coproductionschema(
@@ -39,22 +50,6 @@ def create_coproductionschema(
         raise HTTPException(status_code=403, detail="Not enough permissions")
     coproductionschema = crud.coproductionschema.create(db=db, coproductionschema=coproductionschema_in)
     return coproductionschema
-
-
-@router.get("/{id}/tree", response_model=List[schemas.PhaseOutFull])
-def get_coproductionprocess_tree(
-    *,
-    db: Session = Depends(deps.get_db),
-    id: uuid.UUID,
-    current_user: dict = Depends(deps.get_current_active_user),
-) -> Any:
-    """
-    Get coproduction schema tree.
-    """
-    coproductionschema = crud.coproductionschema.get(db=db, id=id)
-    if not coproductionschema:
-        raise HTTPException(status_code=404, detail="CoproductionSchema not found")
-    return coproductionschema.phases
 
 @router.put("/{id}", response_model=schemas.CoproductionSchemaOutFull)
 def update_coproductionschema(

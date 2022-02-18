@@ -5,17 +5,46 @@ from typing import List, Optional
 from app.general.utils.AllOptional import AllOptional
 from pydantic import BaseModel
 
-class PhaseBase(BaseModel):
+# 
+
+class PhaseMetadataBase(BaseModel):
     is_public: bool = True
+    coproductionschema_id: uuid.UUID
 
-    coproductionprocess_id: Optional[uuid.UUID]
-    coproductionschema_id: Optional[uuid.UUID]
-    parent_id: Optional[uuid.UUID]
-
-class PhaseCreate(PhaseBase):
+class PhaseMetadataCreate(PhaseMetadataBase):
     name_translations: dict
     description_translations: dict
 
+
+class PhaseMetadataPatch(PhaseMetadataBase, metaclass=AllOptional):
+    pass
+
+
+class PhaseMetadata(PhaseMetadataBase):
+    id: uuid.UUID
+    created_at: datetime
+    updated_at: Optional[datetime]
+
+    name: str
+    description: str
+
+    class Config:
+        orm_mode = True
+
+
+class PhaseMetadataOut(PhaseMetadata):
+    # parent
+    prerequisites_ids: List[uuid.UUID]
+
+###########
+
+class PhaseBase(BaseModel):
+    coproductionprocess_id: uuid.UUID
+    name: str
+    description: str
+
+class PhaseCreate(PhaseBase):
+    pass
 
 class PhasePatch(PhaseBase, metaclass=AllOptional):
     pass
@@ -25,9 +54,6 @@ class Phase(PhaseBase):
     id: uuid.UUID
     created_at: datetime
     updated_at: Optional[datetime]
-
-    name: str
-    description: str
 
     class Config:
         orm_mode = True

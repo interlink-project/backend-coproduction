@@ -20,9 +20,28 @@ from sqlalchemy.dialects.postgresql import HSTORE
 from app.translations import translation_hybrid
 
 
+class ObjectiveMetadata(BaseModel):
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name_translations = Column(HSTORE)
+    description_translations = Column(HSTORE)
+
+    name = translation_hybrid(name_translations)
+    description = translation_hybrid(description_translations)
+
+    # belongs to a phasemetadata
+    phasemetadata_id = Column(
+        UUID(as_uuid=True), ForeignKey("phasemetadata.id", ondelete='CASCADE')
+    )
+    phasemetadata = relationship("PhaseMetadata", back_populates="objectivemetadatas")
+
+    taskmetadatas = relationship("TaskMetadata", back_populates="objectivemetadata")
+
+    def __repr__(self):
+        return "<ObjectiveMetadata %r>" % self.name_translations["en"]
+
+
 class Objective(BaseModel):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    is_public = Column(Boolean, default=True)
     progress = Column(Integer, default=0)
     start_date = Column(String, nullable=True)
     end_date = Column(String, nullable=True)
@@ -30,20 +49,14 @@ class Objective(BaseModel):
     name_translations = Column(HSTORE)
     description_translations = Column(HSTORE)
 
-    name = translation_hybrid(name_translations)
-    description = translation_hybrid(description_translations)
+    name = Column(String)
+    description = Column(String)
 
     # belongs to a phase
     phase_id = Column(
         UUID(as_uuid=True), ForeignKey("phase.id", ondelete='CASCADE')
     )
     phase = relationship("Phase", back_populates="objectives")
-
-    # save from where has been forked
-    parent_id = Column(UUID(as_uuid=True), ForeignKey("objective.id"))
-    children = relationship(
-        "Objective", backref=backref("parent", remote_side=[id])
-    )
 
     tasks = relationship("Task", back_populates="objective")
 

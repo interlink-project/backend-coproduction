@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from sqlalchemy import (
     ARRAY,
@@ -11,10 +12,11 @@ from sqlalchemy import (
     String,
     Table,
     Text,
+    
 )
 from sqlalchemy.dialects.postgresql import HSTORE, UUID
-from sqlalchemy.orm import relationship
-
+from sqlalchemy.orm import relationship, object_session
+from app import models
 from app.general.db.base_class import Base as BaseModel
 from app.general.utils.DatabaseLocalization import translation_hybrid
 
@@ -44,12 +46,6 @@ class CoproductionProcess(BaseModel):
     )
     creator = relationship("User", back_populates="created_coproductionprocesses")
 
-    # created from schema
-    coproductionschema_id = Column(
-        UUID(as_uuid=True), ForeignKey("coproductionschema.id")
-    )
-    coproductionschema = relationship("CoproductionSchema", back_populates="coproductionprocesses")
-
     # worked by
     teams = relationship("Team", secondary=association_table, back_populates="coproductionprocesses")
 
@@ -59,3 +55,7 @@ class CoproductionProcess(BaseModel):
     @property
     def acl_id(self):
         return self.acl.id
+    
+    @hybrid_property
+    def phases_count(self):
+        return object_session(self).query(models.Phase).filter(models.Phase.coproductionprocess_id==self.id).count()

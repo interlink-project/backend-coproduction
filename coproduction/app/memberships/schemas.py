@@ -29,14 +29,17 @@ class Membership(MembershipBase):
 
 
 class MembershipOut(Membership):
-    picture: str
-    email: str
+    picture: Optional[str]
+    email: Optional[str]
     
     @root_validator(pre=True)
     def get_user_data_from_auth_microservice(cls, values):
         id = values["user_id"]
-        newValues = {**values}
-        response = requests.get(f"http://{settings.AUTH_SERVICE}/auth/api/v1/users/{id}").json()
-        newValues["picture"] = response["picture"]
-        newValues["email"] = response["email"]
-        return newValues
+        try:
+            newValues = {**values}
+            response = requests.get(f"http://{settings.AUTH_SERVICE}/auth/api/v1/users/{id}").json()
+            newValues["picture"] = response["picture"]
+            newValues["email"] = response["email"]
+            return newValues
+        except:
+            return values

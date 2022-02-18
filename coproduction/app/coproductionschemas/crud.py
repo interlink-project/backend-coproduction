@@ -3,14 +3,16 @@ from typing import Optional
 from app.models import CoproductionSchema, Phase
 from app.schemas import CoproductionSchemaCreate, CoproductionSchemaPatch
 from app.general.utils.CRUDBase import CRUDBase
-from app import crud
+from app import crud, schemas, models
 
 class CRUDCoproductionSchema(CRUDBase[CoproductionSchema, CoproductionSchemaCreate, CoproductionSchemaPatch]):
+    def get_public(self, db: Session, skip: int = 0, limit: int = 100) -> Optional[CoproductionSchema]:
+        return db.query(CoproductionSchema).filter(CoproductionSchema.is_public == True).offset(skip).limit(limit).all()
 
     def get_by_name(self, db: Session, name: str, locale: str) -> Optional[CoproductionSchema]:
         return db.query(CoproductionSchema).filter(CoproductionSchema.name_translations[locale] == name).first()
 
-    def create(self, db: Session, *, coproductionschema: CoproductionSchemaCreate) -> CoproductionSchema:
+    def create(self, db: Session, coproductionschema: CoproductionSchemaCreate) -> CoproductionSchema:
         db_obj = CoproductionSchema(
             name_translations=coproductionschema.name_translations,
             description_translations=coproductionschema.description_translations,

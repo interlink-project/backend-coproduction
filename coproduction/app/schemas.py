@@ -30,12 +30,24 @@ class TaskOutFull(TaskOut):
     pass
 
 
+class TaskMetadataOutFull(TaskMetadataOut):
+    pass
+
+
 class ObjectiveOutFull(ObjectiveOut):
     tasks: List[TaskOutFull]
 
 
+class ObjectiveMetadataOutFull(ObjectiveMetadataOut):
+    taskmetadatas: List[TaskMetadataOutFull] = []
+
+
 class PhaseOutFull(PhaseOut):
     objectives: List[ObjectiveOutFull]
+
+
+class PhaseMetadataOutFull(PhaseMetadataOut):
+    objectivemetadatas: List[ObjectiveMetadataOutFull] = []
 
 
 class MembershipOutFull(MembershipOut):
@@ -51,7 +63,7 @@ class ACLOutFull(ACLOut):
 
 
 class CoproductionSchemaOutFull(CoproductionSchemaOut):
-    phases: List[PhaseOutFull]
+    phasemetadatas: List[PhaseMetadataOutFull] = []
 
 
 class CoproductionProcessOutFull(CoproductionProcessOut):
