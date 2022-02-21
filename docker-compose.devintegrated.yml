@@ -7,7 +7,7 @@ services:
       - default
 
   coproduction:
-    image: "coproductiondev:${TAG-latest}"
+    image: "coproductiondev"
     container_name: coproduction-integrated
     volumes:
       - ./coproduction:/app
@@ -35,7 +35,7 @@ services:
       - default
 
   coproductionworker:
-    image: "coproductionworkerdev:${TAG-latest}"
+    image: "coproductionworkerdev"
     container_name: coproductionworker-integrated
     volumes:
       - ./coproduction:/app
