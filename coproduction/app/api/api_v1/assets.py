@@ -45,29 +45,19 @@ def create_asset(
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     # first check if task exists
-    task = crud.task.get(
-        db=db,
-        id=asset_in.task_id
-    )
-    if not task:
-        raise HTTPException(status_code=403, detail="Task not found")
+    if not crud.task.get(db=db, id=asset_in.task_id):
+        raise HTTPException(status_code=404, detail="Task not found")
 
+    # check that interlinker in catalogue
     try:
         response = requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.interlinker_id}")
-        interlinker = response.json()
-        path = interlinker["path"]
+        assert response.status_code == 200
         
     except:
-        raise HTTPException(status_code=500, detail="Interlinker not active")
+        raise HTTPException(status_code=400, detail="Interlinker not active")
 
-    try:
-        print(f"http://{path}/api/v1/assets/{asset_in.external_id}")
-        assert requests.get(f"http://{path}/assets/{asset_in.external_id}").status_code == 200
-        asset = crud.asset.create(db=db, asset=asset_in, external_id=asset_in.external_id, creator=current_user)
-        return asset
-    except Exception as e:
-        raise e
-        raise HTTPException(status_code=500, detail="Error in interlinker")
+    asset = crud.asset.create(db=db, asset=asset_in, external_id=asset_in.external_id, creator=current_user)
+    return asset
 
 
 @router.put("/{id}", response_model=schemas.AssetOutFull)
