@@ -15,6 +15,7 @@ association_table = Table('association_membership_role', BaseModel.metadata,
                           Column('role_id', ForeignKey('role.id'), primary_key=True))
 
 class Permissions(enum.Enum):
+    assets_view = "assets_view"
     assets_create = "assets_create"
     assets_update = "assets_update"
     assets_delete = "assets_delete"
