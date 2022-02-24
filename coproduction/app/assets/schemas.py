@@ -22,7 +22,8 @@ class Asset(AssetBase):
     id: uuid.UUID
     created_at: datetime
     updated_at: Optional[datetime]
-    
+    capabilities: Optional[dict]
+
     class Config:
         orm_mode = True
 

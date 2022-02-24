@@ -33,27 +33,36 @@ class Asset(BaseModel):
     )
     task = orm.relationship("Task", back_populates="assets")
 
-     # also attach to the coproduction process to do not delete if task deleted
+    # also attach to the coproduction process to do not delete if task deleted
     coproductionprocess_id = Column(
         UUID(as_uuid=True), ForeignKey("coproductionprocess.id", ondelete='CASCADE')
     )
-    coproductionprocess = orm.relationship("CoproductionProcess", back_populates="assets")
+    coproductionprocess = orm.relationship(
+        "CoproductionProcess", back_populates="assets")
 
     # created by
     creator_id = Column(
         String, ForeignKey("user.id")
     )
     creator = orm.relationship("User", back_populates="created_assets")
-    
-    def set_links(self):
-        response = requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{self.softwareinterlinker_id}").json()
 
-        backend =response["backend"]
+    def set_links(self):
+        response = requests.get(
+            f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{self.softwareinterlinker_id}").json()
+
+        backend = response["backend"]
         self.ext_link = f"{backend}/{self.external_asset_id}"
-        
-        backend =response["integration"]["service_name"]
-        api_path =response["integration"]["api_path"]
+
+        integration_data = response["integration"]
+        backend = integration_data["service_name"]
+        api_path =integration_data["api_path"]
         self.int_link = f"http://{backend}{api_path}/{self.external_asset_id}"
+        self.caps = {
+            "clone": integration_data["clone"],
+            "view": integration_data["view"],
+            "edit": integration_data["edit"],
+            "delete": integration_data["delete"],
+        }
 
     # on init
     @orm.reconstructor
@@ -62,11 +71,15 @@ class Asset(BaseModel):
 
     def __repr__(self):
         return "<Asset %r>" % self.id
-    
+
+    @property
+    def capabilities(self):
+        return self.caps
+
     @property
     def link(self):
         return self.ext_link
-    
+
     # not exposed in out schema
     @property
     def internal_link(self):
