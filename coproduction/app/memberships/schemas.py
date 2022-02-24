@@ -7,6 +7,7 @@ from datetime import datetime
 import requests
 from app.config import settings
 
+
 class MembershipBase(BaseModel):
     user_id: str
 
@@ -31,13 +32,15 @@ class Membership(MembershipBase):
 class MembershipOut(Membership):
     picture: Optional[str]
     email: Optional[str]
-    
+
     @root_validator(pre=True)
     def get_user_data_from_auth_microservice(cls, values):
         id = values["user_id"]
         try:
             newValues = {**values}
-            response = requests.get(f"http://{settings.AUTH_SERVICE}/auth/api/v1/users/{id}").json()
+            response = requests.get(f"http://{settings.AUTH_SERVICE}/auth/api/v1/users/{id}", headers={
+                "X-API-Key": "secret"
+            }).json()
             newValues["picture"] = response["picture"]
             newValues["email"] = response["email"]
             return newValues

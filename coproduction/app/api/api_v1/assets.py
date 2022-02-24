@@ -45,20 +45,58 @@ def create_asset(
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     # first check if task exists
-    if not crud.task.get(db=db, id=asset_in.task_id):
+    task = crud.task.get(db=db, id=asset_in.task_id)
+    if not task:
         raise HTTPException(status_code=404, detail="Task not found")
 
     # check that interlinker in catalogue
     try:
-        response = requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.interlinker_id}")
+        response = requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.interlinker_id}", headers={
+            "X-API-Key": "secret"
+        })
         assert response.status_code == 200
         
     except:
         raise HTTPException(status_code=400, detail="Interlinker not active")
 
-    asset = crud.asset.create(db=db, asset=asset_in, external_id=asset_in.external_id, creator=current_user)
+    asset = crud.asset.create(db=db, asset=asset_in, coproductionprocess_id=task.objective.phase.coproductionprocess_id, creator=current_user)
     return asset
 
+@router.post("{id}/clone", response_model=schemas.AssetOutFull)
+def clone_asset(
+    *,
+    id: str,
+    db: Session = Depends(deps.get_db),
+    current_user: dict = Depends(deps.get_current_active_user),
+    token: str = Depends(deps.get_current_active_token),
+) -> Any:
+    """
+    Clone asset.
+    """
+    if not crud.asset.can_create(current_user):
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    asset = crud.asset.get(db=db, id=id)
+    if not asset:
+        raise HTTPException(status_code=404, detail="Asset not found")
+
+    # first check if task exists
+    task = crud.task.get(db=db, id=asset.task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    external_info = requests.post(asset.internal_link + "/clone", headers={
+        "Authorization": "Bearer " + token
+    }).json()
+    print("EXTERNAL")
+    print(external_info)
+    external_id = external_info["id"] if "id" in external_info else external_info["_id"]
+    asset = crud.asset.create(db=db, asset=schemas.AssetCreate(
+        task_id=asset.task_id,
+        interlinker_id=asset.interlinker_id,
+        external_asset_id=external_id
+    ), coproductionprocess_id=task.objective.phase.coproductionprocess_id, creator=current_user)
+    return asset
 
 @router.put("/{id}", response_model=schemas.AssetOutFull)
 def update_asset(
@@ -96,6 +134,23 @@ def read_asset(
     if not crud.asset.can_read(current_user, asset):
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return asset
+
+@router.get("/external/{id}")
+def read_external_asset(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: uuid.UUID,
+    token: str = Depends(deps.get_current_active_token),
+) -> Any:
+    """
+    Get asset by ID.
+    """
+    asset = crud.asset.get(db=db, id=id)
+    if not asset:
+        raise HTTPException(status_code=404, detail="Asset not found")
+    return requests.get(asset.internal_link, headers={
+        "Authorization": "Bearer " + token
+    }).json()
 
 
 @router.delete("/{id}", response_model=schemas.AssetOutFull)

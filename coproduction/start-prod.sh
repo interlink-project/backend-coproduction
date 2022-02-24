@@ -8,6 +8,8 @@ LOG_LEVEL=${LOG_LEVEL:-info}
 # Let the DB start
 python /app/app/pre_start.py
 
+sleep 5
+
 # Run migrations
 alembic revision --autogenerate -m "Added initial table"
 alembic upgrade head

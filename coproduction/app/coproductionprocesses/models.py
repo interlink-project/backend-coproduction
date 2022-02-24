@@ -38,6 +38,8 @@ class CoproductionProcess(BaseModel):
 
     phases = relationship(
         "Phase", back_populates="coproductionprocess")
+    assets = relationship(
+        "Asset", back_populates="coproductionprocess")
     artefact_id = Column(UUID(as_uuid=True))
 
     # created by

@@ -30,19 +30,23 @@ def get_db() -> Generator:
 def get_current_token(
     request: Request
 ) -> dict:
-        state = request.state._state
-        return state["token"]
+        return get_token_in_cookie(request) or get_token_in_header(request)
+
+def get_current_active_token(
+    current_token: str = Depends(get_current_token)
+) -> dict:
+        if not current_token:
+            raise HTTPException(status_code=403, detail="Not authenticated")
+        return current_token
 
 def get_current_user(
     request: Request,
     db: Session = Depends(get_db),
+    current_token: str = Depends(get_current_token)
 ) -> Optional[models.User]:
     try:
-        token = get_token_in_cookie(request) or get_token_in_header(request)
-        if token:
-            token_data = decode_token(token)
-            return crud.user.get(db=db, id=token_data["sub"])
-        return None
+        token_data = decode_token(current_token)
+        return crud.user.get(db=db, id=token_data["sub"])
     except Exception as e:
         print(str(e))
         return None
