@@ -148,6 +148,7 @@ def read_external_asset(
     asset = crud.asset.get(db=db, id=id)
     if not asset:
         raise HTTPException(status_code=404, detail="Asset not found")
+    print("Retrieving external ", asset.internal_link)
     return requests.get(asset.internal_link, headers={
         "Authorization": "Bearer " + token
     }).json()
