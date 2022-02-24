@@ -62,7 +62,7 @@ def create_asset(
     asset = crud.asset.create(db=db, asset=asset_in, coproductionprocess_id=task.objective.phase.coproductionprocess_id, creator=current_user)
     return asset
 
-@router.post("{id}/clone", response_model=schemas.AssetOutFull)
+@router.post("/{id}/clone", response_model=schemas.AssetOutFull)
 def clone_asset(
     *,
     id: str,
