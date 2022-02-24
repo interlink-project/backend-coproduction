@@ -51,7 +51,7 @@ def create_asset(
 
     # check that interlinker in catalogue
     try:
-        response = requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.interlinker_id}", headers={
+        response = requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.softwareinterlinker_id}", headers={
             "X-API-Key": "secret"
         })
         assert response.status_code == 200
@@ -93,7 +93,7 @@ def clone_asset(
     external_id = external_info["id"] if "id" in external_info else external_info["_id"]
     asset = crud.asset.create(db=db, asset=schemas.AssetCreate(
         task_id=asset.task_id,
-        interlinker_id=asset.interlinker_id,
+        softwareinterlinker_id=asset.softwareinterlinker_id,
         external_asset_id=external_id
     ), coproductionprocess_id=task.objective.phase.coproductionprocess_id, creator=current_user)
     return asset

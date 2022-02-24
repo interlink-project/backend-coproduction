@@ -16,7 +16,8 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
         db_obj = Asset(
             coproductionprocess_id=coproductionprocess_id,
             task_id=asset.task_id,
-            interlinker_id=asset.interlinker_id,
+            knowledgeinterlinker_id=asset.knowledgeinterlinker_id,
+            softwareinterlinker_id=asset.softwareinterlinker_id,
             external_asset_id=asset.external_asset_id,
             creator=creator
         )

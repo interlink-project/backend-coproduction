@@ -24,7 +24,9 @@ from app.general.db.base_class import Base as BaseModel
 class Asset(BaseModel):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     external_asset_id = Column(String)
-    interlinker_id = Column(UUID(as_uuid=True))
+    softwareinterlinker_id = Column(UUID(as_uuid=True))
+    # save from which knowledge interlinker has been cloned, if so
+    knowledgeinterlinker_id = Column(UUID(as_uuid=True), nullable=True)
 
     task_id = Column(
         UUID(as_uuid=True), ForeignKey("task.id", ondelete='SET NULL')
@@ -44,7 +46,7 @@ class Asset(BaseModel):
     creator = orm.relationship("User", back_populates="created_assets")
     
     def set_links(self):
-        response = requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{self.interlinker_id}").json()
+        response = requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{self.softwareinterlinker_id}").json()
 
         backend =response["backend"]
         self.ext_link = f"{backend}/{self.external_asset_id}"
