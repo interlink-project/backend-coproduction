@@ -85,7 +85,7 @@ def clone_asset(
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
     
-    external_info = requests.post(asset.internal_link + "/clone", headers={
+    external_info = requests.post(asset.link + "/clone", headers={
         "Authorization": "Bearer " + token
     }).json()
     print("EXTERNAL")
@@ -148,8 +148,8 @@ def read_external_asset(
     asset = crud.asset.get(db=db, id=id)
     if not asset:
         raise HTTPException(status_code=404, detail="Asset not found")
-    print("Retrieving external ", asset.internal_link)
-    return requests.get(asset.internal_link, headers={
+    print("Retrieving external ", asset.link)
+    return requests.get(asset.link, headers={
         "Authorization": "Bearer " + token
     }).json()
 
