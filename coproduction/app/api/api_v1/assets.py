@@ -85,11 +85,16 @@ def clone_asset(
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
     
-    external_info = requests.post(asset.link + "/clone", headers={
-        "Authorization": "Bearer " + token
-    }).json()
-    print("EXTERNAL")
-    print(external_info)
+    
+    try:
+        external_info = requests.post(asset.internal_link + "/clone", headers={
+            "Authorization": "Bearer " + token
+        }).json()
+    except:
+        external_info = requests.post(asset.link + "/clone", headers={
+            "Authorization": "Bearer " + token
+        }).json()
+        
     external_id = external_info["id"] if "id" in external_info else external_info["_id"]
     asset = crud.asset.create(db=db, asset=schemas.AssetCreate(
         task_id=asset.task_id,
@@ -149,9 +154,14 @@ def read_external_asset(
     if not asset:
         raise HTTPException(status_code=404, detail="Asset not found")
     print("Retrieving external ", asset.link)
-    return requests.get(asset.link, headers={
-        "Authorization": "Bearer " + token
-    }).json()
+    try:
+        return requests.get(asset.internal_link, headers={
+            "Authorization": "Bearer " + token
+        }).json()
+    except:
+        return requests.get(asset.link, headers={
+            "Authorization": "Bearer " + token
+        }).json()
 
 
 @router.delete("/{id}", response_model=schemas.AssetOutFull)
