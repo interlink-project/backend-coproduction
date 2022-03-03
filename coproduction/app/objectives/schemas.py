@@ -36,8 +36,6 @@ class ObjectiveMetadataOut(ObjectiveMetadata):
 
 class ObjectiveBase(BaseModel):
     progress: Optional[int]
-    start_date: Optional[date]
-    end_date: Optional[date]
     name: str
     description: str
     phase_id: uuid.UUID
@@ -54,6 +52,8 @@ class Objective(ObjectiveBase):
     id: uuid.UUID
     created_at: datetime
     updated_at: Optional[datetime]
+    start_date: Optional[date]
+    end_date: Optional[date]
     
     class Config:
         orm_mode = True

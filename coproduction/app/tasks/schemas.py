@@ -15,7 +15,6 @@ class TaskMetadataBase(BaseModel):
     problem_profiles: list
     objectivemetadata_id: uuid.UUID
 
-
 class TaskMetadataCreate(TaskMetadataBase):
     name_translations: dict
     description_translations: dict
@@ -37,7 +36,6 @@ class TaskMetadataPatch(TaskMetadataBase):
     name_translations: Optional[dict]
     description_translations: Optional[dict]
 
-
 class TaskMetadata(TaskMetadataBase):
     id: uuid.UUID
     created_at: datetime
@@ -45,7 +43,7 @@ class TaskMetadata(TaskMetadataBase):
 
     name: str
     description: str
-
+    
     class Config:
         orm_mode = True
 
@@ -61,7 +59,8 @@ class TaskBase(BaseModel):
     name: str
     description: str
     objective_id: uuid.UUID
-
+    start_date: Optional[datetime]
+    end_date: Optional[datetime]
 
 class TaskCreate(TaskBase):
     name_translations: dict

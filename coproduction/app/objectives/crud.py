@@ -66,8 +66,6 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
             name=objective.name,
             description=objective.description,
             progress=objective.progress,
-            start_date=objective.start_date,
-            end_date=objective.end_date,
             # relations
             phase_id=objective.phase_id,
         )

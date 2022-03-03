@@ -61,7 +61,9 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
             name=task.name,
             description=task.description,
             objective_id=task.objective_id,
-            problem_profiles=task.problem_profiles
+            problem_profiles=task.problem_profiles,
+            start_date=task.start_date,
+            end_date=task.end_date
         )
         db.add(db_obj)
         db.commit()

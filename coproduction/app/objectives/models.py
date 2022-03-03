@@ -43,9 +43,6 @@ class ObjectiveMetadata(BaseModel):
 class Objective(BaseModel):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     progress = Column(Integer, default=0)
-    start_date = Column(String, nullable=True)
-    end_date = Column(String, nullable=True)
-
     name_translations = Column(HSTORE)
     description_translations = Column(HSTORE)
 
@@ -59,6 +56,26 @@ class Objective(BaseModel):
     phase = relationship("Phase", back_populates="objectives")
 
     tasks = relationship("Task", back_populates="objective")
+
+    @property
+    def start_date(self):
+        lowest = None
+        for task in self.tasks:
+            if task.start_date:
+                var = datetime.strptime(task.start_date, "%Y-%m-%d")
+                if not lowest or var < lowest:
+                    lowest = var
+        return lowest
+
+    @property
+    def end_date(self):
+        greatest = None
+        for task in self.tasks:
+            if task.end_date:
+                var = datetime.strptime(task.end_date, "%Y-%m-%d")
+                if not greatest or var > greatest:
+                    greatest = var
+        return greatest
 
     def __repr__(self):
         return "<Objective %r>" % self.name

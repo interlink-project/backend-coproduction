@@ -54,6 +54,9 @@ class Phase(PhaseBase):
     id: uuid.UUID
     created_at: datetime
     updated_at: Optional[datetime]
+    
+    start_date: Optional[date]
+    end_date: Optional[date]
 
     class Config:
         orm_mode = True
@@ -62,6 +65,4 @@ class Phase(PhaseBase):
 class PhaseOut(Phase):
     # parent
     progress: int
-    start_date: Optional[date]
-    end_date: Optional[date]
     prerequisites_ids: List[uuid.UUID]

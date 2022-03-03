@@ -69,5 +69,8 @@ class Task(BaseModel):
 
     status = Column(Enum(Status, create_constraint=False, native_enum=False), default=Status.awaiting)
     
+    start_date = Column(DateTime, nullable=True)
+    end_date = Column(DateTime, nullable=True)
+    
     def __repr__(self):
         return "<Task %r>" % self.name
