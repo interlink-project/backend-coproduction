@@ -101,6 +101,7 @@ class Phase(BaseModel):
         except:
             return 0
 
+    """
     @property
     def start_date(self):
         lowest = None
@@ -120,3 +121,4 @@ class Phase(BaseModel):
                 if not greatest or var > greatest:
                     greatest = var
         return greatest
+    """

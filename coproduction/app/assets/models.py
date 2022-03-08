@@ -55,7 +55,7 @@ class Asset(BaseModel):
 
         integration_data = response["integration"]
         backend = integration_data["service_name"]
-        api_path =integration_data["api_path"]
+        api_path = integration_data["api_path"]
         self.int_link = f"http://{backend}{api_path}/{self.external_asset_id}"
         self.caps = {
             "clone": integration_data["clone"],

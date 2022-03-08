@@ -55,8 +55,8 @@ class Phase(PhaseBase):
     created_at: datetime
     updated_at: Optional[datetime]
     
-    start_date: Optional[date]
-    end_date: Optional[date]
+    # start_date: Optional[date]
+    # end_date: Optional[date]
 
     class Config:
         orm_mode = True

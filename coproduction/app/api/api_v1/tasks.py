@@ -78,23 +78,6 @@ def read_task(
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return task
 
-@router.get("/{id}/assets", response_model=List[schemas.AssetOutFull])
-def read_task(
-    *,
-    db: Session = Depends(deps.get_db),
-    id: uuid.UUID,
-    current_user: Optional[models.User] = Depends(deps.get_current_user),
-) -> Any:
-    """
-    Get task by ID.
-    """
-    task = crud.task.get(db=db, id=id)
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
-    if not crud.task.can_read(current_user, task):
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-    return task.assets
-
 @router.delete("/{id}", response_model=schemas.TaskOutFull)
 def delete_task(
     *,

@@ -1,6 +1,6 @@
 from enum import Enum
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 from typing import List, Optional
 
 import requests
@@ -59,8 +59,8 @@ class TaskBase(BaseModel):
     name: str
     description: str
     objective_id: uuid.UUID
-    start_date: Optional[datetime]
-    end_date: Optional[datetime]
+    start_date: Optional[date]
+    end_date: Optional[date]
 
 class TaskCreate(TaskBase):
     name_translations: dict

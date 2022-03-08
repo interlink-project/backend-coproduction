@@ -4,22 +4,23 @@ import uuid
 from typing import Any, List, Optional
 
 import requests
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.general import deps
 from app.config import settings
+from fastapi_pagination import Page
 
 router = APIRouter()
 
 
-@router.get("", response_model=List[schemas.AssetOutFull])
+@router.get("", response_model=Page[schemas.AssetOutFull])
 def list_assets(
     db: Session = Depends(deps.get_db),
-    skip: int = 0,
-    limit: int = 100,
+    coproductionprocess_id: Optional[uuid.UUID] = Query(None),
+    task_id: Optional[uuid.UUID] = Query(None),
     current_user: Optional[models.User] = Depends(deps.get_current_user),
 ) -> Any:
     """
@@ -27,8 +28,7 @@ def list_assets(
     """
     if not crud.asset.can_list(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    assets = crud.asset.get_multi(db, skip=skip, limit=limit)
-    return assets
+    return crud.asset.get_multi_filtered(db, task_id=task_id, coproductionprocess_id=coproductionprocess_id)
 
 
 @router.post("", response_model=schemas.AssetOutFull)
@@ -55,12 +55,14 @@ def create_asset(
             "X-API-Key": "secret"
         })
         assert response.status_code == 200
-        
+
     except:
         raise HTTPException(status_code=400, detail="Interlinker not active")
 
-    asset = crud.asset.create(db=db, asset=asset_in, coproductionprocess_id=task.objective.phase.coproductionprocess_id, creator=current_user)
+    asset = crud.asset.create(
+        db=db, asset=asset_in, coproductionprocess_id=task.objective.phase.coproductionprocess_id, creator=current_user)
     return asset
+
 
 @router.post("/{id}/clone", response_model=schemas.AssetOutFull)
 def clone_asset(
@@ -84,8 +86,7 @@ def clone_asset(
     task = crud.task.get(db=db, id=asset.task_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
-    
-    
+
     try:
         external_info = requests.post(asset.internal_link + "/clone", headers={
             "Authorization": "Bearer " + token
@@ -94,7 +95,7 @@ def clone_asset(
         external_info = requests.post(asset.link + "/clone", headers={
             "Authorization": "Bearer " + token
         }).json()
-        
+
     external_id = external_info["id"] if "id" in external_info else external_info["_id"]
     asset = crud.asset.create(db=db, asset=schemas.AssetCreate(
         task_id=asset.task_id,
@@ -102,6 +103,7 @@ def clone_asset(
         external_asset_id=external_id
     ), coproductionprocess_id=task.objective.phase.coproductionprocess_id, creator=current_user)
     return asset
+
 
 @router.put("/{id}", response_model=schemas.AssetOutFull)
 def update_asset(
@@ -139,6 +141,7 @@ def read_asset(
     if not crud.asset.can_read(current_user, asset):
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return asset
+
 
 @router.get("/external/{id}")
 def read_external_asset(

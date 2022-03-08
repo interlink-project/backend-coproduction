@@ -18,7 +18,6 @@ from sqlalchemy.dialects.postgresql import HSTORE, UUID
 from sqlalchemy.orm import relationship, object_session
 from app import models
 from app.general.db.base_class import Base as BaseModel
-from app.general.utils.DatabaseLocalization import translation_hybrid
 
 association_table = Table('association_team_process', BaseModel.metadata,
                           Column('team_id', ForeignKey('team.id'), primary_key=True),

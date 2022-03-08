@@ -5,13 +5,21 @@ from app.schemas import AssetCreate, AssetPatch
 from app.general.utils.CRUDBase import CRUDBase
 from app import models
 import uuid
+from fastapi_pagination.ext.sqlalchemy import paginate
 
 class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
-    def get_multi_by_task_id(
-        self, db: Session, task_id: uuid.UUID, skip: int = 0, limit: int = 100
+    def get_multi_filtered(
+        self, db: Session, coproductionprocess_id: uuid.UUID, task_id: uuid.UUID
     ) -> List[Asset]:
-        return db.query(Asset).filter(task_id=task_id).offset(skip).limit(limit).all()
-
+        queries = []
+        if coproductionprocess_id:
+            queries.append(Asset.coproductionprocess_id == coproductionprocess_id)
+        
+        if task_id:
+            queries.append(Asset.task_id == task_id)
+        
+        return paginate(db.query(Asset).filter(*queries))
+    
     def create(self, db: Session, asset: AssetCreate, coproductionprocess_id: uuid.UUID, creator: models.User) -> Asset:
         db_obj = Asset(
             coproductionprocess_id=coproductionprocess_id,

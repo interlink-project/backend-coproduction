@@ -5,6 +5,7 @@ from typing import TypedDict
 from sqlalchemy import (
     Boolean,
     Column,
+    Date,
     DateTime,
     ForeignKey,
     Integer,
@@ -58,23 +59,21 @@ class Objective(BaseModel):
     tasks = relationship("Task", back_populates="objective")
 
     @property
-    def start_date(self):
+    def start_date(self) -> Date:
         lowest = None
         for task in self.tasks:
             if task.start_date:
-                var = datetime.strptime(task.start_date, "%Y-%m-%d")
-                if not lowest or var < lowest:
-                    lowest = var
+                if not lowest or task.start_date < lowest:
+                    lowest = task.start_date
         return lowest
 
     @property
-    def end_date(self):
+    def end_date(self) -> Date:
         greatest = None
         for task in self.tasks:
             if task.end_date:
-                var = datetime.strptime(task.end_date, "%Y-%m-%d")
-                if not greatest or var > greatest:
-                    greatest = var
+                if not greatest or task.end_date > greatest:
+                    greatest = task.end_date
         return greatest
 
     def __repr__(self):
