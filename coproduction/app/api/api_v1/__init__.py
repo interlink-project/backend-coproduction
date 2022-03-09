@@ -34,8 +34,8 @@ api_router.include_router(coproductionprocesses.router,
                           prefix="/coproductionprocesses", tags=["coproductionprocesses"])
 api_router.include_router(acls.router,
                           prefix="/acl", tags=["coproductionprocesses"])
-# api_router.include_router(phases.router,
-#                           prefix="/phases", tags=["coproduction"])
+api_router.include_router(phases.router,
+                          prefix="/phases", tags=["coproduction"])
 api_router.include_router(objectives.router,
                           prefix="/objectives", tags=["tree"])
 api_router.include_router(tasks.router,
