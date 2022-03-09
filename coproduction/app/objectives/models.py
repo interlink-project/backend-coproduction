@@ -14,12 +14,12 @@ from sqlalchemy import (
     Text,
 )
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import backref, relationship
+from sqlalchemy.orm import backref, relationship, reconstructor
 
 from app.general.db.base_class import Base as BaseModel
 from sqlalchemy.dialects.postgresql import HSTORE
 from app.translations import translation_hybrid
-
+from app.tasks.models import Status
 
 class ObjectiveMetadata(BaseModel):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -58,23 +58,26 @@ class Objective(BaseModel):
 
     tasks = relationship("Task", back_populates="objective")
 
-    @property
-    def start_date(self) -> Date:
+    @reconstructor
+    def init_on_load(self):
+        # SETS start_date, end_date and status based on its tasks
         lowest = None
-        for task in self.tasks:
-            if task.start_date:
-                if not lowest or task.start_date < lowest:
-                    lowest = task.start_date
-        return lowest
-
-    @property
-    def end_date(self) -> Date:
         greatest = None
         for task in self.tasks:
-            if task.end_date:
-                if not greatest or task.end_date > greatest:
-                    greatest = task.end_date
-        return greatest
+            if task.start_date and (not lowest or task.start_date < lowest):
+                lowest = task.start_date
+            if task.end_date and (not greatest or task.end_date > greatest):
+                greatest = task.end_date
+            
+        if all([x.status == Status.finished for x in self.tasks]):
+            self.status = Status.finished
+        elif all([x.status == Status.awaiting for x in self.tasks]):
+            self.status = Status.awaiting
+        else: 
+            self.status = Status.in_progress
+        
+        self.start_date = lowest
+        self.end_date = greatest
 
     def __repr__(self):
         return "<Objective %r>" % self.name

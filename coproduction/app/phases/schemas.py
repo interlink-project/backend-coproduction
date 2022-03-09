@@ -1,15 +1,19 @@
 import uuid
 from datetime import date, datetime
+from enum import Enum
 from typing import List, Optional
 
-from app.general.utils.AllOptional import AllOptional
 from pydantic import BaseModel
 
-# 
+from app.general.utils.AllOptional import AllOptional
+
+#
+
 
 class PhaseMetadataBase(BaseModel):
     is_public: bool = True
     coproductionschema_id: uuid.UUID
+
 
 class PhaseMetadataCreate(PhaseMetadataBase):
     name_translations: dict
@@ -38,13 +42,16 @@ class PhaseMetadataOut(PhaseMetadata):
 
 ###########
 
+
 class PhaseBase(BaseModel):
     coproductionprocess_id: uuid.UUID
     name: str
     description: str
 
+
 class PhaseCreate(PhaseBase):
     pass
+
 
 class PhasePatch(PhaseBase, metaclass=AllOptional):
     pass
@@ -54,15 +61,14 @@ class Phase(PhaseBase):
     id: uuid.UUID
     created_at: datetime
     updated_at: Optional[datetime]
-    
-    # start_date: Optional[date]
-    # end_date: Optional[date]
+
+    start_date: Optional[date]
+    end_date: Optional[date]
+    status: Optional[Enum]
 
     class Config:
         orm_mode = True
 
 
 class PhaseOut(Phase):
-    # parent
-    progress: int
     prerequisites_ids: List[uuid.UUID]

@@ -11,12 +11,13 @@ from sqlalchemy import (
     String,
     Table,
     Text,
+    Date
 )
 from sqlalchemy.dialects.postgresql import HSTORE, UUID
-from sqlalchemy.orm import backref, relationship
-
+from sqlalchemy.orm import backref, relationship, reconstructor
 from app.general.db.base_class import Base as BaseModel
 from app.translations import translation_hybrid
+from app.tasks.models import Status
 
 prerequisites_metadata = Table(
     'metadata_prerequisites', BaseModel.metadata,
@@ -88,37 +89,25 @@ class Phase(BaseModel):
     @property
     def prerequisites_ids(self):
         return [pr.id for pr in self.prerequisites]
-
-    @property
-    def progress(self):
-        fin = 0
-        tot = 0
-        for objective in self.objectives:
-            fin += objective.progress
-            tot += 1
-        try:
-            return int(fin / tot)
-        except:
-            return 0
-
-    """
-    @property
-    def start_date(self):
+    
+   
+    @reconstructor
+    def init_on_load(self):
+        # SETS start_date, end_date and status based on its objectives
         lowest = None
-        for objective in self.objectives:
-            if objective.start_date:
-                var = datetime.strptime(objective.start_date, "%Y-%m-%d")
-                if not lowest or var < lowest:
-                    lowest = var
-        return lowest
-
-    @property
-    def end_date(self):
         greatest = None
         for objective in self.objectives:
-            if objective.end_date:
-                var = datetime.strptime(objective.end_date, "%Y-%m-%d")
-                if not greatest or var > greatest:
-                    greatest = var
-        return greatest
-    """
+            if objective.start_date and (not lowest or objective.start_date < lowest):
+                lowest = objective.start_date
+            if objective.end_date and (not greatest or objective.end_date > greatest):
+                greatest = objective.end_date
+            
+        if all([x.status == Status.finished for x in self.objectives]):
+            self.status = Status.finished
+        elif all([x.status == Status.awaiting for x in self.objectives]):
+            self.status = Status.awaiting
+        else: 
+            self.status = Status.in_progress
+        
+        self.start_date = lowest
+        self.end_date = greatest

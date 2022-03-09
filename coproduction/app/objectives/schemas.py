@@ -1,3 +1,4 @@
+from enum import Enum
 import uuid
 from datetime import datetime, date
 from typing import List, Optional
@@ -54,7 +55,8 @@ class Objective(ObjectiveBase):
     updated_at: Optional[datetime]
     start_date: Optional[date]
     end_date: Optional[date]
-    
+    status: Optional[Enum]
+
     class Config:
         orm_mode = True
 
