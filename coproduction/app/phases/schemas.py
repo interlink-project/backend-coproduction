@@ -65,7 +65,8 @@ class Phase(PhaseBase):
     start_date: Optional[date]
     end_date: Optional[date]
     status: Optional[Enum]
-
+    progress: Optional[int]
+    
     class Config:
         orm_mode = True
 

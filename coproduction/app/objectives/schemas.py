@@ -55,7 +55,9 @@ class Objective(ObjectiveBase):
     updated_at: Optional[datetime]
     start_date: Optional[date]
     end_date: Optional[date]
+    
     status: Optional[Enum]
+    progress: Optional[int]
 
     class Config:
         orm_mode = True
