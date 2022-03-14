@@ -62,6 +62,13 @@ class Asset(BaseModel):
             "view": integration_data["view"],
             "edit": integration_data["edit"],
             "delete": integration_data["delete"],
+            "download": integration_data["download"],
+        }
+        self.interlinker_data = {
+            "id": response["id"],
+            "name": response["name"],
+            "description": response["description"],
+            "logotype_link": response["logotype_link"],
         }
 
     # on init
