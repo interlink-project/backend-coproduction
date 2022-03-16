@@ -12,14 +12,15 @@ from sqlalchemy import (
     String,
     Table,
     Text,
+    func,
 )
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import backref, relationship, reconstructor
+from sqlalchemy.dialects.postgresql import HSTORE, UUID
+from sqlalchemy.orm import backref, reconstructor, relationship
+from sqlalchemy_utils import aggregated
 
 from app.general.db.base_class import Base as BaseModel
-from sqlalchemy.dialects.postgresql import HSTORE
+from app.tasks.models import Status, Task
 from app.translations import translation_hybrid
-from app.tasks.models import Status
 
 class ObjectiveMetadata(BaseModel):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -56,34 +57,30 @@ class Objective(BaseModel):
     )
     phase = relationship("Phase", back_populates="objectives")
 
+    @aggregated('tasks', Column(Date))
+    def end_date(self):
+        return func.max(Task.end_date)
+
+    @aggregated('tasks', Column(Date))
+    def start_date(self):
+        return func.min(Task.start_date)
+
     tasks = relationship("Task", back_populates="objective")
 
     @reconstructor
     def init_on_load(self):
-        # SETS start_date, end_date and status based on its tasks
-        lowest = None
-        greatest = None
-        statuses = []
+        statuses = [task.status for task in self.tasks]
 
-        for task in self.tasks:
-            if task.start_date and (not lowest or task.start_date < lowest):
-                lowest = task.start_date
-            if task.end_date and (not greatest or task.end_date > greatest):
-                greatest = task.end_date
-            statuses.append(task.status)
-            
         if all([x == Status.finished for x in statuses]):
             self.status = Status.finished
         elif all([x == Status.awaiting for x in statuses]):
             self.status = Status.awaiting
-        else: 
+        else:
             self.status = Status.in_progress
-        
+
         countInProgress = statuses.count(Status.in_progress) / 2
         countFinished = statuses.count(Status.finished)
         self.progress = int((countInProgress + countFinished) * 100 / len(statuses))
-        self.start_date = lowest
-        self.end_date = greatest
 
     def __repr__(self):
         return "<task %r>" % self.name
