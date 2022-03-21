@@ -5,6 +5,8 @@ HOST=${HOST:-0.0.0.0}
 PORT=${PORT}
 LOG_LEVEL=${LOG_LEVEL:-info}
 
+mkdir -p /app/static/coproductionprocesses || true
+
 # Let the DB start
 python /app/app/pre_start.py
 
