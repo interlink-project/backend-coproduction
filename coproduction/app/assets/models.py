@@ -29,7 +29,7 @@ class Asset(BaseModel):
     knowledgeinterlinker_id = Column(UUID(as_uuid=True), nullable=True)
 
     task_id = Column(
-        UUID(as_uuid=True), ForeignKey("task.id", ondelete='SET NULL')
+        UUID(as_uuid=True), ForeignKey("task.id", ondelete='CASCADE')
     )
     task = orm.relationship("Task", back_populates="assets")
 
