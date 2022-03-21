@@ -31,8 +31,4 @@ class Team(TeamBase):
 
 
 class TeamOut(Team):
-    @validator('logotype', pre=True)
-    def set_logotype(cls, v):
-        if v:
-            return settings.COMPLETE_SERVER_NAME + v
-        return v
+    logotype_link: Optional[str]

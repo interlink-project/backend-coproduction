@@ -18,6 +18,7 @@ from sqlalchemy.dialects.postgresql import HSTORE, UUID
 from sqlalchemy.orm import relationship, object_session
 from app import models
 from app.general.db.base_class import Base as BaseModel
+from app.config import settings
 
 association_table = Table('association_team_process', BaseModel.metadata,
                           Column('team_id', ForeignKey('team.id'), primary_key=True),
@@ -52,6 +53,10 @@ class CoproductionProcess(BaseModel):
 
     # ACL
     acl = relationship("ACL", back_populates="coproductionprocess", uselist=False)
+
+    @property
+    def logotype_link(self):
+        return settings.COMPLETE_SERVER_NAME + self.logotype if self.logotype else ""
 
     @property
     def acl_id(self):

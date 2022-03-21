@@ -43,9 +43,4 @@ class CoproductionProcess(CoproductionProcessBase):
 class CoproductionProcessOut(CoproductionProcess):
     acl_id: uuid.UUID
     phases_count: Optional[int]
-    
-    @validator('logotype', pre=True)
-    def set_logotype(cls, v):
-        if v:
-            return settings.COMPLETE_SERVER_NAME + v
-        return v
+    logotype_link: Optional[str]

@@ -6,6 +6,7 @@ from sqlalchemy.orm import relationship
 
 from app.general.db.base_class import Base as BaseModel
 from app.coproductionprocesses.models import association_table
+from app.config import settings 
 
 class Team(BaseModel):
     """Team Class contains standard information for a Team."""
@@ -23,3 +24,7 @@ class Team(BaseModel):
 
     memberships = relationship("Membership", back_populates="team")
     coproductionprocesses = relationship("CoproductionProcess", secondary=association_table, back_populates="teams")
+
+    @property
+    def logotype_link(self):
+        return settings.COMPLETE_SERVER_NAME + self.logotype if self.logotype else ""
