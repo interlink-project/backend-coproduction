@@ -84,6 +84,16 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
         db.refresh(phase)
         return phase
 
+    def remove(self, db: Session, *, id: uuid.UUID) -> Phase:
+        obj = db.query(self.model).get(id)
+        db.delete(obj)
+        related = db.query(Phase).filter(Phase.prerequisites.any(Phase.id == obj.id)).all()
+        for i in related:
+            i.prerequisites.remove(obj)
+        db.delete(obj)
+        db.commit()
+        return obj
+
     # CRUD Permissions
     def can_create(self, user):
         return True

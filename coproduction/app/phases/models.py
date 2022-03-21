@@ -115,4 +115,5 @@ class Phase(BaseModel):
 
         countInProgress = statuses.count(Status.in_progress) / 2
         countFinished = statuses.count(Status.finished)
-        self.progress = int((countInProgress + countFinished) * 100 / len(statuses))
+        length = len(statuses)
+        self.progress = int((countInProgress + countFinished) * 100 / length) if length > 0 else 0
