@@ -100,6 +100,7 @@ def clone_asset(
     asset = crud.asset.create(db=db, asset=schemas.AssetCreate(
         task_id=asset.task_id,
         softwareinterlinker_id=asset.softwareinterlinker_id,
+        knowledgeinterlinker_id=asset.knowledgeinterlinker_id,
         external_asset_id=external_id
     ), coproductionprocess_id=task.objective.phase.coproductionprocess_id, creator=current_user)
     return asset
