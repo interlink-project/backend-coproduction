@@ -52,6 +52,9 @@ class PhaseBase(BaseModel):
 class PhaseCreate(PhaseBase):
     pass
 
+class PhaseInternalPatch(PhaseBase, metaclass=AllOptional):
+    status: Optional[Enum]
+    progress: Optional[int]
 
 class PhasePatch(PhaseBase, metaclass=AllOptional):
     pass
@@ -64,6 +67,7 @@ class Phase(PhaseBase):
 
     start_date: Optional[date]
     end_date: Optional[date]
+    
     status: Optional[Enum]
     progress: Optional[int]
     

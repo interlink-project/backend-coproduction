@@ -47,8 +47,8 @@ def main() -> None:
                 **schema_data, is_public=True
             )
         )
-
-        resume = {}
+        phases_resume = {}
+        phase_data: dict
         for phase_data in schema_data["phases"]:
             phase_data["coproductionschema_id"] = SCHEMA.id
 
@@ -58,14 +58,14 @@ def main() -> None:
                     **phase_data
                 )
             )
-            print(phase_data)
-            resume[phase_data["reference"]] = {
+            phases_resume[phase_data["reference"]] = {
                 "id": db_phase.id,
-                "prerequisites": phase_data["prerequisites"]
+                "prerequisites": phase_data.get("prerequisites", [])
             }
 
-            for objective in phase_data["objectives"]:
-                objective_data = objective
+            objectives_resume = {}
+            objective_data : dict 
+            for objective_data in phase_data["objectives"]:
                 objective_data["phasemetadata_id"] = db_phase.id
 
                 db_objective = crud.objectivemetadata.create(
@@ -74,29 +74,53 @@ def main() -> None:
                         **objective_data
                     )
                 )
+                objectives_resume[objective_data["reference"]] = {
+                    "id": db_objective.id,
+                    "prerequisites": objective_data.get("prerequisites", [])
+                }
 
-                for task in objective_data["tasks"]:
-                    task_data = task
+                tasks_resume = {}
+                task_data : dict
+                for task_data in objective_data["tasks"]:
                     task_data["objectivemetadata_id"] = db_objective.id
                     sum = list(task_data["problem_profiles"]) + list(objective_data["problem_profiles"])
                     task_data["problem_profiles"] = list(set(sum))
-                    print(task_data["problem_profiles"])                    
                     db_task = crud.taskmetadata.create(
                         db=db,
                         taskmetadata=schemas.TaskMetadataCreate(
                             **task_data
                         )
                     )
-        
-        print(resume)
-        for key, phase_resume in resume.items():
-            print(phase_resume)
+                    tasks_resume[task_data["reference"]] = {
+                        "id": db_task.id,
+                        "prerequisites": task_data.get("prerequisites", [])
+                    }
+                ## prerequisites
+                for key, task_resume in tasks_resume.items():
+                    db_taskmetadata = crud.taskmetadata.get(db=db, id=task_resume["id"])
+                    prerequisite_reference: dict
+                    for prerequisite_reference in task_resume["prerequisites"]:
+                        if (ref := prerequisite_reference.get("item", None)):
+                            db_prerequisite = crud.taskmetadata.get(db=db, id=tasks_resume[ref]["id"])
+                            print(db_prerequisite, "is a prerequisite for", db_task)
+                            crud.taskmetadata.add_prerequisite(db=db, taskmetadata=db_taskmetadata, prerequisite=db_prerequisite)
+            for key, objective_resume in objectives_resume.items():
+                db_objectivemetadata = crud.objectivemetadata.get(db=db, id=objective_resume["id"])
+                prerequisite_reference: dict
+                for prerequisite_reference in objective_resume["prerequisites"]:
+                    if (ref := prerequisite_reference.get("item", None)):
+                        db_prerequisite = crud.objectivemetadata.get(db=db, id=objectives_resume[ref]["id"])
+                        print(db_prerequisite, "is a prerequisite for", db_objective)
+                        crud.objectivemetadata.add_prerequisite(db=db, objectivemetadata=db_objectivemetadata, prerequisite=db_prerequisite)
+        print(phases_resume)
+        for key, phase_resume in phases_resume.items():
             db_phasemetadata = crud.phasemetadata.get(db=db, id=phase_resume["id"])
             for prerequisite_reference in phase_resume["prerequisites"]:
-                db_prerequisite = crud.phasemetadata.get(db=db, id=resume[prerequisite_reference]["id"])
-                print("Adding", db_prerequisite, "to", db_phase)
-                crud.phasemetadata.add_prerequisite(db=db, phasemetadata=db_phasemetadata, prerequisite=db_prerequisite)
-    db.close()
+                if (ref := prerequisite_reference.get("item", None)):
+                    db_prerequisite = crud.phasemetadata.get(db=db, id=phases_resume[ref]["id"])
+                    print(db_prerequisite, "is a prerequisite for", db_phasemetadata)
+                    crud.phasemetadata.add_prerequisite(db=db, phasemetadata=db_phasemetadata, prerequisite=db_prerequisite)
+        db.close()
     logger.info("Initial data created")
 
 

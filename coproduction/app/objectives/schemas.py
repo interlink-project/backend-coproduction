@@ -48,6 +48,9 @@ class ObjectiveCreate(ObjectiveBase):
 class ObjectivePatch(ObjectiveBase, metaclass=AllOptional):
     pass
 
+class ObjectiveInternalPatch(ObjectiveBase, metaclass=AllOptional):
+    status: Optional[Enum]
+    progress: Optional[int]
 
 class Objective(ObjectiveBase):
     id: uuid.UUID

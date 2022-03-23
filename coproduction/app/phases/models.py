@@ -2,9 +2,8 @@ import uuid
 from cmath import pi
 from datetime import datetime, timedelta
 from typing import TypedDict
-
 from sqlalchemy import (
-    Boolean,
+    Enum,
     Column,
     Date,
     DateTime,
@@ -12,7 +11,7 @@ from sqlalchemy import (
     Integer,
     String,
     Table,
-    Text,
+    Numeric,
     func,
 )
 from sqlalchemy.dialects.postgresql import HSTORE, UUID
@@ -24,13 +23,13 @@ from app.tasks.models import Status, Task
 from app.translations import translation_hybrid
 
 prerequisites_metadata = Table(
-    'metadata_prerequisites', BaseModel.metadata,
+    'phases_metadata_prerequisites', BaseModel.metadata,
     Column('phasemetadata_a_id', ForeignKey('phasemetadata.id'), primary_key=True),
     Column('phasemetadata_b_id', ForeignKey('phasemetadata.id'), primary_key=True)
 )
 
 prerequisites = Table(
-    'prerequisites', BaseModel.metadata,
+    'phase_prerequisites', BaseModel.metadata,
     Column('phase_a_id', ForeignKey('phase.id'), primary_key=True),
     Column('phase_b_id', ForeignKey('phase.id'), primary_key=True)
 )
@@ -101,19 +100,6 @@ class Phase(BaseModel):
         return func.min(Task.start_date)
 
     objectives = relationship("Objective", back_populates="phase")
-
-    @reconstructor
-    def init_on_load(self):
-        statuses = [objective.status for objective in self.objectives]
-
-        if all([x == Status.finished for x in statuses]):
-            self.status = Status.finished
-        elif all([x == Status.awaiting for x in statuses]):
-            self.status = Status.awaiting
-        else:
-            self.status = Status.in_progress
-
-        countInProgress = statuses.count(Status.in_progress) / 2
-        countFinished = statuses.count(Status.finished)
-        length = len(statuses)
-        self.progress = int((countInProgress + countFinished) * 100 / length) if length > 0 else 0
+    status = Column(Enum(Status, create_constraint=False, native_enum=False), default=Status.awaiting)
+    progress = Column(Numeric, default=0)
+    

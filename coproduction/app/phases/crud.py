@@ -3,12 +3,13 @@ from typing import Optional
 from sqlalchemy.orm import Session
 
 from app.general.utils.CRUDBase import CRUDBase
-from app.models import Phase, PhaseMetadata
+from app.models import Phase, PhaseMetadata, Status
 from app.schemas import (
     PhaseCreate,
     PhasePatch,
     PhaseMetadataCreate,
-    PhaseMetadataPatch
+    PhaseMetadataPatch,
+    PhaseInternalPatch
 )
 import uuid
 from app.general.utils.RowToDict import row2dict
@@ -31,6 +32,8 @@ class CRUDPhaseMetadata(CRUDBase[PhaseMetadata, PhaseMetadataCreate, PhaseMetada
         return db.query(PhaseMetadata).filter(PhaseMetadata.name_translations[language] == name).first()
 
     def add_prerequisite(self, db: Session, phasemetadata: PhaseMetadata, prerequisite: PhaseMetadata) -> PhaseMetadata:
+        if phasemetadata.id == prerequisite.id:
+            raise Exception("Same object")
         phasemetadata.prerequisites.append(prerequisite)
         db.commit()
         db.refresh(phasemetadata)
@@ -79,6 +82,8 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
         return db_obj
 
     def add_prerequisite(self, db: Session, phase: Phase, prerequisite: Phase) -> Phase:
+        if phase.id == prerequisite.id:
+            raise Exception("Same object")
         phase.prerequisites.append(prerequisite)
         db.commit()
         db.refresh(phase)

@@ -8,3 +8,6 @@ from app.teams.models import *
 from app.memberships.models import *
 from app.users.models import *
 from app.acl.models import *
+
+# @event.listens_for(Objective, "after_update")
+# def after_objective_update(mapper, connection, instance):

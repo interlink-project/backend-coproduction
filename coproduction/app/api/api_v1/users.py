@@ -18,5 +18,7 @@ def sync_user(
     Create new user.
     """
     # TODO: only from auth micro
+    if user := crud.user.get(db=db, id=user_in.id):
+        return user
     return crud.user.create(db=db, user=user_in)
 

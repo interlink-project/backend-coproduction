@@ -1,9 +1,10 @@
+from email.policy import default
 import uuid
 from datetime import datetime
 from typing import TypedDict
 
 from sqlalchemy import (
-    Boolean,
+    Enum,
     Column,
     Date,
     DateTime,
@@ -12,6 +13,7 @@ from sqlalchemy import (
     String,
     Table,
     Text,
+    Numeric,
     func,
 )
 from sqlalchemy.dialects.postgresql import HSTORE, UUID
@@ -21,6 +23,19 @@ from sqlalchemy_utils import aggregated
 from app.general.db.base_class import Base as BaseModel
 from app.tasks.models import Status, Task
 from app.translations import translation_hybrid
+
+
+prerequisites_metadata = Table(
+    'objective_metadata_prerequisites', BaseModel.metadata,
+    Column('objectivemetadata_a_id', ForeignKey('objectivemetadata.id'), primary_key=True),
+    Column('objectivemetadata_b_id', ForeignKey('objectivemetadata.id'), primary_key=True)
+)
+
+prerequisites = Table(
+    'objective_prerequisites', BaseModel.metadata,
+    Column('objective_a_id', ForeignKey('objective.id'), primary_key=True),
+    Column('objective_b_id', ForeignKey('objective.id'), primary_key=True)
+)
 
 class ObjectiveMetadata(BaseModel):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -36,6 +51,12 @@ class ObjectiveMetadata(BaseModel):
     )
     phasemetadata = relationship("PhaseMetadata", back_populates="objectivemetadatas")
 
+    # prerequisites
+    prerequisites = relationship("ObjectiveMetadata", secondary=prerequisites_metadata,
+                                 primaryjoin=id == prerequisites_metadata.c.objectivemetadata_a_id,
+                                 secondaryjoin=id == prerequisites_metadata.c.objectivemetadata_b_id,
+                                 )
+                                 
     taskmetadatas = relationship("TaskMetadata", back_populates="objectivemetadata")
 
     def __repr__(self):
@@ -50,6 +71,12 @@ class Objective(BaseModel):
 
     name = Column(String)
     description = Column(String)
+
+    # prerequisites
+    prerequisites = relationship("Objective", secondary=prerequisites,
+                                 primaryjoin=id == prerequisites.c.objective_a_id,
+                                 secondaryjoin=id == prerequisites.c.objective_b_id,
+                                 )
 
     # belongs to a phase
     phase_id = Column(
@@ -66,21 +93,8 @@ class Objective(BaseModel):
         return func.min(Task.start_date)
 
     tasks = relationship("Task", back_populates="objective")
-
-    @reconstructor
-    def init_on_load(self):
-        statuses = [task.status for task in self.tasks]
-
-        if all([x == Status.finished for x in statuses]):
-            self.status = Status.finished
-        elif all([x == Status.awaiting for x in statuses]):
-            self.status = Status.awaiting
-        else:
-            self.status = Status.in_progress
-
-        countInProgress = statuses.count(Status.in_progress) / 2
-        countFinished = statuses.count(Status.finished)
-        self.progress = int((countInProgress + countFinished) * 100 / len(statuses))
+    status = Column(Enum(Status, create_constraint=False, native_enum=False), default=Status.awaiting)
+    progress = Column(Numeric, default=0)
 
     def __repr__(self):
         return "<task %r>" % self.name
