@@ -80,6 +80,10 @@ class Task(BaseModel):
                                  secondaryjoin=id == prerequisites.c.task_b_id,
                                  )
 
+    @property
+    def prerequisites_ids(self):
+        return [pr.id for pr in self.prerequisites]
+        
     """
     # save from where has been forked
     parent_id = Column(UUID(as_uuid=True), ForeignKey("task.id"))

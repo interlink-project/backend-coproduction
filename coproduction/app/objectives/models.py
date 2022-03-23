@@ -78,6 +78,10 @@ class Objective(BaseModel):
                                  secondaryjoin=id == prerequisites.c.objective_b_id,
                                  )
 
+    @property
+    def prerequisites_ids(self):
+        return [pr.id for pr in self.prerequisites]
+        
     # belongs to a phase
     phase_id = Column(
         UUID(as_uuid=True), ForeignKey("phase.id", ondelete='CASCADE')

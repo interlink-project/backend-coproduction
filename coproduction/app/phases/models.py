@@ -58,6 +58,8 @@ class PhaseMetadata(BaseModel):
 
     objectivemetadatas = relationship(
         "ObjectiveMetadata", back_populates="phasemetadata")
+    
+    # phases = relationship("Phase", back_populates="phasemetadata")
 
     @property
     def prerequisites_ids(self):
@@ -83,6 +85,11 @@ class Phase(BaseModel):
         UUID(as_uuid=True), ForeignKey("coproductionprocess.id", ondelete='CASCADE')
     )
     coproductionprocess = relationship("CoproductionProcess", back_populates="phases")
+
+    # phasemetadata_id = Column(
+    #     UUID(as_uuid=True), ForeignKey("phasemetadata.id", ondelete='SET NULL')
+    # )
+    # phasemetadata = relationship("PhaseMetadata", back_populates="phases")
 
     def __repr__(self):
         return "<Phase %r>" % self.name
