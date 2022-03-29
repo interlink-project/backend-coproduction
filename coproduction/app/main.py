@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from starlette.middleware.cors import CORSMiddleware
 
-from app.api.api_v1 import api_router, team_management_router
+from app.api.api_v1 import api_router
 from app.config import settings
 from app.translations import RequestContextMiddleware
 
@@ -34,7 +34,6 @@ if settings.BACKEND_CORS_ORIGINS:
 
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
-app.include_router(team_management_router, prefix=settings.API_V1_STR)
 
 
 ###################

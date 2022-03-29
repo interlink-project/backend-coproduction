@@ -7,7 +7,7 @@ from typing_extensions import Annotated
 
 from app.config import settings
 from app.general.utils.AllOptional import AllOptional
-
+from app.roles.schemas import RoleBase, RoleOut, ExceptionOut
 
 class CoproductionProcessBase(BaseModel):
     name: str
@@ -21,6 +21,10 @@ class CoproductionProcessBase(BaseModel):
 
 class CoproductionProcessCreate(CoproductionProcessBase):
     team_id: uuid.UUID
+    roles: Optional[List[RoleBase]]
+
+    class Config:
+        arbitrary_types_allowed = True
 
 class CoproductionProcessPatch(CoproductionProcessCreate):
     name:  Optional[str]
@@ -41,6 +45,5 @@ class CoproductionProcess(CoproductionProcessBase):
 
 
 class CoproductionProcessOut(CoproductionProcess):
-    acl_id: uuid.UUID
     phases_count: Optional[int]
-    logotype_link: Optional[str]
+    logotype_link: Optional[str] 

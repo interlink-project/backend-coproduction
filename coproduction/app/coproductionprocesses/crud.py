@@ -1,23 +1,17 @@
-from cmath import phase
 import uuid
-from typing import Any, Dict, Optional, List
+from typing import List, Optional
 
-import requests
+from slugify import slugify
 from sqlalchemy.orm import Session
-from fastapi.exceptions import HTTPException
 
-from app import crud, schemas
-from app.config import settings
+from app import crud, models
 from app.general.utils.CRUDBase import CRUDBase
-from app.models import CoproductionProcess, CoproductionSchema, Team
+from app.models import CoproductionProcess, Team, Role, User
+from app.roles.crud import exportCrud as exportRoleCrud
+from app.roles.models import AdministratorRole, DefaultRole, UnauthenticatedRole
 from app.schemas import CoproductionProcessCreate, CoproductionProcessPatch
-from app.initial_data import DEFAULT_SCHEMA_NAME
-from app.memberships.models import Membership
-from app import models, schemas
-from slugify import slugify
-from app.coproductionschemas.crud import exportCrud as schemas_crud
+from sqlalchemy import or_
 
-from slugify import slugify
 
 class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessCreate, CoproductionProcessPatch]):
     def get_by_name(self, db: Session, name: str) -> Optional[Team]:
@@ -26,26 +20,21 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
     def get_by_artefact(self, db: Session, artefact_id: uuid.UUID) -> Optional[CoproductionProcess]:
         return db.query(CoproductionProcess).filter(CoproductionProcess.artefact_id == artefact_id).first()
 
-    def get_multi_by_user(self, db: Session, user_id: str) -> Optional[List[CoproductionProcess]]:
+    def get_multi_by_user(self, db: Session, user: User) -> Optional[List[CoproductionProcess]]:
+        team_ids = user.team_ids
+        print(team_ids)
         return db.query(
             CoproductionProcess
         ).join(
-            CoproductionProcess.teams
+            CoproductionProcess.roles
         ).filter(
-            Team.id == Membership.team_id,
-        ).filter(
-            Membership.user_id == user_id,
+            or_(
+                Role.users.any(User.id.in_([user.id])),
+                Role.teams.any(Team.id.in_(team_ids))
+            )
         ).all()
 
-
-    def add_team(self, db: Session, coproductionprocess: CoproductionProcess, team: models.Team):
-        coproductionprocess.teams.append(team)
-        db.commit()
-        db.refresh(coproductionprocess)
-        return coproductionprocess
-        
-    def create(self, db: Session, *, coproductionprocess: CoproductionProcessCreate, creator: models.User) -> CoproductionProcess:
-        team = crud.team.get(db=db, id=coproductionprocess.team_id)
+    def create(self, db: Session, *, coproductionprocess: CoproductionProcessCreate, creator: models.User, team: models.Team) -> CoproductionProcess:
         db_obj = CoproductionProcess(
             artefact_id=coproductionprocess.artefact_id,
             # uses postgres
@@ -58,11 +47,31 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
             # relations
             creator=creator,
         )
-        db_obj.teams.append(team)
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
-        crud.acl.create(db=db, coproductionprocess=db_obj)
+
+        # Add mandatory roles
+        data = AdministratorRole.dict()
+        admin_role = models.Role(**data, coproductionprocess=db_obj, perms_editable=False,
+                                 meta_editable=False, deletable=False, selectable=True)
+        db.add(admin_role)
+
+        data = UnauthenticatedRole.dict()
+        db_role = models.Role(**data, coproductionprocess=db_obj, perms_editable=True,
+                              meta_editable=False, deletable=False, selectable=False)
+        db.add(db_role)
+
+        data = DefaultRole.dict()
+        default_role = models.Role(**data, coproductionprocess=db_obj, perms_editable=True,
+                                   meta_editable=False, deletable=False, selectable=True)
+        db.add(default_role)
+
+        # Set the main team as admin
+        exportRoleCrud.add_team(db=db, role=admin_role, team=team)
+
+        db_obj.default_role = default_role
+        db.commit()
         db.refresh(db_obj)
         return db_obj
 
@@ -77,14 +86,14 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                     language=language
                 )
 
-                ## Add new phase object and the prerequisites for later loop
+                #  Add new phase object and the prerequisites for later loop
                 name = phasemetadata.name_translations[language]
                 total_key = "phase-" + slugify(name)
                 total[total_key] = {
                     "prerequisites": ["phase-" + slugify(prereq.name) for prereq in phasemetadata.prerequisites],
                     "newObj": db_phase,
                 }
-                
+
                 if hasattr(phasemetadata, "objectivemetadatas") and phasemetadata.objectivemetadatas:
                     for objectivemetadata in phasemetadata.objectivemetadatas:
                         db_obj = crud.objective.create_from_metadata(
@@ -94,7 +103,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                             language=language
                         )
 
-                        ## Add new objective object and the prerequisites for later loop
+                        #  Add new objective object and the prerequisites for later loop
                         name = objectivemetadata.name_translations[language]
                         total_key = "objective-" + slugify(name)
                         total[total_key] = {
@@ -110,7 +119,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                                     objective_id=db_obj.id,
                                     language=language
                                 )
-                                ## Add new task object and the prerequisites for later loop
+                                #  Add new task object and the prerequisites for later loop
                                 name = taskmetadata.name_translations[language]
                                 total_key = "task-" + slugify(name)
                                 total[total_key] = {
@@ -128,21 +137,24 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                 entry = total["phase-" + slugify(new_phase.name)]
                 for prerequisite_name in entry["prerequisites"]:
                     prerequisite = total[prerequisite_name]["newObj"]
-                    crud.phase.add_prerequisite(db=db, phase=new_phase, prerequisite=prerequisite)
+                    crud.phase.add_prerequisite(
+                        db=db, phase=new_phase, prerequisite=prerequisite)
 
                 # objectives
                 for new_objective in new_phase.objectives:
                     entry = total["objective-" + slugify(new_objective.name)]
                     for prerequisite_name in entry["prerequisites"]:
                         prerequisite = total[prerequisite_name]["newObj"]
-                        crud.objective.add_prerequisite(db=db, objective=new_objective, prerequisite=prerequisite)
+                        crud.objective.add_prerequisite(
+                            db=db, objective=new_objective, prerequisite=prerequisite)
 
                     # objectives
                     for new_task in new_objective.tasks:
                         entry = total["task-" + slugify(new_task.name)]
                         for prerequisite_name in entry["prerequisites"]:
                             prerequisite = total[prerequisite_name]["newObj"]
-                            crud.task.add_prerequisite(db=db, task=new_task, prerequisite=prerequisite)
+                            crud.task.add_prerequisite(
+                                db=db, task=new_task, prerequisite=prerequisite)
         else:
             print("SCHEMA HAS NO PHASES")
 
@@ -157,7 +169,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
     def check_perm(self, db: Session, user: models.User, object, perm):
         return True
-        
+
     def can_read(self, db: Session, user, object):
         return self.check_perm(db=db, user=user, object=object, perm="retrieve")
 

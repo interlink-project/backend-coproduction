@@ -6,8 +6,7 @@ from app.models import Team
 from app.schemas import TeamCreate, TeamPatch
 import uuid
 from app import models
-from app.memberships.crud import exportCrud as memberships_crud
-from app.acl.crud import exportRoleCrud as roles_crud
+from app.users.crud import exportCrud as users_crud
 from app import schemas
 
 class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
@@ -17,13 +16,7 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
     def get_multi_by_user(self, db: Session, user_id: str) -> Optional[Team]:
         return db.query(
             Team,
-        ).filter(
-            Team.id == models.Membership.team_id,
-        ).filter(
-            models.Membership.user_id == models.User.id,
-        ).filter(
-            models.User.id == user_id,
-        ).all()
+        ).filter(Team.users.any(models.User.id.in_([user_id]))).all()
 
     def create(self, db: Session, team: TeamCreate, creator: models.User) -> Team:
         db_obj = Team(
@@ -35,8 +28,9 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
         db.commit()
 
         for user_id in team.user_ids:
-            memberships_crud.create(db=db, membership=schemas.MembershipCreate(team_id=db_obj.id, user_id=user_id))
-
+            if user := users_crud.get(db=db, id=user_id):
+                db_obj.users.append(user)
+        db.commit()
         db.refresh(db_obj)
         return db_obj
         

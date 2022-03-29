@@ -9,13 +9,12 @@ from app.api.api_v1 import (
     assets,
     coproductionprocesses,
     coproductionschemas,
-    memberships,
     objectives,
     phases,
     tasks,
     teams,
-    acls,
-    users
+    users,
+    roles
 )
 from app.config import settings
 from app.general import deps
@@ -32,26 +31,23 @@ api_router.include_router(coproductionschemas.router,
 
 api_router.include_router(coproductionprocesses.router,
                           prefix="/coproductionprocesses", tags=["coproductionprocesses"])
-api_router.include_router(acls.router,
-                          prefix="/acl", tags=["coproductionprocesses"])
+
 api_router.include_router(phases.router,
-                          prefix="/phases", tags=["coproduction"])
+                          prefix="/phases", tags=["tree"])
 api_router.include_router(objectives.router,
                           prefix="/objectives", tags=["tree"])
 api_router.include_router(tasks.router,
                           prefix="/tasks", tags=["tree"])
 api_router.include_router(assets.router,
-                          prefix="/assets", tags=["assets"])
+                          prefix="/assets", tags=["tree"])
 
-team_management_router = APIRouter()
-team_management_router.include_router(teams.router,
+api_router.include_router(teams.router,
                           prefix="/teams", tags=["teammanagement"])
 
-team_management_router.include_router(memberships.router,
-                          prefix="/memberships", tags=["teammanagement"])
-
-team_management_router.include_router(users.router,
-                          prefix="/users", tags=["users"])
+api_router.include_router(roles.router,
+                          prefix="/roles", tags=["teammanagement"])
+api_router.include_router(users.router,
+                          prefix="/users", tags=["teammanagement"])
 
 @api_router.get("/")
 def main():

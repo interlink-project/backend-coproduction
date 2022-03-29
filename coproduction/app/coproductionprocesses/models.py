@@ -12,18 +12,16 @@ from sqlalchemy import (
     String,
     Table,
     Text,
-    
+    func
 )
+from sqlalchemy_utils import aggregated
 from sqlalchemy.dialects.postgresql import HSTORE, UUID
 from sqlalchemy.orm import relationship, object_session
 from app import models
 from app.general.db.base_class import Base as BaseModel
 from app.config import settings
+from app.roles.models import Role
 
-association_table = Table('association_team_process', BaseModel.metadata,
-                          Column('team_id', ForeignKey('team.id'), primary_key=True),
-                          Column('coproductionprocess_id', ForeignKey('coproductionprocess.id'), primary_key=True))
-                  
 class CoproductionProcess(BaseModel):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
@@ -35,6 +33,10 @@ class CoproductionProcess(BaseModel):
     idea = Column(Text, nullable=True)
     organization = Column(Text, nullable=True)
     challenges = Column(Text, nullable=True)
+
+    @aggregated('phases', Column(Integer))
+    def phases_count(self):
+        return func.count('1')
 
     phases = relationship(
         "Phase", back_populates="coproductionprocess")
@@ -48,20 +50,12 @@ class CoproductionProcess(BaseModel):
     )
     creator = relationship("User", back_populates="created_coproductionprocesses")
 
-    # worked by
-    teams = relationship("Team", secondary=association_table, back_populates="coproductionprocesses")
-
     # ACL
-    acl = relationship("ACL", back_populates="coproductionprocess", uselist=False)
+    roles = relationship('Role', foreign_keys=[Role.coproductionprocess_id], back_populates='coproductionprocess')
+
+    default_role_id = Column(UUID(as_uuid=True), ForeignKey('role.id', use_alter=True, ondelete='SET NULL'))
+    default_role = relationship('Role', foreign_keys=[default_role_id], post_update=True)
 
     @property
     def logotype_link(self):
         return settings.COMPLETE_SERVER_NAME + self.logotype if self.logotype else ""
-
-    @property
-    def acl_id(self):
-        return self.acl.id
-    
-    @hybrid_property
-    def phases_count(self):
-        return object_session(self).query(models.Phase).filter(models.Phase.coproductionprocess_id==self.id).count()

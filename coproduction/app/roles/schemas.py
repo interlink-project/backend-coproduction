@@ -11,7 +11,7 @@ class ExceptionBase(BaseModel):
     grant: bool
 
 class ExceptionCreate(ExceptionBase):
-    acl_id: uuid.UUID
+    coproductionprocess_id: uuid.UUID
     role_id: uuid.UUID
     # asset_id
 
@@ -36,10 +36,10 @@ class ExceptionOut(Exception):
 class RoleBase(BaseModel):
     name: str
     description: str
-    permissions: List[Any]
+    permissions: Optional[List[Any]]
 
 class RoleCreate(RoleBase):
-    acl_id: uuid.UUID
+    coproductionprocess_id: uuid.UUID
 
 class RolePatch(BaseModel):
     name: Optional[str]
@@ -50,7 +50,8 @@ class Role(RoleBase):
     id: uuid.UUID
     created_at: datetime
     updated_at: Optional[datetime]
-    membership_ids: List[uuid.UUID]
+    # team_ids: List[uuid.UUID]
+    # user_ids: List[str]
 
     perms_editable: bool
     meta_editable: bool
@@ -62,33 +63,4 @@ class Role(RoleBase):
 
 
 class RoleOut(Role):
-    acl_id: uuid.UUID
-
-#########
-
-class ACLBase(BaseModel):
     coproductionprocess_id: uuid.UUID
-    
-class ACLCreate(ACLBase):
-    roles: Optional[List[RoleBase]]
-
-    class Config:
-        arbitrary_types_allowed = True
-
-class ACLPatch(ACLBase, metaclass=AllOptional):
-    pass
-
-
-class ACL(ACLBase):
-    id: uuid.UUID
-    created_at: datetime
-    updated_at: Optional[datetime]
-    
-    class Config:
-        orm_mode = True
-
-
-class ACLOut(ACL):
-    roles: List[RoleOut]
-    exceptions: List[ExceptionOut]
-    permissions: list

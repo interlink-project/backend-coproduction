@@ -41,7 +41,7 @@ def list_my_coproductionprocesses(
     """
     if not crud.coproductionprocess.can_list(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    return crud.coproductionprocess.get_multi_by_user(db, user_id=current_user.id)
+    return crud.coproductionprocess.get_multi_by_user(db, user=current_user)
 
 
 @router.post("", response_model=schemas.CoproductionProcessOutFull)
@@ -56,10 +56,11 @@ def create_coproductionprocess(
     """
     if not crud.coproductionprocess.can_create(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    coproductionprocess = crud.coproductionprocess.create(
-        db=db, coproductionprocess=coproductionprocess_in, creator=current_user)
-    return coproductionprocess
-
+    if team := crud.team.get(db=db, id=coproductionprocess_in.team_id):
+        coproductionprocess = crud.coproductionprocess.create(
+            db=db, coproductionprocess=coproductionprocess_in, creator=current_user, team=team)
+        return coproductionprocess
+    raise HTTPException(status_code=400, detail="Team does not exist")
 
 @router.post("/{id}/logotype", response_model=schemas.CoproductionProcessOutFull)
 async def set_logotype(
@@ -176,27 +177,3 @@ def get_coproductionprocess_coproductionschema(
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return coproductionprocess.phases
 
-
-class TeamIn(BaseModel):
-    team_id: uuid.UUID
-
-@router.post("/{id}/add_team")
-def add_team(
-    *,
-    db: Session = Depends(deps.get_db),
-    id: uuid.UUID,
-    team_in: TeamIn,
-    current_user: dict = Depends(deps.get_current_active_user),
-) -> Any:
-    """
-    Add roles for team
-    """
-    coproductionprocess = crud.coproductionprocess.get(db=db, id=id)
-    if not coproductionprocess:
-        raise HTTPException(status_code=404, detail="CoproductionProcess not found")
-    
-    team = crud.team.get(db=db, id=team_in.team_id)
-    if not team:
-        raise HTTPException(status_code=400, detail="Membership not found")
-    
-    return crud.coproductionprocess.add_team(db=db, coproductionprocess=coproductionprocess, team=team)
