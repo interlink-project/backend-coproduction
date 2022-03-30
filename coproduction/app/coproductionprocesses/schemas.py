@@ -20,7 +20,7 @@ class CoproductionProcessBase(BaseModel):
     artefact_id: Optional[uuid.UUID]
 
 class CoproductionProcessCreate(CoproductionProcessBase):
-    team_id: uuid.UUID
+    team_id: Optional[uuid.UUID]
     roles: Optional[List[RoleBase]]
 
     class Config:
@@ -28,7 +28,6 @@ class CoproductionProcessCreate(CoproductionProcessBase):
 
 class CoproductionProcessPatch(CoproductionProcessCreate):
     name:  Optional[str]
-    team_id: Optional[uuid.UUID]
     logotype: Optional[str]
 
 

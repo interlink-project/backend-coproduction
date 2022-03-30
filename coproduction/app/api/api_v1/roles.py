@@ -36,6 +36,8 @@ def switch_role(
 
     if not user and not team:
         raise HTTPException(status_code=400, detail="Please, specify a team or a user")
+    if user and team:
+        raise HTTPException(status_code=400, detail="Please, specify only a team or a user")
 
     new_role = crud.role.get(db=db, id=switch_in.new_role)
     old_role = crud.role.get(db=db, id=switch_in.old_role)
@@ -43,7 +45,7 @@ def switch_role(
         raise HTTPException(status_code=400, detail="At least one of the roles does not exist")
     
     if new_role.coproductionprocess_id != old_role.coproductionprocess_id:
-        raise HTTPException(status_code=400, detail="Roles do not belong to the same process")
+        raise HTTPException(status_code=400, detail="Creators role can not be modified")
     if old_role.coproductionprocess.creator_id == switch_in.user_id:
         raise HTTPException(status_code=400, detail="Role of the creator can not be modified")
 
@@ -143,7 +145,48 @@ def add_team(
     """
     if role := crud.role.get(db=db, id=id):
         if team := crud.team.get(db=db, id=team_in.team_id):
-            return crud.role.add_team(db=db, role=role, team=team)
+            crud.role.add_team(db=db, role=role, team=team)
+            return True
+        raise HTTPException(status_code=400, detail="Team not found")
+    raise HTTPException(status_code=404, detail="Role not found")
+
+
+@router.post("/{id}/remove_team")
+def remove_team(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: uuid.UUID,
+    team_in: TeamIn,
+    current_user: dict = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Add team to role
+    """
+    if role := crud.role.get(db=db, id=id):
+        if team := crud.team.get(db=db, id=team_in.team_id):
+            crud.role.remove_team(db=db, role=role, team=team)
+            return True
         raise HTTPException(status_code=400, detail="Team not found")
     raise HTTPException(status_code=404, detail="Role not found")
     
+    
+class UserIn(BaseModel):
+    user_id: str
+
+@router.post("/{id}/remove_user")
+def remove_user(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: uuid.UUID,
+    user_in: UserIn,
+    current_user: dict = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Add user to role
+    """
+    if role := crud.role.get(db=db, id=id):
+        if user := crud.user.get(db=db, id=user_in.user_id):
+            crud.role.remove_user(db=db, role=role, user=user)
+            return True
+        raise HTTPException(status_code=400, detail="User not found")
+    raise HTTPException(status_code=404, detail="Role not found")

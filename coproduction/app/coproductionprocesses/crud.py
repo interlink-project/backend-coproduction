@@ -68,7 +68,9 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         db.add(default_role)
 
         # Set the main team as admin
-        exportRoleCrud.add_team(db=db, role=admin_role, team=team)
+        exportRoleCrud.add_user(db=db, role=admin_role, user=creator)
+        if team:
+            exportRoleCrud.add_team(db=db, role=admin_role, team=team)
 
         db_obj.default_role = default_role
         db.commit()
@@ -162,6 +164,9 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
     def add_team(self, db: Session, coproductionprocess: models.CoproductionProcess, team: models.Team):
         return exportRoleCrud.add_team(db=db, role=coproductionprocess.default_role, team=team)
+
+    def add_user(self, db: Session, coproductionprocess: models.CoproductionProcess, user: models.User):
+        return exportRoleCrud.add_user(db=db, role=coproductionprocess.default_role, user=user)
 
     # CRUD Permissions
     def can_create(self, user):

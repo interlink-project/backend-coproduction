@@ -24,6 +24,18 @@ class CRUDRole(CRUDBase[Role, schemas.RoleCreate, schemas.RolePatch]):
         db.commit()
         db.refresh(role)
         return role
+    
+    def remove_team(self, db: Session, role: Role, team: models.Team):
+        role.teams.remove(team)
+        db.commit()
+        db.refresh(role)
+        return role
+    
+    def remove_user(self, db: Session, role: Role, user: models.User):
+        role.users.remove(user)
+        db.commit()
+        db.refresh(role)
+        return role
 
     # CRUD Permissions
     def can_create(self, user):

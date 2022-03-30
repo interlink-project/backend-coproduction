@@ -56,11 +56,12 @@ def create_coproductionprocess(
     """
     if not crud.coproductionprocess.can_create(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    if team := crud.team.get(db=db, id=coproductionprocess_in.team_id):
-        coproductionprocess = crud.coproductionprocess.create(
-            db=db, coproductionprocess=coproductionprocess_in, creator=current_user, team=team)
-        return coproductionprocess
-    raise HTTPException(status_code=400, detail="Team does not exist")
+    team = None
+    if coproductionprocess_in.team_id and not (team := crud.team.get(db=db, id=coproductionprocess_in.team_id)):
+        raise HTTPException(status_code=400, detail="Team does not exist")
+    return crud.coproductionprocess.create(
+        db=db, coproductionprocess=coproductionprocess_in, creator=current_user, team=team)
+    
 
 @router.post("/{id}/logotype", response_model=schemas.CoproductionProcessOutFull)
 async def set_logotype(
@@ -102,7 +103,6 @@ async def set_schema(
 class TeamIn(BaseModel):
     team_id: uuid.UUID
 
-
 @router.post("/{id}/add_team")
 def add_team(
     *,
@@ -116,10 +116,31 @@ def add_team(
     """
     if coproductionprocess := crud.coproductionprocess.get(db=db, id=id):
         if team := crud.team.get(db=db, id=team_in.team_id):
-            return crud.coproductionprocess.add_team(db=db, coproductionprocess=coproductionprocess, team=team)
+            crud.coproductionprocess.add_team(db=db, coproductionprocess=coproductionprocess, team=team)
+            return True
         raise HTTPException(status_code=400, detail="Team not found")
     raise HTTPException(status_code=404, detail="Coproductionprocess not found")
-    
+
+class UserIn(BaseModel):
+    user_id: str
+
+@router.post("/{id}/add_user")
+def add_user(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: uuid.UUID,
+    user_in: UserIn,
+    current_user: dict = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Add user to coproductionprocess (with default role)
+    """
+    if coproductionprocess := crud.coproductionprocess.get(db=db, id=id):
+        if user := crud.user.get(db=db, id=user_in.user_id):
+            crud.coproductionprocess.add_user(db=db, coproductionprocess=coproductionprocess, user=user)
+            return True
+        raise HTTPException(status_code=400, detail="User not found")
+    raise HTTPException(status_code=404, detail="Coproductionprocess not found")
 
 @router.put("/{id}", response_model=schemas.CoproductionProcessOutFull)
 def update_coproductionprocess(
