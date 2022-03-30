@@ -5,6 +5,8 @@ from typing import Any, List, Optional
 
 from app.general.utils.AllOptional import AllOptional
 from pydantic import BaseModel
+from app.users.schemas import UserOut
+from app.teams.schemas import TeamOut
 
 class ExceptionBase(BaseModel):
     permission: Any
@@ -64,3 +66,5 @@ class Role(RoleBase):
 
 class RoleOut(Role):
     coproductionprocess_id: uuid.UUID
+    users: List[UserOut]
+    teams: List[TeamOut]

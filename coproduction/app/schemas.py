@@ -59,5 +59,10 @@ class CoproductionSchemaOutFull(CoproductionSchemaOut):
 class CoproductionProcessOutFull(CoproductionProcessOut):
     # teams: Optional[List[TeamOutFull]]
     default_role_id: uuid.UUID
-    roles: List[RoleOut]
+    # roles: List[RoleOut]
     exceptions: List[ExceptionOut]
+
+
+class RoleOutFull(RoleOut):
+    users: List[UserOutFull]
+    teams: List[TeamOutFull]

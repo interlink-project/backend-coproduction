@@ -8,11 +8,7 @@ from app.general.db.base_class import Base as BaseModel
 from app.config import settings
 from app.users.models import User
 from sqlalchemy.ext.associationproxy import association_proxy
-
-user_team_association_table = Table('association_user_team', BaseModel.metadata,
-                                    Column('user_id', ForeignKey('user.id'), primary_key=True),
-                                    Column('team_id', ForeignKey('team.id'), primary_key=True))
-
+from app.tables import user_team_association_table, team_role_association_table
 
 class Team(BaseModel):
     """Team Class contains standard information for a Team."""
@@ -33,6 +29,11 @@ class Team(BaseModel):
         secondary=user_team_association_table,
         backref="teams")
     user_ids = association_proxy('users', 'id')
+
+    roles = relationship(
+        "Role",
+        secondary=team_role_association_table,
+        back_populates="teams")
 
     @property
     def logotype_link(self):

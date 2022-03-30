@@ -160,6 +160,9 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
         return coproductionprocess
 
+    def add_team(self, db: Session, coproductionprocess: models.CoproductionProcess, team: models.Team):
+        return exportRoleCrud.add_team(db=db, role=coproductionprocess.default_role, team=team)
+
     # CRUD Permissions
     def can_create(self, user):
         return True

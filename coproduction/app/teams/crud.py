@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, List
 
 from sqlalchemy.orm import Session
 from app.general.utils.CRUDBase import CRUDBase
@@ -7,16 +7,31 @@ from app.schemas import TeamCreate, TeamPatch
 import uuid
 from app import models
 from app.users.crud import exportCrud as users_crud
-from app import schemas
+from fastapi_pagination.ext.sqlalchemy import paginate
 
 class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
+    def get_multi_filtered(
+        self, db: Session, coproductionprocess_id: uuid.UUID
+    ) -> List[Team]:
+        queries = []
+        # if coproductionprocess_id:
+        #     queries.append(Team.roles.any(models.Role.id.in_([coproductionprocess_id])))
+        # else:
+        #     queries.append(Team.is_public == False)
+        return paginate(db.query(Team).filter(*queries))
+
     def get_by_name(self, db: Session, name: str) -> Optional[Team]:
         return db.query(Team).filter(Team.name == name).first()
 
-    def get_multi_by_user(self, db: Session, user_id: str) -> Optional[Team]:
+    def get_multi_by_user(self, db: Session, user_id: str) -> Optional[List[Team]]:
         return db.query(
             Team,
         ).filter(Team.users.any(models.User.id.in_([user_id]))).all()
+    
+    # def get_multi_by_process(self, db: Session, coproductionprocess_id: uuid.UUID) -> Optional[List[Team]]:
+    #     return db.query(
+    #         Team,
+    #     ).filter(Team.roles.any(models.Role.id.in_([coproductionprocess_id]))).all()
 
     def create(self, db: Session, team: TeamCreate, creator: models.User) -> Team:
         db_obj = Team(

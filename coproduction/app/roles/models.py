@@ -23,16 +23,7 @@ from app.general.db.base_class import Base as BaseModel
 from app.teams.models import Team
 from app.users.models import User
 from app.permissions import Permissions, permissions_list
-
-team_association_table = Table('association_team_role', BaseModel.metadata,
-                               Column('team_id', ForeignKey(
-                                   'team.id'), primary_key=True),
-                               Column('role_id', ForeignKey('role.id'), primary_key=True))
-
-user_association_table = Table('association_user_role', BaseModel.metadata,
-                               Column('user_id', ForeignKey(
-                                   'user.id'), primary_key=True),
-                               Column('role_id', ForeignKey('role.id'), primary_key=True))
+from app.tables import team_role_association_table, user_association_table
 
 AdministratorRole = schemas.RoleBase(**{
     "name": "Administrator",
@@ -78,8 +69,8 @@ class Role(BaseModel):
 
     teams = relationship(
         "Team",
-        secondary=team_association_table,
-        backref="roles")
+        secondary=team_role_association_table,
+        back_populates="roles")
     team_ids = association_proxy('teams', 'id')
 
     # @hybrid_property

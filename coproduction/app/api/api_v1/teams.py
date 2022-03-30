@@ -1,7 +1,7 @@
 import os
 from typing import Any, List, Optional
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.functions import user
 
@@ -9,24 +9,18 @@ from app import crud, models, schemas
 from app.general import deps
 import aiofiles
 from slugify import slugify
+from fastapi_pagination import Page
 
 router = APIRouter()
 
 
-@router.get("", response_model=List[schemas.TeamOut])
+@router.get("", response_model=Page[schemas.TeamOutFull])
 def list_teams(
     db: Session = Depends(deps.get_db),
-    skip: int = 0,
-    limit: int = 100,
     current_user: Optional[models.User] = Depends(deps.get_current_user),
+    coproductionprocess_id: uuid.UUID = Query(None),
 ) -> Any:
-    """
-    Retrieve teams.
-    """
-    if not crud.team.can_list(current_user):
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-    teams = crud.team.get_multi(db, skip=skip, limit=limit)
-    return teams
+    return crud.team.get_multi_filtered(db, coproductionprocess_id)
 
 @router.get("/mine", response_model=List[schemas.TeamOutFull])
 def list_my_teams(

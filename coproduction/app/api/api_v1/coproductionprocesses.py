@@ -99,6 +99,27 @@ async def set_schema(
         raise HTTPException(status_code=404, detail="Coproduction schema not found")
     raise HTTPException(status_code=404, detail="Coproduction process not found")
 
+class TeamIn(BaseModel):
+    team_id: uuid.UUID
+
+
+@router.post("/{id}/add_team")
+def add_team(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: uuid.UUID,
+    team_in: TeamIn,
+    current_user: dict = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Add team to coproductionprocess (with default role)
+    """
+    if coproductionprocess := crud.coproductionprocess.get(db=db, id=id):
+        if team := crud.team.get(db=db, id=team_in.team_id):
+            return crud.coproductionprocess.add_team(db=db, coproductionprocess=coproductionprocess, team=team)
+        raise HTTPException(status_code=400, detail="Team not found")
+    raise HTTPException(status_code=404, detail="Coproductionprocess not found")
+    
 
 @router.put("/{id}", response_model=schemas.CoproductionProcessOutFull)
 def update_coproductionprocess(

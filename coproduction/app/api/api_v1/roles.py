@@ -69,7 +69,7 @@ def create_role(
     """
     return crud.role.create(db=db, role=role)
 
-@router.get("", response_model=List[schemas.RoleOut])
+@router.get("", response_model=List[schemas.RoleOutFull])
 def get_roles(
     *,
     db: Session = Depends(deps.get_db),
@@ -83,7 +83,7 @@ def get_roles(
         return process.roles
     raise HTTPException(status_code=404, detail="Coproductionprocess not found")
 
-@router.get("/{id}", response_model=schemas.RoleOut)
+@router.get("/{id}", response_model=schemas.RoleOutFull)
 def get_role(
     *,
     db: Session = Depends(deps.get_db),
@@ -97,7 +97,7 @@ def get_role(
         return role
     raise HTTPException(status_code=404, detail="Role not found")
 
-@router.put("/{id}", response_model=schemas.RoleOut)
+@router.put("/{id}", response_model=schemas.RoleOutFull)
 def update_role(
     *,
     db: Session = Depends(deps.get_db),
