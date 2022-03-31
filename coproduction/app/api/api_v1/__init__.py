@@ -8,7 +8,6 @@ from app import models, schemas
 from app.api.api_v1 import (
     assets,
     coproductionprocesses,
-    coproductionschemas,
     objectives,
     phases,
     tasks,
@@ -25,9 +24,6 @@ def list_assets(
     current_user: Optional[models.User] = Depends(deps.get_current_active_user),
 ) -> Any:
     return current_user
-
-api_router.include_router(coproductionschemas.router,
-                          prefix="/coproductionschemas", tags=["coproductionschemas"])
 
 api_router.include_router(coproductionprocesses.router,
                           prefix="/coproductionprocesses", tags=["coproductionprocesses"])

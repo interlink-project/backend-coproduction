@@ -3,13 +3,16 @@ import uuid
 from typing import Any, List, Optional
 
 import aiofiles
+import requests
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from pydantic import BaseModel
 from slugify import slugify
 from sqlalchemy.orm import Session
 
-from app import crud, schemas, models
+from app import crud, models, schemas
+from app.config import settings
 from app.general import deps
-from pydantic import BaseModel
+from app.translations import DEFAULT_LANGUAGE
 
 router = APIRouter()
 
@@ -61,7 +64,7 @@ def create_coproductionprocess(
         raise HTTPException(status_code=400, detail="Team does not exist")
     return crud.coproductionprocess.create(
         db=db, coproductionprocess=coproductionprocess_in, creator=current_user, team=team)
-    
+
 
 @router.post("/{id}/logotype", response_model=schemas.CoproductionProcessOutFull)
 async def set_logotype(
@@ -86,22 +89,32 @@ async def set_logotype(
 class CoproductionSchemaSetter(BaseModel):
     coproductionschema_id: uuid.UUID
 
-@router.post("/{id}/set_schema", response_model=schemas.CoproductionProcessOutFull)
+
+@router.post("/{id}/set_schema", response_model=schemas.CoproductionProcessOutFull )
 async def set_schema(
     *,
     id: uuid.UUID,
     db: Session = Depends(deps.get_db),
     schema_setter: CoproductionSchemaSetter,
     current_user: dict = Depends(deps.get_current_user),
+    language: str = DEFAULT_LANGUAGE
 ) -> Any:
     if (coproductionprocess := crud.coproductionprocess.get(db=db, id=id)):
-        if (coproductionschema := crud.coproductionschema.get(db=db, id=schema_setter.coproductionschema_id)):
-            return crud.coproductionprocess.set_schema(db=db, coproductionschema=coproductionschema, coproductionprocess=coproductionprocess)
-        raise HTTPException(status_code=404, detail="Coproduction schema not found")
+        try:
+            coproductionschema = requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/coproductionschemas/{schema_setter.coproductionschema_id}", headers={
+                # "X-API-Key": "secret",
+                "Accept-Language": language
+            }).json()
+        except Exception as e:
+            print(e)
+            raise HTTPException(status_code=404, detail="Coproduction schema not found")
+        return crud.coproductionprocess.set_schema(db=db, coproductionschema=coproductionschema, coproductionprocess=coproductionprocess)
     raise HTTPException(status_code=404, detail="Coproduction process not found")
+
 
 class TeamIn(BaseModel):
     team_id: uuid.UUID
+
 
 @router.post("/{id}/add_team")
 def add_team(
@@ -116,13 +129,16 @@ def add_team(
     """
     if coproductionprocess := crud.coproductionprocess.get(db=db, id=id):
         if team := crud.team.get(db=db, id=team_in.team_id):
-            crud.coproductionprocess.add_team(db=db, coproductionprocess=coproductionprocess, team=team)
+            crud.coproductionprocess.add_team(
+                db=db, coproductionprocess=coproductionprocess, team=team)
             return True
         raise HTTPException(status_code=400, detail="Team not found")
     raise HTTPException(status_code=404, detail="Coproductionprocess not found")
 
+
 class UserIn(BaseModel):
     user_id: str
+
 
 @router.post("/{id}/add_user")
 def add_user(
@@ -137,10 +153,12 @@ def add_user(
     """
     if coproductionprocess := crud.coproductionprocess.get(db=db, id=id):
         if user := crud.user.get(db=db, id=user_in.user_id):
-            crud.coproductionprocess.add_user(db=db, coproductionprocess=coproductionprocess, user=user)
+            crud.coproductionprocess.add_user(
+                db=db, coproductionprocess=coproductionprocess, user=user)
             return True
         raise HTTPException(status_code=400, detail="User not found")
     raise HTTPException(status_code=404, detail="Coproductionprocess not found")
+
 
 @router.put("/{id}", response_model=schemas.CoproductionProcessOutFull)
 def update_coproductionprocess(
@@ -203,7 +221,7 @@ def delete_coproductionprocess(
 # specific
 
 @router.get("/{id}/tree", response_model=Optional[List[schemas.PhaseOutFull]])
-def get_coproductionprocess_coproductionschema(
+def get_coproductionprocess_tree(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
@@ -218,4 +236,3 @@ def get_coproductionprocess_coproductionschema(
     if not crud.coproductionprocess.can_read(db=db, user=current_user, object=coproductionprocess):
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return coproductionprocess.phases
-

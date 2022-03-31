@@ -1,12 +1,11 @@
 import enum
 
 class Permissions(enum.Enum):
-    assets_view = "assets_view"
-    assets_create = "assets_create"
-    assets_update = "assets_update"
-    assets_delete = "assets_delete"
-    acl_update = "acl_update"
-    process_update = "process_update"
+    view_assets = "view_assets"
+    create_assets = "create_assets"
+    delete_assets = "delete_assets"
+    change_access = "change_access"
+    update_settings = "update_settings"
 
 
 permissions_list = [e.value for e in Permissions]

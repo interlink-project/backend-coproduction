@@ -1,3 +1,4 @@
+from multiprocessing.dummy import Value
 import uuid
 from typing import List, Optional
 
@@ -77,89 +78,65 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         db.refresh(db_obj)
         return db_obj
 
-    def set_schema(self, db: Session, coproductionprocess: models.CoproductionProcess, coproductionschema: models.CoproductionSchema, language: str = "en"):
-        if coproductionschema and hasattr(coproductionschema, "phasemetadatas"):
-            total = {}
-            for phasemetadata in coproductionschema.phasemetadatas:
-                db_phase = crud.phase.create_from_metadata(
+    def set_schema(self, db: Session, coproductionprocess: models.CoproductionProcess, coproductionschema: dict, language: str = "en"):
+        total = {}
+        for phasemetadata in coproductionschema.get("phasemetadatas", []):
+            phasemetadata: dict
+            db_phase = crud.phase.create_from_metadata(
+                db=db,
+                phasemetadata=phasemetadata,
+                coproductionprocess_id=coproductionprocess.id,
+            )
+
+            #  Add new phase object and the prerequisites for later loop
+            total[phasemetadata["id"]] = {
+                "type": "phase",
+                "prerequisites_ids": phasemetadata["prerequisites_ids"] or [],
+                "oldId": phasemetadata["id"],
+                "newId": db_phase.id,
+                "newObj": db_phase,
+            }
+
+            for objectivemetadata in phasemetadata.get("objectivemetadatas", []):
+                objectivemetadata: dict
+                db_obj = crud.objective.create_from_metadata(
                     db=db,
-                    phasemetadata=phasemetadata,
-                    coproductionprocess_id=coproductionprocess.id,
-                    language=language
+                    objectivemetadata=objectivemetadata,
+                    phase_id=db_phase.id,
                 )
-
-                #  Add new phase object and the prerequisites for later loop
-                name = phasemetadata.name_translations[language]
-                total_key = "phase-" + slugify(name)
-                total[total_key] = {
-                    "prerequisites": ["phase-" + slugify(prereq.name) for prereq in phasemetadata.prerequisites],
-                    "newObj": db_phase,
+                #  Add new objective object and the prerequisites for later loop
+                total[objectivemetadata["id"]] = {
+                    "type": "objective",
+                    "prerequisites_ids": objectivemetadata["prerequisites_ids"] or [],
+                    "oldId": objectivemetadata["id"],
+                    "newId": db_obj.id,
+                    "newObj": db_obj,
                 }
+                for taskmetadata in objectivemetadata.get("taskmetadatas", []):
+                    db_task = crud.task.create_from_metadata(
+                        db=db,
+                        taskmetadata=taskmetadata,
+                        objective_id=db_obj.id,
+                    )
+                    total[taskmetadata["id"]] = {
+                        "type": "task",
+                        "prerequisites_ids": taskmetadata["prerequisites_ids"] or [],
+                        "oldId": taskmetadata["id"],
+                        "newId": db_task.id,
+                        "newObj": db_task,
+                    }
+           
 
-                if hasattr(phasemetadata, "objectivemetadatas") and phasemetadata.objectivemetadatas:
-                    for objectivemetadata in phasemetadata.objectivemetadatas:
-                        db_obj = crud.objective.create_from_metadata(
-                            db=db,
-                            objectivemetadata=objectivemetadata,
-                            phase_id=db_phase.id,
-                            language=language
-                        )
-
-                        #  Add new objective object and the prerequisites for later loop
-                        name = objectivemetadata.name_translations[language]
-                        total_key = "objective-" + slugify(name)
-                        total[total_key] = {
-                            "prerequisites": ["objective-" + slugify(prereq.name) for prereq in objectivemetadata.prerequisites],
-                            "newObj": db_obj,
-                        }
-
-                        if hasattr(objectivemetadata, "taskmetadatas") and objectivemetadata.taskmetadatas:
-                            for taskmetadata in objectivemetadata.taskmetadatas:
-                                db_task = crud.task.create_from_metadata(
-                                    db=db,
-                                    taskmetadata=taskmetadata,
-                                    objective_id=db_obj.id,
-                                    language=language
-                                )
-                                #  Add new task object and the prerequisites for later loop
-                                name = taskmetadata.name_translations[language]
-                                total_key = "task-" + slugify(name)
-                                total[total_key] = {
-                                    "prerequisites": ["task-" + slugify(prereq.name) for prereq in taskmetadata.prerequisites],
-                                    "newObj": db_task,
-                                }
-                        else:
-                            print("OBJECTIVE HAS NO TASKS")
-                else:
-                    print("PHASE HAS NO OBJECTIVES")
-
-            print(total)
-            # iterate over phases to poblate with prerequisites using total dict
-            for new_phase in coproductionprocess.phases:
-                entry = total["phase-" + slugify(new_phase.name)]
-                for prerequisite_name in entry["prerequisites"]:
-                    prerequisite = total[prerequisite_name]["newObj"]
-                    crud.phase.add_prerequisite(
-                        db=db, phase=new_phase, prerequisite=prerequisite)
-
-                # objectives
-                for new_objective in new_phase.objectives:
-                    entry = total["objective-" + slugify(new_objective.name)]
-                    for prerequisite_name in entry["prerequisites"]:
-                        prerequisite = total[prerequisite_name]["newObj"]
-                        crud.objective.add_prerequisite(
-                            db=db, objective=new_objective, prerequisite=prerequisite)
-
-                    # objectives
-                    for new_task in new_objective.tasks:
-                        entry = total["task-" + slugify(new_task.name)]
-                        for prerequisite_name in entry["prerequisites"]:
-                            prerequisite = total[prerequisite_name]["newObj"]
-                            crud.task.add_prerequisite(
-                                db=db, task=new_task, prerequisite=prerequisite)
-        else:
-            print("SCHEMA HAS NO PHASES")
-
+        for key, element in total.items():
+            for pre_id in element["prerequisites_ids"]:
+                
+                if element["type"] == "phase":
+                    crud.phase.add_prerequisite(db=db, phase=element["newObj"], prerequisite=total[pre_id]["newObj"])
+                if element["type"] == "objective":
+                    crud.objective.add_prerequisite(db=db, objective=element["newObj"], prerequisite=total[pre_id]["newObj"])
+                if element["type"] == "task":
+                    crud.task.add_prerequisite(db=db, task=element["newObj"], prerequisite=total[pre_id]["newObj"])
+                    
         return coproductionprocess
 
     def add_team(self, db: Session, coproductionprocess: models.CoproductionProcess, team: models.Team):

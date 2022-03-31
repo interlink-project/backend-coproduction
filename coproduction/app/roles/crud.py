@@ -6,6 +6,9 @@ from app.general.utils.CRUDBase import CRUDBase
 from app.roles.models import Role
 
 class CRUDRole(CRUDBase[Role, schemas.RoleCreate, schemas.RolePatch]):
+    def get_role_of_user_for_coproductionprocess(self, db: Session, coproductionprocess: models.CoproductionProcess, user: models.User) -> Role:
+        return True
+
     def create(self, db: Session, role: schemas.RoleCreate) -> Role:
         db_role = models.Role(**role.dict())
         db.add(db_role)

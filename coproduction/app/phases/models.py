@@ -1,7 +1,4 @@
 import uuid
-from cmath import pi
-from datetime import datetime, timedelta
-from typing import TypedDict
 from sqlalchemy import (
     Enum,
     Column,
@@ -14,60 +11,18 @@ from sqlalchemy import (
     Numeric,
     func,
 )
-from sqlalchemy.dialects.postgresql import HSTORE, UUID
-from sqlalchemy.orm import backref, reconstructor, relationship
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 from sqlalchemy_utils import aggregated
 
 from app.general.db.base_class import Base as BaseModel
 from app.tasks.models import Status, Task
-from app.translations import translation_hybrid
-
-prerequisites_metadata = Table(
-    'phases_metadata_prerequisites', BaseModel.metadata,
-    Column('phasemetadata_a_id', ForeignKey('phasemetadata.id'), primary_key=True),
-    Column('phasemetadata_b_id', ForeignKey('phasemetadata.id'), primary_key=True)
-)
 
 prerequisites = Table(
     'phase_prerequisites', BaseModel.metadata,
     Column('phase_a_id', ForeignKey('phase.id'), primary_key=True),
     Column('phase_b_id', ForeignKey('phase.id'), primary_key=True)
 )
-
-
-class PhaseMetadata(BaseModel):
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name_translations = Column(HSTORE)
-    description_translations = Column(HSTORE)
-
-    name = translation_hybrid(name_translations)
-    description = translation_hybrid(description_translations)
-
-    # prerequisites
-    prerequisites = relationship("PhaseMetadata", secondary=prerequisites_metadata,
-                                 primaryjoin=id == prerequisites_metadata.c.phasemetadata_a_id,
-                                 secondaryjoin=id == prerequisites_metadata.c.phasemetadata_b_id,
-                                 )
-
-    # or can belong to an schema
-    coproductionschema_id = Column(
-        UUID(as_uuid=True), ForeignKey("coproductionschema.id", ondelete='CASCADE')
-    )
-    coproductionschema = relationship(
-        "CoproductionSchema", back_populates="phasemetadatas")
-
-    objectivemetadatas = relationship(
-        "ObjectiveMetadata", back_populates="phasemetadata")
-    
-    # phases = relationship("Phase", back_populates="phasemetadata")
-
-    @property
-    def prerequisites_ids(self):
-        return [pr.id for pr in self.prerequisites]
-
-    def __repr__(self):
-        return "<PhaseMetadata %r>" % self.name_translations["en"]
-
 
 class Phase(BaseModel):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
