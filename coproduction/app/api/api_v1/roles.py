@@ -85,6 +85,20 @@ def get_roles(
         return process.roles
     raise HTTPException(status_code=404, detail="Coproductionprocess not found")
 
+@router.get("/2")
+def get_roles2(
+    *,
+    db: Session = Depends(deps.get_db),
+    coproductionprocess_id: uuid.UUID = Query(None),
+    current_user: Optional[models.User] = Depends(deps.get_current_user),
+) -> Any:
+    """
+    Get role by ID.
+    """
+    if process := crud.coproductionprocess.get(db=db, id=coproductionprocess_id):
+        return crud.role.get_permissions_of_user_for_coproductionprocess(db=db, coproductionprocess=process, user=current_user)
+    raise HTTPException(status_code=404, detail="Coproductionprocess not found")
+
 @router.get("/{id}", response_model=schemas.RoleOutFull)
 def get_role(
     *,

@@ -14,12 +14,12 @@ from app.general.utils.RowToDict import row2dict
 class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
     def create_from_metadata(self, db: Session, phasemetadata: dict, coproductionprocess_id: uuid.UUID) -> Optional[Phase]:
         creator = PhaseCreate(**phasemetadata, coproductionprocess_id=coproductionprocess_id)
-        return self.create(db=db, phase=creator)
+        return self.create(db=db, phase=creator, commit=False)
 
     def get_by_name(self, db: Session, name: str) -> Optional[Phase]:
         return db.query(Phase).filter(Phase.name == name).first()
 
-    def create(self, db: Session, *, phase: PhaseCreate) -> Phase:
+    def create(self, db: Session, *, phase: PhaseCreate, commit : bool = True) -> Phase:
         db_obj = Phase(
             name=phase.name,
             description=phase.description,
@@ -27,16 +27,18 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
             coproductionprocess_id=phase.coproductionprocess_id,
         )
         db.add(db_obj)
-        db.commit()
-        db.refresh(db_obj)
+        if commit:
+            db.commit()
+            db.refresh(db_obj)
         return db_obj
 
-    def add_prerequisite(self, db: Session, phase: Phase, prerequisite: Phase) -> Phase:
-        if phase.id == prerequisite.id:
+    def add_prerequisite(self, db: Session, phase: Phase, prerequisite: Phase, commit : bool = True) -> Phase:
+        if phase == prerequisite:
             raise Exception("Same object")
         phase.prerequisites.append(prerequisite)
-        db.commit()
-        db.refresh(phase)
+        if commit:
+            db.commit()
+            db.refresh(phase)
         return phase
 
     def remove(self, db: Session, *, id: uuid.UUID) -> Phase:

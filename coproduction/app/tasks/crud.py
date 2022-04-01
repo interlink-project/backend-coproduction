@@ -26,34 +26,46 @@ def calculate_status_and_progress(obj, key):
     return status, progress
 
 class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
-    def create_from_metadata(self, db: Session, taskmetadata: dict, objective_id: uuid.UUID) -> Optional[Task]:
+    def create_from_metadata(self, db: Session, taskmetadata: dict, objective: Objective = None, objective_id: uuid.UUID = None) -> Optional[Task]:
+        if objective and objective_id:
+            raise Exception("Specify only one objective")
+        if not objective and not objective_id:
+            raise Exception("Objective not specified")
         taskmetadata["problemprofiles"] = [pp["id"] for pp in taskmetadata.get("problemprofiles", [])]
         creator = TaskCreate(**taskmetadata, objective_id=objective_id)
-        return self.create(db=db, task=creator)
+        return self.create(db=db, task=creator, objective=objective, commit=False)
 
     def get_by_name(self, db: Session, name: str) -> Optional[Task]:
         return db.query(Task).filter(Task.name == name).first()
 
-    def create(self, db: Session, *, task: TaskCreate) -> Task:
+    def create(self, db: Session, *, task: TaskCreate, objective: Objective = None, commit : bool = True) -> Task:
+        if objective and task.objective_id:
+            raise Exception("Specify only one objective")
+        if not objective and not task.objective_id:
+            raise Exception("Objective not specified")
+        
         db_obj = Task(
             name=task.name,
             description=task.description,
+            objective=objective,
             objective_id=task.objective_id,
             problemprofiles=task.problemprofiles,
             start_date=task.start_date,
             end_date=task.end_date
         )
         db.add(db_obj)
-        db.commit()
-        db.refresh(db_obj)
+        if commit:
+            db.commit()
+            db.refresh(db_obj)
         return db_obj
 
-    def add_prerequisite(self, db: Session, task: Task, prerequisite: Task) -> Task:
-        if task.id == prerequisite.id:
+    def add_prerequisite(self, db: Session, task: Task, prerequisite: Task, commit : bool = True) -> Task:
+        if task == prerequisite:
             raise Exception("Same object")
         task.prerequisites.append(prerequisite)
-        db.commit()
-        db.refresh(task)
+        if commit:
+            db.commit()
+            db.refresh(task)
         return task
 
     def remove(self, db: Session, *, id: uuid.UUID) -> Task:

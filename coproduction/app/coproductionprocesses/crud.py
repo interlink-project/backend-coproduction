@@ -92,8 +92,6 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
             total[phasemetadata["id"]] = {
                 "type": "phase",
                 "prerequisites_ids": phasemetadata["prerequisites_ids"] or [],
-                "oldId": phasemetadata["id"],
-                "newId": db_phase.id,
                 "newObj": db_phase,
             }
 
@@ -102,27 +100,23 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                 db_obj = crud.objective.create_from_metadata(
                     db=db,
                     objectivemetadata=objectivemetadata,
-                    phase_id=db_phase.id,
+                    phase=db_phase,
                 )
                 #  Add new objective object and the prerequisites for later loop
                 total[objectivemetadata["id"]] = {
                     "type": "objective",
                     "prerequisites_ids": objectivemetadata["prerequisites_ids"] or [],
-                    "oldId": objectivemetadata["id"],
-                    "newId": db_obj.id,
                     "newObj": db_obj,
                 }
                 for taskmetadata in objectivemetadata.get("taskmetadatas", []):
                     db_task = crud.task.create_from_metadata(
                         db=db,
                         taskmetadata=taskmetadata,
-                        objective_id=db_obj.id,
+                        objective=db_obj,
                     )
                     total[taskmetadata["id"]] = {
                         "type": "task",
                         "prerequisites_ids": taskmetadata["prerequisites_ids"] or [],
-                        "oldId": taskmetadata["id"],
-                        "newId": db_task.id,
                         "newObj": db_task,
                     }
            
@@ -131,12 +125,14 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
             for pre_id in element["prerequisites_ids"]:
                 
                 if element["type"] == "phase":
-                    crud.phase.add_prerequisite(db=db, phase=element["newObj"], prerequisite=total[pre_id]["newObj"])
+                    crud.phase.add_prerequisite(db=db, phase=element["newObj"], prerequisite=total[pre_id]["newObj"], commit=False)
                 if element["type"] == "objective":
-                    crud.objective.add_prerequisite(db=db, objective=element["newObj"], prerequisite=total[pre_id]["newObj"])
+                    crud.objective.add_prerequisite(db=db, objective=element["newObj"], prerequisite=total[pre_id]["newObj"], commit=False)
                 if element["type"] == "task":
-                    crud.task.add_prerequisite(db=db, task=element["newObj"], prerequisite=total[pre_id]["newObj"])
-                    
+                    crud.task.add_prerequisite(db=db, task=element["newObj"], prerequisite=total[pre_id]["newObj"], commit=False)
+        
+        db.commit()
+        db.refresh(coproductionprocess)
         return coproductionprocess
 
     def add_team(self, db: Session, coproductionprocess: models.CoproductionProcess, team: models.Team):

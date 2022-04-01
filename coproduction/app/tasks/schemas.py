@@ -9,12 +9,12 @@ class TaskBase(BaseModel):
     problemprofiles: list
     name: str
     description: str
-    objective_id: uuid.UUID
     start_date: Optional[date]
     end_date: Optional[date]
+    objective_id: uuid.UUID
 
 class TaskCreate(TaskBase):
-    pass
+    objective_id: Optional[uuid.UUID]
 
 class TaskPatch(TaskBase):
     problemprofiles: Optional[list]

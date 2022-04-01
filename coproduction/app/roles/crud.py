@@ -1,13 +1,32 @@
 from typing import Optional
 from sqlalchemy.orm import Session
+from sqlalchemy import or_, func
 
 from app import models, schemas
 from app.general.utils.CRUDBase import CRUDBase
-from app.roles.models import Role
+from app.models import Role, User, Team
 
 class CRUDRole(CRUDBase[Role, schemas.RoleCreate, schemas.RolePatch]):
-    def get_role_of_user_for_coproductionprocess(self, db: Session, coproductionprocess: models.CoproductionProcess, user: models.User) -> Role:
-        return True
+    def get_permissions_of_user_for_coproductionprocess(self, db: Session, coproductionprocess: models.CoproductionProcess, user: models.User) -> Role:
+        # predominan los individuales
+        if individual_role := db.query(Role).filter(
+                Role.coproductionprocess_id == coproductionprocess.id
+            ).filter(
+                Role.users.any(User.id.in_([user.id]))
+            ).first():
+            return individual_role.permissions
+
+        perms = []
+        for role in db.query(Role).filter(
+                Role.coproductionprocess_id == coproductionprocess.id
+            ).filter(
+                Role.teams.any(Team.id.in_(user.team_ids))
+            ).all():
+            perms += role.permissions
+        return perms
+
+    def check_permission_on_coproductionprocess(self, db: Session, permission: str, coproductionprocess: models.CoproductionProcess, user: models.User) -> Role:
+        return permission in self.get_permissions_of_user_for_coproductionprocess(db=db, coproductionprocess=coproductionprocess, user=user)
 
     def create(self, db: Session, role: schemas.RoleCreate) -> Role:
         db_role = models.Role(**role.dict())

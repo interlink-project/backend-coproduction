@@ -11,9 +11,9 @@ class ObjectiveBase(BaseModel):
     name: str
     description: str
     phase_id: uuid.UUID
-
+    
 class ObjectiveCreate(ObjectiveBase):
-    pass
+    phase_id: Optional[uuid.UUID]
 
 
 class ObjectivePatch(ObjectiveBase, metaclass=AllOptional):
