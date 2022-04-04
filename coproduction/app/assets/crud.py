@@ -6,6 +6,7 @@ from app.general.utils.CRUDBase import CRUDBase
 from app import models
 import uuid
 from fastapi_pagination.ext.sqlalchemy import paginate
+from app.messages import log
 
 class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
     def get_multi_filtered(
@@ -31,6 +32,10 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
         )
         db.add(db_obj)
         db.commit()
+        log({
+            "type": "ASSET_CREATED",
+            "id": db_obj.id,
+        })
         db.refresh(db_obj)
         db_obj.set_links()
         return db_obj
