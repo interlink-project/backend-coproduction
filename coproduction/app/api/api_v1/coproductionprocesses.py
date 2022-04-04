@@ -139,6 +139,20 @@ def add_team(
 class UserIn(BaseModel):
     user_id: str
 
+@router.get("/{id}/my_roles")
+def get_my_roles(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: uuid.UUID,
+    current_user: Optional[models.User] = Depends(deps.get_current_user),
+) -> Any:
+    """
+    Get role by ID.
+    """
+    if process := crud.coproductionprocess.get(db=db, id=id):
+        return crud.role.get_roles_of_user_for_coproductionprocess(db=db, coproductionprocess=process, user=current_user)
+    raise HTTPException(status_code=404, detail="Coproductionprocess not found")
+
 
 @router.post("/{id}/add_user")
 def add_user(

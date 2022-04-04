@@ -10,6 +10,7 @@ from app.general import deps
 import aiofiles
 from slugify import slugify
 from fastapi_pagination import Page
+from pydantic import BaseModel
 
 router = APIRouter()
 
@@ -67,6 +68,26 @@ async def set_logotype(
             content = await file.read()  # async read
             await out_file.write(content)  # async write
         return crud.team.update(db=db, db_obj=team, obj_in=schemas.TeamPatch(logotype=out_file_path))
+    raise HTTPException(status_code=404, detail="Team not found")
+
+class UserIn(BaseModel):
+    user_id: str
+
+@router.post("/{id}/add_user", response_model=schemas.TeamOutFull)
+async def add_user(
+    *,
+    id: uuid.UUID,
+    db: Session = Depends(deps.get_db),
+    current_user: dict = Depends(deps.get_current_user),
+    user: UserIn
+) -> Any:
+    """
+    Create new team.
+    """
+    if (team := crud.team.get(db=db, id=id)):
+        if (user := crud.user.get(db=db, id=user.user_id)):
+            return crud.team.add_user(db=db, team=team, user=user)
+        raise HTTPException(status_code=404, detail="User not found")
     raise HTTPException(status_code=404, detail="Team not found")
     
 

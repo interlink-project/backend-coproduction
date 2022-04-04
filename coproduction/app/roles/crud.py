@@ -7,21 +7,25 @@ from app.general.utils.CRUDBase import CRUDBase
 from app.models import Role, User, Team
 
 class CRUDRole(CRUDBase[Role, schemas.RoleCreate, schemas.RolePatch]):
-    def get_permissions_of_user_for_coproductionprocess(self, db: Session, coproductionprocess: models.CoproductionProcess, user: models.User) -> Role:
+    def get_roles_of_user_for_coproductionprocess(self, db: Session, coproductionprocess: models.CoproductionProcess, user: models.User) -> Role:
         # predominan los individuales
         if individual_role := db.query(Role).filter(
                 Role.coproductionprocess_id == coproductionprocess.id
             ).filter(
                 Role.users.any(User.id.in_([user.id]))
             ).first():
-            return individual_role.permissions
+            return [individual_role]
 
-        perms = []
-        for role in db.query(Role).filter(
+        return db.query(Role).filter(
                 Role.coproductionprocess_id == coproductionprocess.id
             ).filter(
                 Role.teams.any(Team.id.in_(user.team_ids))
-            ).all():
+            ).all()
+    
+    def get_permissions_of_user_for_coproductionprocess(self, db: Session, coproductionprocess: models.CoproductionProcess, user: models.User) -> Role:
+        perms = []
+        role: Role
+        for role in self.get_roles_of_user_for_coproductionprocess(db=db, coproductionprocess=coproductionprocess, user=user):
             perms += role.permissions
         return perms
 

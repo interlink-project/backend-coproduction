@@ -33,6 +33,12 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
     #         Team,
     #     ).filter(Team.roles.any(models.Role.id.in_([coproductionprocess_id]))).all()
 
+    def add_user(self, db: Session, team: Team, user: models.User) -> Team:
+        team.users.append(user)
+        db.commit()
+        db.refresh(team)
+        return team
+        
     def create(self, db: Session, team: TeamCreate, creator: models.User) -> Team:
         db_obj = Team(
             name=team.name,
