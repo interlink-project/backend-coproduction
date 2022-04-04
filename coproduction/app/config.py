@@ -49,6 +49,12 @@ class Settings(BaseSettings):
     CATALOGUE_PORT: int
     CATALOGUE_SERVICE: str = os.getenv("CATALOGUE_SERVICE_NAME") + ":" + os.getenv("CATALOGUE_PORT")
 
+    # Logging
+    RABBITMQ_HOST: str
+    RABBITMQ_USER: str
+    RABBITMQ_PASSWORD: str
+    EXCHANGE_NAME: str
+    
     class Config:
         case_sensitive = True
 
