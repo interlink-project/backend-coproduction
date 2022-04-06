@@ -9,7 +9,6 @@ from app.schemas import (
     ObjectivePatch
 )
 import uuid
-from app.general.utils.RowToDict import row2dict
 
 class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
     async def create_from_metadata(self, db: Session, objectivemetadata: dict, phase: Phase = None, phase_id: uuid.UUID = None) -> Optional[Objective]:

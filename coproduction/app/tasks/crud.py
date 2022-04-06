@@ -5,7 +5,6 @@ from sqlalchemy.orm import Session
 
 from app import schemas
 from app.general.utils.CRUDBase import CRUDBase
-from app.general.utils.RowToDict import row2dict
 from app.models import Task, Status, Phase, Objective
 from app.schemas import TaskCreate, TaskPatch
 from fastapi.encoders import jsonable_encoder

@@ -9,7 +9,6 @@ from app.schemas import (
     PhasePatch,
 )
 import uuid
-from app.general.utils.RowToDict import row2dict
 
 class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
     async def create_from_metadata(self, db: Session, phasemetadata: dict, coproductionprocess_id: uuid.UUID) -> Optional[Phase]:
