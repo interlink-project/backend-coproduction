@@ -26,19 +26,19 @@ def calculate_status_and_progress(obj, key):
     return status, progress
 
 class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
-    def create_from_metadata(self, db: Session, taskmetadata: dict, objective: Objective = None, objective_id: uuid.UUID = None) -> Optional[Task]:
+    async def create_from_metadata(self, db: Session, taskmetadata: dict, objective: Objective = None, objective_id: uuid.UUID = None) -> Optional[Task]:
         if objective and objective_id:
             raise Exception("Specify only one objective")
         if not objective and not objective_id:
             raise Exception("Objective not specified")
         taskmetadata["problemprofiles"] = [pp["id"] for pp in taskmetadata.get("problemprofiles", [])]
         creator = TaskCreate(**taskmetadata, objective_id=objective_id)
-        return self.create(db=db, task=creator, objective=objective, commit=False)
+        return await self.create(db=db, task=creator, objective=objective, commit=False)
 
-    def get_by_name(self, db: Session, name: str) -> Optional[Task]:
+    async def get_by_name(self, db: Session, name: str) -> Optional[Task]:
         return db.query(Task).filter(Task.name == name).first()
 
-    def create(self, db: Session, *, task: TaskCreate, objective: Objective = None, commit : bool = True) -> Task:
+    async def create(self, db: Session, *, task: TaskCreate, objective: Objective = None, commit : bool = True) -> Task:
         if objective and task.objective_id:
             raise Exception("Specify only one objective")
         if not objective and not task.objective_id:
@@ -59,7 +59,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
             db.refresh(db_obj)
         return db_obj
 
-    def add_prerequisite(self, db: Session, task: Task, prerequisite: Task, commit : bool = True) -> Task:
+    async def add_prerequisite(self, db: Session, task: Task, prerequisite: Task, commit : bool = True) -> Task:
         if task == prerequisite:
             raise Exception("Same object")
         task.prerequisites.append(prerequisite)
@@ -68,7 +68,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
             db.refresh(task)
         return task
 
-    def remove(self, db: Session, *, id: uuid.UUID) -> Task:
+    async def remove(self, db: Session, *, id: uuid.UUID) -> Task:
         obj = db.query(self.model).get(id)
         db.delete(obj)
         related = db.query(Task).filter(Task.prerequisites.any(Task.id == obj.id)).all()
@@ -78,7 +78,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
         db.commit()
         return obj
 
-    def update(
+    async def update(
         self,
         db: Session,
         db_obj: Task,

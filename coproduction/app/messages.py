@@ -2,7 +2,18 @@ import json
 import os
 from base64 import b64decode, b64encode
 import aiormq
+import json
+from uuid import UUID
+from app.middleware import get_user_id
 
+
+class UUIDEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, UUID):
+            # if the obj is uuid, we simply return the value of uuid
+            return obj.hex
+        return json.JSONEncoder.default(self, obj)
+        
 class RabbitBody:
     service: str
     data: dict
@@ -13,7 +24,7 @@ class RabbitBody:
 
     def encode(self):
         dicc = {"service": self.service, "data": self.data}
-        return b64encode(json.dumps(dicc).encode())
+        return b64encode(json.dumps(dicc,cls=UUIDEncoder).encode())
 
     @staticmethod
     def decode(encoded):
@@ -26,8 +37,9 @@ rabbitmq_user = os.environ.get("RABBITMQ_USER")
 rabbitmq_password = os.environ.get("RABBITMQ_PASSWORD")
 
 async def log(data: dict):
+    data["user_id"] = get_user_id()
     request = RabbitBody("coproduction", data)
-
+    
     connection = await aiormq.connect("amqp://{}:{}@{}/".format(rabbitmq_user, rabbitmq_password, rabbitmq_host))
     channel = await connection.channel()
 
@@ -43,3 +55,4 @@ async def log(data: dict):
             delivery_mode=2
         )
     )
+    print("MENSAJE ENVIADO POR RABBITMQ")

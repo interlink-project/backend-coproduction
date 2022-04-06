@@ -12,18 +12,18 @@ import uuid
 from app.general.utils.RowToDict import row2dict
 
 class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
-    def create_from_metadata(self, db: Session, objectivemetadata: dict, phase: Phase = None, phase_id: uuid.UUID = None) -> Optional[Objective]:
+    async def create_from_metadata(self, db: Session, objectivemetadata: dict, phase: Phase = None, phase_id: uuid.UUID = None) -> Optional[Objective]:
         if phase and phase_id:
             raise Exception("Specify only one phase")
         if not phase and not phase_id:
             raise Exception("Phase not specified")
         creator = ObjectiveCreate(**objectivemetadata, phase_id=phase_id)
-        return self.create(db=db, objective=creator, phase=phase, commit=False)
+        return await self.create(db=db, objective=creator, phase=phase, commit=False)
 
-    def get_by_name(self, db: Session, name: str) -> Optional[Objective]:
+    async def get_by_name(self, db: Session, name: str) -> Optional[Objective]:
         return db.query(Objective).filter(Objective.name == name).first()
 
-    def create(self, db: Session, *, objective: ObjectiveCreate, phase: Phase = None, commit : bool = True) -> Objective:
+    async def create(self, db: Session, *, objective: ObjectiveCreate, phase: Phase = None, commit : bool = True) -> Objective:
         if phase and objective.phase_id:
             raise Exception("Specify only one objective")
         if not phase and not objective.phase_id:
@@ -42,7 +42,7 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
             db.refresh(db_obj)
         return db_obj
 
-    def add_prerequisite(self, db: Session, objective: Objective, prerequisite: Objective, commit : bool = True) -> Objective:
+    async def add_prerequisite(self, db: Session, objective: Objective, prerequisite: Objective, commit : bool = True) -> Objective:
         if objective == prerequisite:
             raise Exception("Same object")
         # TODO: if objective in prerequisite.prerequisites => block
@@ -52,7 +52,7 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
             db.refresh(objective)
         return objective
 
-    def remove(self, db: Session, *, id: uuid.UUID) -> Objective:
+    async def remove(self, db: Session, *, id: uuid.UUID) -> Objective:
         obj = db.query(self.model).get(id)
         db.delete(obj)
         related = db.query(Objective).filter(Objective.prerequisites.any(Objective.id == obj.id)).all()

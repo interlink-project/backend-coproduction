@@ -17,7 +17,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=Page[schemas.AssetOutFull])
-def list_assets(
+async def list_assets(
     db: Session = Depends(deps.get_db),
     coproductionprocess_id: Optional[uuid.UUID] = Query(None),
     task_id: Optional[uuid.UUID] = Query(None),
@@ -28,15 +28,15 @@ def list_assets(
     """
     if not crud.asset.can_list(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    return crud.asset.get_multi_filtered(db, task_id=task_id, coproductionprocess_id=coproductionprocess_id)
+    return await crud.asset.get_multi_filtered(db, task_id=task_id, coproductionprocess_id=coproductionprocess_id)
 
 
 @router.post("", response_model=schemas.AssetOutFull)
-def create_asset(
+async def create_asset(
     *,
     db: Session = Depends(deps.get_db),
     asset_in: schemas.AssetCreate,
-    current_user: dict = Depends(deps.get_current_active_user),
+    current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Create new asset.
@@ -59,17 +59,17 @@ def create_asset(
     except:
         raise HTTPException(status_code=400, detail="Interlinker not active")
 
-    asset = crud.asset.create(
+    asset = await crud.asset.create(
         db=db, asset=asset_in, coproductionprocess_id=task.objective.phase.coproductionprocess_id, creator=current_user)
     return asset
 
 
 @router.post("/{id}/clone", response_model=schemas.AssetOutFull)
-def clone_asset(
+async def clone_asset(
     *,
     id: str,
     db: Session = Depends(deps.get_db),
-    current_user: dict = Depends(deps.get_current_active_user),
+    current_user: models.User = Depends(deps.get_current_active_user),
     token: str = Depends(deps.get_current_active_token),
 ) -> Any:
     """
@@ -78,7 +78,7 @@ def clone_asset(
     if not crud.asset.can_create(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
-    asset = crud.asset.get(db=db, id=id)
+    asset = await crud.asset.get(db=db, id=id)
     if not asset:
         raise HTTPException(status_code=404, detail="Asset not found")
 
@@ -97,7 +97,7 @@ def clone_asset(
         }).json()
 
     external_id = external_info["id"] if "id" in external_info else external_info["_id"]
-    asset = crud.asset.create(db=db, asset=schemas.AssetCreate(
+    asset = await crud.asset.create(db=db, asset=schemas.AssetCreate(
         task_id=asset.task_id,
         softwareinterlinker_id=asset.softwareinterlinker_id,
         knowledgeinterlinker_id=asset.knowledgeinterlinker_id,
@@ -107,27 +107,27 @@ def clone_asset(
 
 
 @router.put("/{id}", response_model=schemas.AssetOutFull)
-def update_asset(
+async def update_asset(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
     asset_in: schemas.AssetPatch,
-    current_user: dict = Depends(deps.get_current_active_user),
+    current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Update an asset.
     """
-    asset = crud.asset.get(db=db, id=id)
+    asset = await crud.asset.get(db=db, id=id)
     if not asset:
         raise HTTPException(status_code=404, detail="Asset not found")
     if not crud.asset.can_update(current_user, asset):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    asset = crud.asset.update(db=db, db_obj=asset, obj_in=asset_in)
+    asset = await crud.asset.update(db=db, db_obj=asset, obj_in=asset_in)
     return asset
 
 
 @router.get("/{id}", response_model=schemas.AssetOutFull)
-def read_asset(
+async def read_asset(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
@@ -136,16 +136,15 @@ def read_asset(
     """
     Get asset by ID.
     """
-    asset = crud.asset.get(db=db, id=id)
-    if not asset:
-        raise HTTPException(status_code=404, detail="Asset not found")
-    if not crud.asset.can_read(current_user, asset):
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-    return asset
-
+    
+    if asset := await crud.asset.get(db=db, id=id):
+        if not crud.asset.can_read(current_user, asset):
+            raise HTTPException(status_code=403, detail="Not enough permissions")
+        return asset
+    raise HTTPException(status_code=404, detail="Asset not found")
 
 @router.get("/external/{id}")
-def read_external_asset(
+async def read_external_asset(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
@@ -154,35 +153,35 @@ def read_external_asset(
     """
     Get asset by ID.
     """
-    asset = crud.asset.get(db=db, id=id)
-    if not asset:
-        raise HTTPException(status_code=404, detail="Asset not found")
-    print("Retrieving external ", asset.link)
-    try:
-        return requests.get(asset.internal_link, headers={
-            "Authorization": "Bearer " + token
-        }).json()
-    except:
-        return requests.get(asset.link, headers={
-            "Authorization": "Bearer " + token
-        }).json()
+    
+    if asset := await crud.asset.get(db=db, id=id):
+        print("Retrieving external ", asset.link)
+        try:
+            return requests.get(asset.internal_link, headers={
+                "Authorization": "Bearer " + token
+            }).json()
+        except:
+            return requests.get(asset.link, headers={
+                "Authorization": "Bearer " + token
+            }).json()
+    raise HTTPException(status_code=404, detail="Asset not found")
 
 
 @router.delete("/{id}", response_model=schemas.AssetOutFull)
-def delete_asset(
+async def delete_asset(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
-    current_user: dict = Depends(deps.get_current_active_user),
+    current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Delete an asset.
     """
-    asset = crud.asset.get(db=db, id=id)
+    
+    if asset := await crud.asset.get(db=db, id=id):
+        if not crud.asset.can_remove(current_user, asset):
+            raise HTTPException(status_code=403, detail="Not enough permissions")
+        await crud.asset.remove(db=db, id=id)
+        return None
     # TODO: DELETE to interlinker
-    if not asset:
-        raise HTTPException(status_code=404, detail="Asset not found")
-    if not crud.asset.can_remove(current_user, asset):
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-    crud.asset.remove(db=db, id=id)
-    return None
+    raise HTTPException(status_code=404, detail="Asset not found")

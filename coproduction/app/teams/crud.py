@@ -10,7 +10,7 @@ from app.users.crud import exportCrud as users_crud
 from fastapi_pagination.ext.sqlalchemy import paginate
 
 class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
-    def get_multi_filtered(
+    async def get_multi_filtered(
         self, db: Session, coproductionprocess_id: uuid.UUID
     ) -> List[Team]:
         queries = []
@@ -20,26 +20,26 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
         #     queries.append(Team.is_public == False)
         return paginate(db.query(Team).filter(*queries))
 
-    def get_by_name(self, db: Session, name: str) -> Optional[Team]:
+    async def get_by_name(self, db: Session, name: str) -> Optional[Team]:
         return db.query(Team).filter(Team.name == name).first()
 
-    def get_multi_by_user(self, db: Session, user_id: str) -> Optional[List[Team]]:
+    async def get_multi_by_user(self, db: Session, user_id: str) -> Optional[List[Team]]:
         return db.query(
             Team,
         ).filter(Team.users.any(models.User.id.in_([user_id]))).all()
     
-    # def get_multi_by_process(self, db: Session, coproductionprocess_id: uuid.UUID) -> Optional[List[Team]]:
+    # async def get_multi_by_process(self, db: Session, coproductionprocess_id: uuid.UUID) -> Optional[List[Team]]:
     #     return db.query(
     #         Team,
     #     ).filter(Team.roles.any(models.Role.id.in_([coproductionprocess_id]))).all()
 
-    def add_user(self, db: Session, team: Team, user: models.User) -> Team:
+    async def add_user(self, db: Session, team: Team, user: models.User) -> Team:
         team.users.append(user)
         db.commit()
         db.refresh(team)
         return team
         
-    def create(self, db: Session, team: TeamCreate, creator: models.User) -> Team:
+    async def create(self, db: Session, team: TeamCreate, creator: models.User) -> Team:
         db_obj = Team(
             name=team.name,
             description=team.description,
@@ -48,9 +48,9 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
         db.add(db_obj)
         db.commit()
 
-        for user_id in team.user_ids:
-            if user := users_crud.get(db=db, id=user_id):
-                db_obj.users.append(user)
+        for user in await users_crud.get_multi_by_ids(db=db, ids=team.user_ids):
+            db_obj.users.append(user)
+            
         db.commit()
         db.refresh(db_obj)
         return db_obj
