@@ -45,7 +45,7 @@ async def create_asset(
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     # first check if task exists
-    task = crud.task.get(db=db, id=asset_in.task_id)
+    task = await crud.task.get(db=db, id=asset_in.task_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
 

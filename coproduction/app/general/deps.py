@@ -47,8 +47,7 @@ async def get_current_user(
     from app.middleware import get_user
 
     try:
-        user = get_user()
-        if user:
+        if user := get_user():
             return await crud.user.get(db=db, id=user["sub"])
         return None
     except Exception as e:

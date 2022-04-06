@@ -20,9 +20,10 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
         if task_id:
             queries.append(Asset.task_id == task_id)
         await log({
-            "type": f"{self.modelName}_LIST",
-            "coproductionprocess_id": str(coproductionprocess_id),
-            "task_id": str(task_id)
+            "model": self.modelName,
+            "action": "LIST",
+            "coproductionprocess_id": coproductionprocess_id,
+            "task_id": task_id
         })
         return paginate(db.query(Asset).filter(*queries))
     
@@ -38,9 +39,10 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
         db.add(db_obj)
         db.commit()
         await log({
-            "type": f"{self.modelName}_CREATE",
-            "coproductionprocess_id": str(coproductionprocess_id),
-            "task_id": str(db_obj.id)
+            "model": self.modelName,
+            "action": "CREATE",
+            "coproductionprocess_id": coproductionprocess_id,
+            "task_id": db_obj.id
         })
         db.refresh(db_obj)
         db_obj.set_links()

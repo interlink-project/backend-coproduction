@@ -8,7 +8,6 @@ from sqlalchemy.orm import Session
 
 from app.general.db.base_class import Base
 from app.messages import log
-from app.middleware import get_user_id
 
 ModelType = TypeVar("ModelType", bound=Base)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
@@ -32,17 +31,21 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
         self.model = model
 
     async def get(self, db: Session, id: uuid.UUID) -> Optional[ModelType]:
-        await log({
-            "type": f"{self.modelName}_GET",
-            "id": str(id)
-        })
-        return db.query(self.model).filter(self.model.id == id).first()
+        if obj := db.query(self.model).filter(self.model.id == id).first():
+            await log({
+                "model": self.modelName,
+                "action": "GET",
+                "id": id
+            })
+            return obj
+        return
 
     async def get_multi(
         self, db: Session, *, skip: int = 0, limit: int = 100
     ) -> List[ModelType]:
         await log({
-            "type": f"{self.modelName}_LIST"
+            "model": self.modelName,
+            "action": "LIST",
         })
         return db.query(self.model).order_by(self.model.created_at.asc()).offset(skip).limit(limit).all()
 
@@ -52,8 +55,9 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
         db.add(db_obj)
         db.commit()
         log({
-            "type": f"{self.modelName}_CREATE",
-            "id": str(db_obj.id)
+            "model": self.modelName,
+            "action": "CREATE",
+            "id": db_obj.id
         })
         db.refresh(db_obj)
         return db_obj
@@ -76,7 +80,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
         db.add(db_obj)
         db.commit()
         await log({
-            "type": f"{self.modelName}_UPDATE",
+            "model": self.modelName,
+            "action": "UPDATE",
             "id": obj_in.id
         })
         db.refresh(db_obj)
@@ -87,8 +92,9 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
         db.delete(obj)
         db.commit()
         await log({
-            "type": f"{self.modelName}_REMOVE",
-            "id": str(id)
+            "model": self.modelName,
+            "action": "DELETE",
+            "id": id
         })
         return obj
 

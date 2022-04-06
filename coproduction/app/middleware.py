@@ -14,11 +14,12 @@ class Locales(enum.Enum):
     en = "en"
     es = "es"
     it = "it"
+    lv = "lv"
 
 DEFAULT_LANGUAGE = Locales.en.value
 SUPPORTED_LANGUAGE_CODES = [e.value for e in Locales]
 
-_lang: ContextVar[str] = ContextVar(DEFAULT_LANGUAGE, default=None)
+_lang: ContextVar[str] = ContextVar("language", default=DEFAULT_LANGUAGE)
 
 
 # def _(message: str) -> str:
@@ -32,19 +33,24 @@ def set_language(code) -> str:
     else:
         raise Exception(f"{code} not in supported languages")
 
-_user: ContextVar[str] = ContextVar("", default=None)
+_user: ContextVar[str] = ContextVar("user", default=None)
 
 def get_language() -> str:
     return _lang.get()
 
 def set_user(token) -> str:
-    _user.set(json.dumps(decode_token(token)))
+    try:
+        _user.set(json.dumps(decode_token(token)))
+    except:
+        pass
 
 def get_user() -> str:
-    return json.loads(_user.get())
+    user_data = _user.get()
+    return json.loads(user_data) if user_data and "sub" in user_data else None
 
 def get_user_id() -> str:
-    return json.loads(_user.get())["sub"]
+    us = get_user()
+    return us["sub"] if us else None
 
 translation_hybrid = TranslationHybrid(
     current_locale=get_language,
