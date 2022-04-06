@@ -12,13 +12,13 @@ from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.config import settings
 from app.general import deps
-from app.translations import DEFAULT_LANGUAGE
+from app.middleware import DEFAULT_LANGUAGE
 
 router = APIRouter()
 
 
 @router.get("", response_model=List[schemas.CoproductionProcessOut])
-def list_coproductionprocesses(
+async def list_coproductionprocesses(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
     limit: int = 100,
@@ -29,13 +29,10 @@ def list_coproductionprocesses(
     """
     if not crud.coproductionprocess.can_list(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    coproductionprocesses = crud.coproductionprocess.get_multi(
-        db, skip=skip, limit=limit)
-    return coproductionprocesses
-
+    return await crud.coproductionprocess.get_multi(db, skip=skip, limit=limit)
 
 @router.get("/mine", response_model=List[schemas.CoproductionProcessOut])
-def list_my_coproductionprocesses(
+async def list_my_coproductionprocesses(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
@@ -44,15 +41,15 @@ def list_my_coproductionprocesses(
     """
     if not crud.coproductionprocess.can_list(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    return crud.coproductionprocess.get_multi_by_user(db, user=current_user)
+    return await crud.coproductionprocess.get_multi_by_user(db, user=current_user)
 
 
 @router.post("", response_model=schemas.CoproductionProcessOutFull)
-def create_coproductionprocess(
+async def create_coproductionprocess(
     *,
     db: Session = Depends(deps.get_db),
     coproductionprocess_in: schemas.CoproductionProcessCreate,
-    current_user: dict = Depends(deps.get_current_active_user),
+    current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Create new coproductionprocess.
@@ -60,10 +57,9 @@ def create_coproductionprocess(
     if not crud.coproductionprocess.can_create(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
     team = None
-    if coproductionprocess_in.team_id and not (team := crud.team.get(db=db, id=coproductionprocess_in.team_id)):
+    if coproductionprocess_in.team_id and not (team := await crud.team.get(db=db, id=coproductionprocess_in.team_id)):
         raise HTTPException(status_code=400, detail="Team does not exist")
-    return crud.coproductionprocess.create(
-        db=db, coproductionprocess=coproductionprocess_in, creator=current_user, team=team)
+    return await crud.coproductionprocess.create(db=db, coproductionprocess=coproductionprocess_in, creator=current_user, team=team)
 
 
 @router.post("/{id}/logotype", response_model=schemas.CoproductionProcessOutFull)
@@ -71,10 +67,10 @@ async def set_logotype(
     *,
     id: uuid.UUID,
     db: Session = Depends(deps.get_db),
-    current_user: dict = Depends(deps.get_current_user),
+    current_user: models.User = Depends(deps.get_current_user),
     file: UploadFile = File(...),
 ) -> Any:
-    if (coproductionprocess := crud.coproductionprocess.get(db=db, id=id)):
+    if (coproductionprocess := await crud.coproductionprocess.get(db=db, id=id)):
         name = slugify(coproductionprocess.name)
         filename, extension = os.path.splitext(file.filename)
         out_file_path = f"/static/coproductionprocesses/{name}{extension}"
@@ -82,7 +78,7 @@ async def set_logotype(
         async with aiofiles.open("/app" + out_file_path, 'wb') as out_file:
             content = await file.read()  # async read
             await out_file.write(content)  # async write
-        return crud.team.update(db=db, db_obj=coproductionprocess, obj_in=schemas.CoproductionProcessPatch(logotype=out_file_path))
+        return await crud.coproductionprocess.update(db=db, db_obj=coproductionprocess, obj_in=schemas.CoproductionProcessPatch(logotype=out_file_path))
     raise HTTPException(status_code=404, detail="Coproduction process not found")
 
 
@@ -96,10 +92,10 @@ async def set_schema(
     id: uuid.UUID,
     db: Session = Depends(deps.get_db),
     schema_setter: CoproductionSchemaSetter,
-    current_user: dict = Depends(deps.get_current_user),
+    current_user: models.User = Depends(deps.get_current_user),
     language: str = DEFAULT_LANGUAGE
 ) -> Any:
-    if (coproductionprocess := crud.coproductionprocess.get(db=db, id=id)):
+    if (coproductionprocess := await crud.coproductionprocess.get(db=db, id=id)):
         try:
             coproductionschema = requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/coproductionschemas/{schema_setter.coproductionschema_id}", headers={
                 # "X-API-Key": "secret",
@@ -108,7 +104,7 @@ async def set_schema(
         except Exception as e:
             print(e)
             raise HTTPException(status_code=404, detail="Coproduction schema not found")
-        return crud.coproductionprocess.set_schema(db=db, coproductionschema=coproductionschema, coproductionprocess=coproductionprocess)
+        return await crud.coproductionprocess.set_schema(db=db, coproductionschema=coproductionschema, coproductionprocess=coproductionprocess)
     raise HTTPException(status_code=404, detail="Coproduction process not found")
 
 
@@ -117,19 +113,19 @@ class TeamIn(BaseModel):
 
 
 @router.post("/{id}/add_team")
-def add_team(
+async def add_team(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
     team_in: TeamIn,
-    current_user: dict = Depends(deps.get_current_active_user),
+    current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Add team to coproductionprocess (with default role)
+    Add team to coproductionprocess (with async default role)
     """
-    if coproductionprocess := crud.coproductionprocess.get(db=db, id=id):
-        if team := crud.team.get(db=db, id=team_in.team_id):
-            crud.coproductionprocess.add_team(
+    if coproductionprocess := await crud.coproductionprocess.get(db=db, id=id):
+        if team := await crud.team.get(db=db, id=team_in.team_id):
+            await crud.coproductionprocess.add_team(
                 db=db, coproductionprocess=coproductionprocess, team=team)
             return True
         raise HTTPException(status_code=400, detail="Team not found")
@@ -140,7 +136,7 @@ class UserIn(BaseModel):
     user_id: str
 
 @router.get("/{id}/my_roles")
-def get_my_roles(
+async def get_my_roles(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
@@ -149,25 +145,25 @@ def get_my_roles(
     """
     Get role by ID.
     """
-    if process := crud.coproductionprocess.get(db=db, id=id):
-        return crud.role.get_roles_of_user_for_coproductionprocess(db=db, coproductionprocess=process, user=current_user)
+    if process := await crud.coproductionprocess.get(db=db, id=id):
+        return await crud.role.get_roles_of_user_for_coproductionprocess(db=db, coproductionprocess=process, user=current_user)
     raise HTTPException(status_code=404, detail="Coproductionprocess not found")
 
 
 @router.post("/{id}/add_user")
-def add_user(
+async def add_user(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
     user_in: UserIn,
-    current_user: dict = Depends(deps.get_current_active_user),
+    current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Add user to coproductionprocess (with default role)
+    Add user to coproductionprocess (with async default role)
     """
-    if coproductionprocess := crud.coproductionprocess.get(db=db, id=id):
-        if user := crud.user.get(db=db, id=user_in.user_id):
-            crud.coproductionprocess.add_user(
+    if coproductionprocess := await crud.coproductionprocess.get(db=db, id=id):
+        if user := await crud.user.get(db=db, id=user_in.user_id):
+            await crud.coproductionprocess.add_user(
                 db=db, coproductionprocess=coproductionprocess, user=user)
             return True
         raise HTTPException(status_code=400, detail="User not found")
@@ -175,28 +171,28 @@ def add_user(
 
 
 @router.put("/{id}", response_model=schemas.CoproductionProcessOutFull)
-def update_coproductionprocess(
+async def update_coproductionprocess(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
     coproductionprocess_in: schemas.CoproductionProcessPatch,
-    current_user: dict = Depends(deps.get_current_active_user),
+    current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Update an coproductionprocess.
     """
-    coproductionprocess = crud.coproductionprocess.get(db=db, id=id)
+    coproductionprocess = await crud.coproductionprocess.get(db=db, id=id)
     if not coproductionprocess:
         raise HTTPException(status_code=404, detail="CoproductionProcess not found")
     if not crud.coproductionprocess.can_update(db=db, user=current_user, object=coproductionprocess):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    coproductionprocess = crud.coproductionprocess.update(
+    coproductionprocess = await crud.coproductionprocess.update(
         db=db, db_obj=coproductionprocess, obj_in=coproductionprocess_in)
     return coproductionprocess
 
 
 @router.get("/{id}", response_model=schemas.CoproductionProcessOutFull)
-def read_coproductionprocess(
+async def read_coproductionprocess(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
@@ -205,7 +201,7 @@ def read_coproductionprocess(
     """
     Get coproductionprocess by ID.
     """
-    coproductionprocess = crud.coproductionprocess.get(db=db, id=id)
+    coproductionprocess = await crud.coproductionprocess.get(db=db, id=id)
     if not coproductionprocess:
         raise HTTPException(status_code=404, detail="CoproductionProcess not found")
     if not crud.coproductionprocess.can_read(db=db, user=current_user, object=coproductionprocess):
@@ -214,37 +210,37 @@ def read_coproductionprocess(
 
 
 @router.delete("/{id}", response_model=schemas.CoproductionProcessOutFull)
-def delete_coproductionprocess(
+async def delete_coproductionprocess(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
-    current_user: dict = Depends(deps.get_current_active_user),
+    current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Delete an coproductionprocess.
     """
-    coproductionprocess = crud.coproductionprocess.get(db=db, id=id)
+    coproductionprocess = await crud.coproductionprocess.get(db=db, id=id)
     if not coproductionprocess:
         raise HTTPException(status_code=404, detail="CoproductionProcess not found")
     if not crud.coproductionprocess.can_remove(db=db, user=current_user, object=coproductionprocess):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    crud.coproductionprocess.remove(db=db, id=id)
+    await crud.coproductionprocess.remove(db=db, id=id)
     return None
 
 
 # specific
 
 @router.get("/{id}/tree", response_model=Optional[List[schemas.PhaseOutFull]])
-def get_coproductionprocess_tree(
+async def get_coproductionprocess_tree(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
-    current_user: dict = Depends(deps.get_current_active_user),
+    current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Get coproductionprocess tree.
     """
-    coproductionprocess = crud.coproductionprocess.get(db=db, id=id)
+    coproductionprocess = await crud.coproductionprocess.get(db=db, id=id)
     if not coproductionprocess:
         raise HTTPException(status_code=404, detail="CoproductionProcess not found")
     if not crud.coproductionprocess.can_read(db=db, user=current_user, object=coproductionprocess):

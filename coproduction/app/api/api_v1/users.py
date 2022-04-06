@@ -9,7 +9,7 @@ from app.general import deps
 router = APIRouter()
 
 @router.post("", response_model=schemas.UserOutFull)
-def sync_user(
+async def sync_user(
     *,
     db: Session = Depends(deps.get_db),
     user_in: schemas.UserCreate,
@@ -18,7 +18,7 @@ def sync_user(
     Create new user.
     """
     # TODO: only from auth micro
-    if user := crud.user.get(db=db, id=user_in.id):
+    if user := await crud.user.get(db=db, id=user_in.id):
         return user
-    return crud.user.create(db=db, user=user_in)
+    return await crud.user.create(db=db, user=user_in)
 

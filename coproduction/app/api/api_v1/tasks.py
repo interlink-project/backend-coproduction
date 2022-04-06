@@ -10,7 +10,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=List[schemas.TaskOut])
-def list_tasks(
+async def list_tasks(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
     limit: int = 100,
@@ -21,48 +21,48 @@ def list_tasks(
     """
     if not crud.task.can_list(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    tasks = crud.task.get_multi(db, skip=skip, limit=limit)
+    tasks = await crud.task.get_multi(db, skip=skip, limit=limit)
     return tasks
 
 
 @router.post("", response_model=schemas.TaskOutFull)
-def create_task(
+async def create_task(
     *,
     db: Session = Depends(deps.get_db),
     task_in: schemas.TaskCreate,
-    current_user: dict = Depends(deps.get_current_active_user),
+    current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Create new task.
     """
     if not crud.task.can_create(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    task = crud.task.create(db=db, task=task_in)
+    task = await crud.task.create(db=db, task=task_in)
     return task
 
 
 @router.put("/{id}", response_model=schemas.TaskOutFull)
-def update_task(
+async def update_task(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
     task_in: schemas.TaskPatch,
-    current_user: dict = Depends(deps.get_current_active_user),
+    current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Update an task.
     """
-    task = crud.task.get(db=db, id=id)
+    task = await crud.task.get(db=db, id=id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
     if not crud.task.can_update(current_user, task):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    task = crud.task.update(db=db, db_obj=task, obj_in=task_in)
+    task = await crud.task.update(db=db, db_obj=task, obj_in=task_in)
     return task
 
 
 @router.get("/{id}", response_model=schemas.TaskOutFull)
-def read_task(
+async def read_task(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
@@ -71,7 +71,7 @@ def read_task(
     """
     Get task by ID.
     """
-    task = crud.task.get(db=db, id=id)
+    task = await crud.task.get(db=db, id=id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
     if not crud.task.can_read(current_user, task):
@@ -79,19 +79,19 @@ def read_task(
     return task
 
 @router.delete("/{id}", response_model=schemas.TaskOutFull)
-def delete_task(
+async def delete_task(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
-    current_user: dict = Depends(deps.get_current_active_user),
+    current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Delete an task.
     """
-    task = crud.task.get(db=db, id=id)
+    task = await crud.task.get(db=db, id=id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
     if not crud.task.can_remove(current_user, task):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    crud.task.remove(db=db, id=id)
+    await crud.task.remove(db=db, id=id)
     return None

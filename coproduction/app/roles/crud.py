@@ -7,7 +7,7 @@ from app.general.utils.CRUDBase import CRUDBase
 from app.models import Role, User, Team
 
 class CRUDRole(CRUDBase[Role, schemas.RoleCreate, schemas.RolePatch]):
-    def get_roles_of_user_for_coproductionprocess(self, db: Session, coproductionprocess: models.CoproductionProcess, user: models.User) -> Role:
+    async def get_roles_of_user_for_coproductionprocess(self, db: Session, coproductionprocess: models.CoproductionProcess, user: models.User) -> Role:
         # predominan los individuales
         if individual_role := db.query(Role).filter(
                 Role.coproductionprocess_id == coproductionprocess.id
@@ -22,42 +22,42 @@ class CRUDRole(CRUDBase[Role, schemas.RoleCreate, schemas.RolePatch]):
                 Role.teams.any(Team.id.in_(user.team_ids))
             ).all()
     
-    def get_permissions_of_user_for_coproductionprocess(self, db: Session, coproductionprocess: models.CoproductionProcess, user: models.User) -> Role:
+    async def get_permissions_of_user_for_coproductionprocess(self, db: Session, coproductionprocess: models.CoproductionProcess, user: models.User) -> Role:
         perms = []
         role: Role
-        for role in self.get_roles_of_user_for_coproductionprocess(db=db, coproductionprocess=coproductionprocess, user=user):
+        for role in await self.get_roles_of_user_for_coproductionprocess(db=db, coproductionprocess=coproductionprocess, user=user):
             perms += role.permissions
         return perms
 
-    def check_permission_on_coproductionprocess(self, db: Session, permission: str, coproductionprocess: models.CoproductionProcess, user: models.User) -> Role:
-        return permission in self.get_permissions_of_user_for_coproductionprocess(db=db, coproductionprocess=coproductionprocess, user=user)
+    async def check_permission_on_coproductionprocess(self, db: Session, permission: str, coproductionprocess: models.CoproductionProcess, user: models.User) -> Role:
+        return permission in await self.get_permissions_of_user_for_coproductionprocess(db=db, coproductionprocess=coproductionprocess, user=user)
 
-    def create(self, db: Session, role: schemas.RoleCreate) -> Role:
+    async def create(self, db: Session, role: schemas.RoleCreate) -> Role:
         db_role = models.Role(**role.dict())
         db.add(db_role)
         db.commit()
         db.refresh(db_role)
         return db_role
 
-    def add_team(self, db: Session, role: Role, team: models.Team):
+    async def add_team(self, db: Session, role: Role, team: models.Team):
         role.teams.append(team)
         db.commit()
         db.refresh(role)
         return role
     
-    def add_user(self, db: Session, role: Role, user: models.User):
+    async def add_user(self, db: Session, role: Role, user: models.User):
         role.users.append(user)
         db.commit()
         db.refresh(role)
         return role
     
-    def remove_team(self, db: Session, role: Role, team: models.Team):
+    async def remove_team(self, db: Session, role: Role, team: models.Team):
         role.teams.remove(team)
         db.commit()
         db.refresh(role)
         return role
     
-    def remove_user(self, db: Session, role: Role, user: models.User):
+    async def remove_user(self, db: Session, role: Role, user: models.User):
         role.users.remove(user)
         db.commit()
         db.refresh(role)

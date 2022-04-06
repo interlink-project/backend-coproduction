@@ -6,10 +6,13 @@ from app.models import User
 from app.schemas import UserCreate, UserPatch
 
 class CRUDUser(CRUDBase[User, UserCreate, UserPatch]):
-    def get(self, db: Session, id: str) -> Optional[User]:
+    async def get(self, db: Session, id: str) -> Optional[User]:
         return db.query(User).filter(User.id == id).first()
+    
+    async def get_multi_by_ids(self, db: Session, ids: list) -> Optional[User]:
+        return db.query(User).filter(User.id.in_(ids)).all()
 
-    def create(self, db: Session, user: UserCreate) -> User:
+    async def create(self, db: Session, user: UserCreate) -> User:
         print(f"CREATING USER {user.id}")
         db_obj = User(
             id=user.id,

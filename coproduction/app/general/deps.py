@@ -39,20 +39,24 @@ def get_current_active_token(
             raise HTTPException(status_code=403, detail="Not authenticated")
         return current_token
 
-def get_current_user(
-    request: Request,
+async def get_current_user(
+    # request: Request,
     db: Session = Depends(get_db),
-    current_token: str = Depends(get_current_token)
+    # current_token: str = Depends(get_current_token)
 ) -> Optional[models.User]:
+    from app.middleware import get_user
+
     try:
-        token_data = decode_token(current_token)
-        return crud.user.get(db=db, id=token_data["sub"])
+        user = get_user()
+        if user:
+            return await crud.user.get(db=db, id=user["sub"])
+        return None
     except Exception as e:
         print(str(e))
         return None
 
 def get_current_active_user(
-    current_user: dict = Depends(get_current_user),
+    current_user: models.User = Depends(get_current_user),
 ) -> models.User:
     # calls get_current_user, and if nothing is returned, raises Not authenticated exception
     if not current_user:

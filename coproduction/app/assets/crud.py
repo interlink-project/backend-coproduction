@@ -9,7 +9,8 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from app.messages import log
 
 class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
-    def get_multi_filtered(
+
+    async def get_multi_filtered(
         self, db: Session, coproductionprocess_id: uuid.UUID, task_id: uuid.UUID
     ) -> List[Asset]:
         queries = []
@@ -18,10 +19,14 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
         
         if task_id:
             queries.append(Asset.task_id == task_id)
-        
+        await log({
+            "type": f"{self.modelName}_LIST",
+            "coproductionprocess_id": str(coproductionprocess_id),
+            "task_id": str(task_id)
+        })
         return paginate(db.query(Asset).filter(*queries))
     
-    def create(self, db: Session, asset: AssetCreate, coproductionprocess_id: uuid.UUID, creator: models.User) -> Asset:
+    async def create(self, db: Session, asset: AssetCreate, coproductionprocess_id: uuid.UUID, creator: models.User) -> Asset:
         db_obj = Asset(
             coproductionprocess_id=coproductionprocess_id,
             task_id=asset.task_id,
@@ -32,21 +37,15 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
         )
         db.add(db_obj)
         db.commit()
-        log({
-            "type": "ASSET_CREATED",
-            "id": db_obj.id,
+        await log({
+            "type": f"{self.modelName}_CREATE",
+            "coproductionprocess_id": str(coproductionprocess_id),
+            "task_id": str(db_obj.id)
         })
         db.refresh(db_obj)
         db_obj.set_links()
         return db_obj
     
-    def remove(self, db: Session, *, id: uuid.UUID) -> Asset:
-        obj = db.query(Asset).get(id)
-        db.delete(obj)
-        db.commit()
-        # TODO: remove from external microservice
-        return obj
-
     # CRUD Permissions
     def can_create(self, user):
         return True

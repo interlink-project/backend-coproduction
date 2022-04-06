@@ -15,15 +15,14 @@ from sqlalchemy import or_
 
 
 class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessCreate, CoproductionProcessPatch]):
-    def get_by_name(self, db: Session, name: str) -> Optional[Team]:
+    async def get_by_name(self, db: Session, name: str) -> Optional[Team]:
         return db.query(CoproductionProcess).filter(CoproductionProcess.name == name).first()
 
-    def get_by_artefact(self, db: Session, artefact_id: uuid.UUID) -> Optional[CoproductionProcess]:
+    async def get_by_artefact(self, db: Session, artefact_id: uuid.UUID) -> Optional[CoproductionProcess]:
         return db.query(CoproductionProcess).filter(CoproductionProcess.artefact_id == artefact_id).first()
 
-    def get_multi_by_user(self, db: Session, user: User) -> Optional[List[CoproductionProcess]]:
+    async def get_multi_by_user(self, db: Session, user: User) -> Optional[List[CoproductionProcess]]:
         team_ids = user.team_ids
-        print(team_ids)
         return db.query(
             CoproductionProcess
         ).join(
@@ -35,7 +34,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
             )
         ).all()
 
-    def create(self, db: Session, *, coproductionprocess: CoproductionProcessCreate, creator: models.User, team: models.Team) -> CoproductionProcess:
+    async def create(self, db: Session, *, coproductionprocess: CoproductionProcessCreate, creator: models.User, team: models.Team) -> CoproductionProcess:
         db_obj = CoproductionProcess(
             artefact_id=coproductionprocess.artefact_id,
             # uses postgres
@@ -69,20 +68,20 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         db.add(default_role)
 
         # Set the main team as admin
-        exportRoleCrud.add_user(db=db, role=admin_role, user=creator)
+        await exportRoleCrud.add_user(db=db, role=admin_role, user=creator)
         if team:
-            exportRoleCrud.add_team(db=db, role=admin_role, team=team)
+            await exportRoleCrud.add_team(db=db, role=admin_role, team=team)
 
         db_obj.default_role = default_role
         db.commit()
         db.refresh(db_obj)
         return db_obj
 
-    def set_schema(self, db: Session, coproductionprocess: models.CoproductionProcess, coproductionschema: dict, language: str = "en"):
+    async def set_schema(self, db: Session, coproductionprocess: models.CoproductionProcess, coproductionschema: dict, language: str = "en"):
         total = {}
         for phasemetadata in coproductionschema.get("phasemetadatas", []):
             phasemetadata: dict
-            db_phase = crud.phase.create_from_metadata(
+            db_phase = await crud.phase.create_from_metadata(
                 db=db,
                 phasemetadata=phasemetadata,
                 coproductionprocess_id=coproductionprocess.id,
@@ -97,7 +96,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
             for objectivemetadata in phasemetadata.get("objectivemetadatas", []):
                 objectivemetadata: dict
-                db_obj = crud.objective.create_from_metadata(
+                db_obj = await crud.objective.create_from_metadata(
                     db=db,
                     objectivemetadata=objectivemetadata,
                     phase=db_phase,
@@ -109,7 +108,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                     "newObj": db_obj,
                 }
                 for taskmetadata in objectivemetadata.get("taskmetadatas", []):
-                    db_task = crud.task.create_from_metadata(
+                    db_task = await crud.task.create_from_metadata(
                         db=db,
                         taskmetadata=taskmetadata,
                         objective=db_obj,
@@ -125,20 +124,20 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
             for pre_id in element["prerequisites_ids"]:
                 
                 if element["type"] == "phase":
-                    crud.phase.add_prerequisite(db=db, phase=element["newObj"], prerequisite=total[pre_id]["newObj"], commit=False)
+                    await crud.phase.add_prerequisite(db=db, phase=element["newObj"], prerequisite=total[pre_id]["newObj"], commit=False)
                 if element["type"] == "objective":
-                    crud.objective.add_prerequisite(db=db, objective=element["newObj"], prerequisite=total[pre_id]["newObj"], commit=False)
+                    await crud.objective.add_prerequisite(db=db, objective=element["newObj"], prerequisite=total[pre_id]["newObj"], commit=False)
                 if element["type"] == "task":
-                    crud.task.add_prerequisite(db=db, task=element["newObj"], prerequisite=total[pre_id]["newObj"], commit=False)
+                    await crud.task.add_prerequisite(db=db, task=element["newObj"], prerequisite=total[pre_id]["newObj"], commit=False)
         
         db.commit()
         db.refresh(coproductionprocess)
         return coproductionprocess
 
-    def add_team(self, db: Session, coproductionprocess: models.CoproductionProcess, team: models.Team):
+    async def add_team(self, db: Session, coproductionprocess: models.CoproductionProcess, team: models.Team):
         return exportRoleCrud.add_team(db=db, role=coproductionprocess.default_role, team=team)
 
-    def add_user(self, db: Session, coproductionprocess: models.CoproductionProcess, user: models.User):
+    async def add_user(self, db: Session, coproductionprocess: models.CoproductionProcess, user: models.User):
         return exportRoleCrud.add_user(db=db, role=coproductionprocess.default_role, user=user)
 
     # CRUD Permissions
