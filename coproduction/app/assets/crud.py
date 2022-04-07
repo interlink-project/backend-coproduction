@@ -1,12 +1,13 @@
 from sqlalchemy.orm import Session
 from typing import List
-from app.models import Asset
-from app.schemas import AssetCreate, AssetPatch
+from app.models import Asset, InternalAsset, ExternalAsset
+from app.schemas import AssetCreate, AssetPatch, ExternalAssetCreate, InternalAssetCreate
 from app.general.utils.CRUDBase import CRUDBase
 from app import models
 import uuid
 from fastapi_pagination.ext.sqlalchemy import paginate
 from app.messages import log
+from fastapi.encoders import jsonable_encoder
 
 class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
 
@@ -28,21 +29,25 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
         return paginate(db.query(Asset).filter(*queries))
     
     async def create(self, db: Session, asset: AssetCreate, coproductionprocess_id: uuid.UUID, creator: models.User) -> Asset:
-        db_obj = Asset(
-            coproductionprocess_id=coproductionprocess_id,
-            task_id=asset.task_id,
-            knowledgeinterlinker_id=asset.knowledgeinterlinker_id,
-            softwareinterlinker_id=asset.softwareinterlinker_id,
-            external_asset_id=asset.external_asset_id,
-            creator=creator
-        )
+        data = jsonable_encoder(asset)
+        if type(asset) == ExternalAssetCreate:
+            print("IS EXTERNAL")
+            data["type"] = "externalasset"
+            db_obj = ExternalAsset(**data)
+
+        if type(asset) == InternalAssetCreate:
+            print("IS INTERNAL")
+            data["type"] = "internalasset"
+            db_obj = InternalAsset(**data)
+
         db.add(db_obj)
         db.commit()
         await log({
             "model": self.modelName,
             "action": "CREATE",
+            "id": db_obj.id,
             "coproductionprocess_id": coproductionprocess_id,
-            "task_id": db_obj.id
+            "task_id": db_obj.task.id
         })
         db.refresh(db_obj)
         db_obj.set_links()

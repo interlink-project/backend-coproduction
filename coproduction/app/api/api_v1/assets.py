@@ -51,13 +51,16 @@ async def create_asset(
 
     # check that interlinker in catalogue
     try:
-        response = requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.softwareinterlinker_id}", headers={
+        interlinker_id = asset_in.softwareinterlinker_id or asset_in.externalinterlinker_id
+        print("CREATING WITH ", interlinker_id)
+        response = requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{interlinker_id}", headers={
             "X-API-Key": "secret"
         })
+        print("CREATING WITH ", response.json())
         assert response.status_code == 200
 
     except:
-        raise HTTPException(status_code=400, detail="Interlinker not active")
+        raise HTTPException(status_code=400, detail="Interlinker not found")
 
     asset = await crud.asset.create(
         db=db, asset=asset_in, coproductionprocess_id=task.objective.phase.coproductionprocess_id, creator=current_user)
@@ -143,8 +146,8 @@ async def read_asset(
         return asset
     raise HTTPException(status_code=404, detail="Asset not found")
 
-@router.get("/external/{id}")
-async def read_external_asset(
+@router.get("/internal/{id}")
+async def read_internal_asset(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
@@ -155,7 +158,7 @@ async def read_external_asset(
     """
     
     if asset := await crud.asset.get(db=db, id=id):
-        print("Retrieving external ", asset.link)
+        print("Retrieving internal ", asset.link)
         try:
             return requests.get(asset.internal_link, headers={
                 "Authorization": "Bearer " + token

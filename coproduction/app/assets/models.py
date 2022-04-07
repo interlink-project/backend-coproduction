@@ -23,10 +23,8 @@ from app.general.db.base_class import Base as BaseModel
 
 class Asset(BaseModel):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    external_asset_id = Column(String)
-    softwareinterlinker_id = Column(UUID(as_uuid=True))
-    # save from which knowledge interlinker has been cloned, if so
-    knowledgeinterlinker_id = Column(UUID(as_uuid=True), nullable=True)
+    # discriminator
+    type = Column(String)
 
     task_id = Column(
         UUID(as_uuid=True), ForeignKey("task.id", ondelete='CASCADE')
@@ -45,6 +43,27 @@ class Asset(BaseModel):
         String, ForeignKey("user.id")
     )
     creator = orm.relationship("User", back_populates="created_assets")
+
+    __mapper_args__ = {
+        "polymorphic_identity": "asset",
+        "polymorphic_on": type,
+    }
+
+class InternalAsset(Asset):
+    id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("asset.id"),
+        primary_key=True,
+        default=uuid.uuid4,
+    )
+    external_asset_id = Column(String)
+    softwareinterlinker_id = Column(UUID(as_uuid=True))
+    # save from which knowledge interlinker has been cloned, if so
+    knowledgeinterlinker_id = Column(UUID(as_uuid=True), nullable=True)
+
+    __mapper_args__ = {
+        "polymorphic_identity": "internalasset",
+    }
 
     def set_links(self):
         response = requests.get(
@@ -91,3 +110,20 @@ class Asset(BaseModel):
     @property
     def internal_link(self):
         return self.int_link
+
+class ExternalAsset(BaseModel):
+    id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("asset.id"),
+        primary_key=True,
+        default=uuid.uuid4,
+    )
+    name = Column(String)
+    icon = Column(String)
+    externalinterlinker_id = Column(UUID(as_uuid=True))
+    name = Column(String)
+    uri = Column(String)
+    
+    __mapper_args__ = {
+        "polymorphic_identity": "externalasset",
+    }
