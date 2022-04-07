@@ -5,6 +5,10 @@ services:
     image: redis:6-alpine
     networks:
       - default
+    logging:
+      driver: "json-file"
+      options:
+        tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
 
   coproduction:
     image: "coproductiondev"
@@ -33,6 +37,10 @@ services:
     networks:
       - traefik-public
       - default
+    logging:
+      driver: "json-file"
+      options:
+        tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
 
   coproductionworker:
     image: "coproductionworkerdev"
@@ -55,6 +63,10 @@ services:
     networks:
       - traefik-public
       - default
+    logging:
+      driver: "json-file"
+      options:
+        tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
 
 networks:
   traefik-public:

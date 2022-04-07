@@ -14,6 +14,8 @@ from app.config import settings
 from app.general import deps
 from app.middleware import DEFAULT_LANGUAGE
 
+from app.messages import log
+
 router = APIRouter()
 
 
@@ -29,7 +31,17 @@ async def list_coproductionprocesses(
     """
     if not crud.coproductionprocess.can_list(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    return await crud.coproductionprocess.get_multi(db, skip=skip, limit=limit)
+
+    coproductionprocess = await crud.coproductionprocess.get_multi(db, skip=skip, limit=limit)
+
+    # await log({
+    #     "model": "COPRODPROCESS",
+    #     "action": "LIST",
+    #     "crud": False,
+    #     "coproductionprocess_id": coproductionprocess.id,
+    # })
+
+    return coproductionprocess
 
 @router.get("/mine", response_model=List[schemas.CoproductionProcessOut])
 async def list_my_coproductionprocesses(
@@ -59,7 +71,17 @@ async def create_coproductionprocess(
     team = None
     if coproductionprocess_in.team_id and not (team := await crud.team.get(db=db, id=coproductionprocess_in.team_id)):
         raise HTTPException(status_code=400, detail="Team does not exist")
-    return await crud.coproductionprocess.create(db=db, coproductionprocess=coproductionprocess_in, creator=current_user, team=team)
+
+    coproductionprocess = await crud.coproductionprocess.create(db=db, coproductionprocess=coproductionprocess_in, creator=current_user, team=team)
+
+    await log({
+        "model": "COPRODPROCESS",
+        "action": "CREATE",
+        "crud": False,
+        "coproductionprocess_id": coproductionprocess.id,
+    })
+
+    return coproductionprocess
 
 
 @router.post("/{id}/logotype", response_model=schemas.CoproductionProcessOutFull)
@@ -188,6 +210,14 @@ async def update_coproductionprocess(
         raise HTTPException(status_code=403, detail="Not enough permissions")
     coproductionprocess = await crud.coproductionprocess.update(
         db=db, db_obj=coproductionprocess, obj_in=coproductionprocess_in)
+
+    await log({
+        "model": "COPRODPROCESS",
+        "action": "UPDATE",
+        "crud": False,
+        "coproductionprocess_id": coproductionprocess.id,
+    })
+
     return coproductionprocess
 
 
@@ -206,6 +236,14 @@ async def read_coproductionprocess(
         raise HTTPException(status_code=404, detail="CoproductionProcess not found")
     if not crud.coproductionprocess.can_read(db=db, user=current_user, object=coproductionprocess):
         raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    await log({
+        "model": "COPRODPROCESS",
+        "action": "GET",
+        "crud": False,
+        "coproductionprocess_id": coproductionprocess.id,
+    })
+
     return coproductionprocess
 
 
@@ -225,6 +263,14 @@ async def delete_coproductionprocess(
     if not crud.coproductionprocess.can_remove(db=db, user=current_user, object=coproductionprocess):
         raise HTTPException(status_code=403, detail="Not enough permissions")
     await crud.coproductionprocess.remove(db=db, id=id)
+
+    await log({
+        "model": "COPRODPROCESS",
+        "action": "DELETE",
+        "crud": False,
+        "coproductionprocess_id": coproductionprocess.id,
+    })
+
     return None
 
 
