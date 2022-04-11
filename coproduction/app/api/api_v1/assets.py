@@ -135,33 +135,44 @@ async def clone_asset(
     if not crud.asset.can_create(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
-    asset = await crud.asset.get(db=db, id=id)
-    if not asset:
+    asset : models.Asset
+    if not (asset := await crud.asset.get(db=db, id=id)):
         raise HTTPException(status_code=404, detail="Asset not found")
 
     # first check if task exists
-    task = crud.task.get(db=db, id=asset.task_id)
-    if not task:
+    task : models.Task
+    if not (task := await crud.task.get(db=db, id=asset.task_id)):
         raise HTTPException(status_code=404, detail="Task not found")
 
-    try:
-        external_info = requests.post(asset.internal_link + "/clone", headers={
-            "Authorization": "Bearer " + token
-        }).json()
-    except:
-        external_info = requests.post(asset.link + "/clone", headers={
-            "Authorization": "Bearer " + token
-        }).json()
+    if asset.type == "internalasset":
+        try:
+            external_info = requests.post(asset.internal_link + "/clone", headers={
+                "Authorization": "Bearer " + token
+            }).json()
+        except:
+            external_info = requests.post(asset.link + "/clone", headers={
+                "Authorization": "Bearer " + token
+            }).json()
 
-    external_id = external_info["id"] if "id" in external_info else external_info["_id"]
-    asset = await crud.asset.create(db=db, asset=schemas.AssetCreate(
-        task_id=asset.task_id,
-        softwareinterlinker_id=asset.softwareinterlinker_id,
-        knowledgeinterlinker_id=asset.knowledgeinterlinker_id,
-        external_asset_id=external_id
-    ), coproductionprocess_id=task.objective.phase.coproductionprocess_id, creator=current_user)
-    return asset
+        external_id = external_info["id"] if "id" in external_info else external_info["_id"]
 
+        asset : models.InternalAsset
+        return await crud.asset.create(db=db, asset=schemas.InternalAssetCreate(
+            task_id=asset.task_id,
+            softwareinterlinker_id=asset.softwareinterlinker_id,
+            knowledgeinterlinker_id=asset.knowledgeinterlinker_id,
+            external_asset_id=external_id
+        ), coproductionprocess_id=task.objective.phase.coproductionprocess_id, creator=current_user)
+    
+    if asset.type == "externalasset":
+        asset : models.ExternalAsset
+        return await crud.asset.create(db=db, asset=schemas.ExternalAssetCreate(
+            task_id=asset.task_id,
+            externalinterlinker_id=asset.externalinterlinker_id,
+            name=asset.name,
+            uri=asset.uri
+        ), coproductionprocess_id=task.objective.phase.coproductionprocess_id, creator=current_user)
+    raise HTTPException(status_code=400, detail="Asset type not recognized")
 
 @router.put("/{id}", response_model=schemas.AssetOutFull)
 async def update_asset(
