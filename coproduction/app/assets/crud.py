@@ -1,3 +1,4 @@
+import requests
 from sqlalchemy.orm import Session
 from typing import List
 from app.models import Asset, InternalAsset, ExternalAsset
@@ -8,6 +9,7 @@ import uuid
 from fastapi_pagination.ext.sqlalchemy import paginate
 from app.messages import log
 from fastapi.encoders import jsonable_encoder
+import favicon
 
 class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
 
@@ -33,6 +35,19 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
         if type(asset) == ExternalAssetCreate:
             print("IS EXTERNAL")
             data["type"] = "externalasset"
+
+            # try to get favicon
+            icons = favicon.get(asset.uri)
+            if len(icons) > 0:
+                icon = icons[0]
+                response = requests.get(icon.url, stream=True)
+                icon_path = f'/app/static/assets/{uuid.uuid4()}.{icon.format}'
+                with open(icon_path, 'wb') as image:
+                    for chunk in response.iter_content(1024):
+                        image.write(chunk)
+                icon_path = icon_path.replace("/app", "")
+                print(icon_path)
+                data["icon_path"] = icon_path
             db_obj = ExternalAsset(**data, creator=creator, coproductionprocess_id=coproductionprocess_id)
 
         if type(asset) == InternalAssetCreate:

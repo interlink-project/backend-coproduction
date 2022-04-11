@@ -119,11 +119,15 @@ class ExternalAsset(Asset):
         default=uuid.uuid4,
     )
     name = Column(String)
-    icon = Column(String)
+    icon_path = Column(String)
     externalinterlinker_id = Column(UUID(as_uuid=True))
     name = Column(String)
     uri = Column(String)
     
+    @property
+    def icon(self):
+        return settings.COMPLETE_SERVER_NAME + self.icon_path if self.icon_path else ""
+
     __mapper_args__ = {
         "polymorphic_identity": "externalasset",
     }

@@ -87,7 +87,7 @@ class ExternalAsset(ExternalAssetBase):
 
 
 class ExternalAssetOut(BaseAssetOut, ExternalAsset):
-    pass
+    icon: Optional[str]
 
 
 
