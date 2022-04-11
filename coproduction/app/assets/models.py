@@ -111,7 +111,7 @@ class InternalAsset(Asset):
     def internal_link(self):
         return self.int_link
 
-class ExternalAsset(BaseModel):
+class ExternalAsset(Asset):
     id = Column(
         UUID(as_uuid=True),
         ForeignKey("asset.id"),

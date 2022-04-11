@@ -5,6 +5,7 @@ from pydantic import BaseModel, validator
 from app.general.utils.AllOptional import AllOptional
 from datetime import datetime
 from app.config import settings
+from app.users.schemas import UserOut
 
 class TeamBase(BaseModel):
     name: str
@@ -32,3 +33,4 @@ class Team(TeamBase):
 
 class TeamOut(Team):
     logotype_link: Optional[str]
+    users: Optional[List[UserOut]]

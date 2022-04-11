@@ -37,7 +37,7 @@ class PhaseOutFull(PhaseOut):
 
 
 class TeamOutFull(TeamOut):
-    users: Optional[List[UserOutFull]]
+    roles: Optional[List[RoleOut]]
 
 
 class CoproductionProcessOutFull(CoproductionProcessOut):

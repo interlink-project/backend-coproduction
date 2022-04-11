@@ -160,7 +160,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         return coproductionprocess
 
     async def add_team(self, db: Session, coproductionprocess: models.CoproductionProcess, team: models.Team):
-        if obj := exportRoleCrud.add_team(db=db, role=coproductionprocess.default_role, team=team):
+        if obj := await exportRoleCrud.add_team(db=db, role=coproductionprocess.default_role, team=team):
             await log({
                 "model": self.modelName,
                 "action": "ADD_TEAM",
@@ -171,7 +171,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         return
 
     async def add_user(self, db: Session, coproductionprocess: models.CoproductionProcess, user: models.User):
-        if obj := exportRoleCrud.add_user(db=db, role=coproductionprocess.default_role, user=user):
+        if obj := await exportRoleCrud.add_user(db=db, role=coproductionprocess.default_role, user=user):
             await log({
                 "model": self.modelName,
                 "action": "ADD_USER",

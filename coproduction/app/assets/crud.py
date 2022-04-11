@@ -33,12 +33,12 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
         if type(asset) == ExternalAssetCreate:
             print("IS EXTERNAL")
             data["type"] = "externalasset"
-            db_obj = ExternalAsset(**data)
+            db_obj = ExternalAsset(**data, creator=creator, coproductionprocess_id=coproductionprocess_id)
 
         if type(asset) == InternalAssetCreate:
             print("IS INTERNAL")
             data["type"] = "internalasset"
-            db_obj = InternalAsset(**data)
+            db_obj = InternalAsset(**data, creator=creator, coproductionprocess_id=coproductionprocess_id)
 
         db.add(db_obj)
         db.commit()
@@ -50,7 +50,8 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
             "task_id": db_obj.task.id
         })
         db.refresh(db_obj)
-        db_obj.set_links()
+        if type(asset) == InternalAssetCreate:
+            db_obj.set_links()
         return db_obj
     
     # CRUD Permissions

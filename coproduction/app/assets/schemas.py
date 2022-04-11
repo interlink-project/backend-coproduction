@@ -9,8 +9,7 @@ from app.general.utils.AllOptional import AllOptional
 
 
 class BaseAssetBase(BaseModel):
-    task_id: Optional[uuid.UUID]
-    coproductionprocess_id: Optional[uuid.UUID]
+    task_id: uuid.UUID
 
 class BaseAssetCreate(BaseAssetBase):
     pass
@@ -23,6 +22,8 @@ class BaseAsset(BaseAssetBase):
     id: uuid.UUID
     created_at: datetime
     updated_at: Optional[datetime]
+    
+    coproductionprocess_id: Optional[uuid.UUID]
     
     class Config:
         orm_mode = True
@@ -65,7 +66,7 @@ class InternalAssetOut(BaseAssetOut, InternalAsset):
 
 class ExternalAssetBase(BaseAssetBase):
     type: Literal["externalasset"] = "externalasset"
-    externalinterlinker_id: uuid.UUID
+    externalinterlinker_id: Optional[uuid.UUID]
     name: str
     uri: str
     
