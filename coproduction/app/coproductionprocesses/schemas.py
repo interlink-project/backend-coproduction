@@ -34,6 +34,7 @@ class CoproductionProcessCreate(CoproductionProcessBase):
 class CoproductionProcessPatch(CoproductionProcessCreate):
     name:  Optional[str]
     logotype: Optional[str]
+    language: Optional[Languages]
 
 
 class CoproductionProcess(CoproductionProcessBase):
