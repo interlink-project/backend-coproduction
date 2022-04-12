@@ -4,7 +4,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 
 from sqlalchemy import (
     ARRAY,
-    Boolean,
+    Enum,
     Column,
     DateTime,
     ForeignKey,
@@ -21,10 +21,13 @@ from app import models
 from app.general.db.base_class import Base as BaseModel
 from app.config import settings
 from app.roles.models import Role
+from app.locales import Locales, DEFAULT_LANGUAGE_ENUM
 
 class CoproductionProcess(BaseModel):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
+    language = Column(Enum(Locales, create_constraint=False,
+                    native_enum=False), default=DEFAULT_LANGUAGE_ENUM)
     name = Column(String)
     description = Column(String)
 

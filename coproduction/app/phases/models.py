@@ -37,7 +37,7 @@ class Phase(BaseModel):
 
     # they belong to a process
     coproductionprocess_id = Column(
-        UUID(as_uuid=True), ForeignKey("coproductionprocess.id", ondelete='CASCADE')
+        UUID(as_uuid=True), ForeignKey("coproductionprocess.id")
     )
     coproductionprocess = relationship("CoproductionProcess", back_populates="phases")
 
@@ -61,7 +61,7 @@ class Phase(BaseModel):
     def start_date(self):
         return func.min(Task.start_date)
 
-    objectives = relationship("Objective", back_populates="phase")
+    objectives = relationship("Objective", back_populates="phase", cascade="all,delete")
     status = Column(Enum(Status, create_constraint=False, native_enum=False), default=Status.awaiting)
     progress = Column(Numeric, default=0)
     

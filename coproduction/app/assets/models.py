@@ -27,13 +27,13 @@ class Asset(BaseModel):
     type = Column(String)
 
     task_id = Column(
-        UUID(as_uuid=True), ForeignKey("task.id", ondelete='CASCADE')
+        UUID(as_uuid=True), ForeignKey("task.id")
     )
     task = orm.relationship("Task", back_populates="assets")
 
     # also attach to the coproduction process to do not delete if task deleted
     coproductionprocess_id = Column(
-        UUID(as_uuid=True), ForeignKey("coproductionprocess.id", ondelete='CASCADE')
+        UUID(as_uuid=True), ForeignKey("coproductionprocess.id")
     )
     coproductionprocess = orm.relationship(
         "CoproductionProcess", back_populates="assets")

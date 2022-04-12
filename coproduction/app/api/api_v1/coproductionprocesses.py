@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.config import settings
 from app.general import deps
-from app.middleware import DEFAULT_LANGUAGE
+from app.locales import DEFAULT_LANGUAGE
 
 router = APIRouter()
 

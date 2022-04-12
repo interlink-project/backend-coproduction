@@ -54,6 +54,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
             # uses postgres
             name=coproductionprocess.name,
             description=coproductionprocess.description,
+            language=coproductionprocess.language,
             aim=coproductionprocess.aim,
             idea=coproductionprocess.idea,
             organization=coproductionprocess.organization,

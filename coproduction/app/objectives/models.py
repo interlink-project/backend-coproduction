@@ -48,7 +48,7 @@ class Objective(BaseModel):
 
     # belongs to a phase
     phase_id = Column(
-        UUID(as_uuid=True), ForeignKey("phase.id", ondelete='CASCADE')
+        UUID(as_uuid=True), ForeignKey("phase.id")
     )
     phase = relationship("Phase", back_populates="objectives")
 
@@ -60,7 +60,7 @@ class Objective(BaseModel):
     def start_date(self):
         return func.min(Task.start_date)
 
-    tasks = relationship("Task", back_populates="objective")
+    tasks = relationship("Task", back_populates="objective", cascade="all,delete")
     status = Column(Enum(Status, create_constraint=False,
                     native_enum=False), default=Status.awaiting)
     progress = Column(Numeric, default=0)

@@ -51,7 +51,7 @@ class Task(BaseModel):
         
 
     problemprofiles = Column(ARRAY(String), default=list)
-    assets = relationship("Asset", back_populates="task")
+    assets = relationship("Asset", back_populates="task", cascade="all,delete")
 
     status = Column(Enum(Status, create_constraint=False, native_enum=False), default=Status.awaiting)
     
