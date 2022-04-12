@@ -100,7 +100,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         db.refresh(db_obj)
         return db_obj
 
-    async def set_schema(self, db: Session, coproductionprocess: models.CoproductionProcess, coproductionschema: dict, language: str = "en"):
+    async def set_schema(self, db: Session, coproductionprocess: models.CoproductionProcess, coproductionschema: dict):
         total = {}
         for phasemetadata in coproductionschema.get("phasemetadatas", []):
             phasemetadata: dict

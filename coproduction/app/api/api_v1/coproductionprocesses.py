@@ -115,13 +115,12 @@ async def set_schema(
     db: Session = Depends(deps.get_db),
     schema_setter: CoproductionSchemaSetter,
     current_user: models.User = Depends(deps.get_current_user),
-    language: str = DEFAULT_LANGUAGE
 ) -> Any:
     if (coproductionprocess := await crud.coproductionprocess.get(db=db, id=id)):
         try:
             coproductionschema = requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/coproductionschemas/{schema_setter.coproductionschema_id}", headers={
                 # "X-API-Key": "secret",
-                "Accept-Language": language
+                "Accept-Language": coproductionprocess.language.value
             }).json()
         except Exception as e:
             print(e)
