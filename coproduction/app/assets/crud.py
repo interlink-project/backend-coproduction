@@ -22,12 +22,12 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
         
         if task_id:
             queries.append(Asset.task_id == task_id)
-        await log({
-            "model": self.modelName,
-            "action": "LIST",
-            "coproductionprocess_id": coproductionprocess_id,
-            "task_id": task_id
-        })
+        # await log({
+        #     "model": self.modelName,
+        #     "action": "LIST",
+        #     "coproductionprocess_id": coproductionprocess_id,
+        #     "task_id": task_id
+        # })
         return paginate(db.query(Asset).filter(*queries))
     
     async def create(self, db: Session, asset: AssetCreate, coproductionprocess_id: uuid.UUID, creator: models.User) -> Asset:
@@ -57,13 +57,14 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
 
         db.add(db_obj)
         db.commit()
-        await log({
-            "model": self.modelName,
-            "action": "CREATE",
-            "id": db_obj.id,
-            "coproductionprocess_id": coproductionprocess_id,
-            "task_id": db_obj.task.id
-        })
+        # await log({
+        #     "model": self.modelName,
+        #     "action": "CREATE",
+        #     "id": db_obj.id,
+        #     "crud": True,
+        #     "coproductionprocess_id": coproductionprocess_id,
+        #     "task_id": db_obj.task_id
+        # })
         db.refresh(db_obj)
         if type(asset) == InternalAssetCreate:
             db_obj.set_links()

@@ -12,6 +12,8 @@ from slugify import slugify
 from fastapi_pagination import Page
 from pydantic import BaseModel
 
+from app.messages import log
+
 router = APIRouter()
 
 
@@ -43,8 +45,21 @@ async def create_team(
     """
     Create new team.
     """
-    if not await crud.team.get_by_name(db=db, name=team_in.name):
-        return await crud.team.create(db=db, team=team_in, creator=current_user)
+    team = await crud.team.get_by_name(db=db, name=team_in.name)
+
+    if not team:
+
+        team = await crud.team.create(db=db, team=team_in, creator=current_user)
+
+        await log({
+            "model": "TEAM",
+            "action": "CREATE",
+            "crud": False,
+            "team_id": team.id
+        })
+
+        return team
+
     raise HTTPException(status_code=400, detail="Team already exists")
 
 
@@ -103,11 +118,21 @@ async def update_team(
     Update an team.
     """
     team = await crud.team.get(db=db, id=id)
+
     if not team:
         raise HTTPException(status_code=404, detail="Team not found")
     if not crud.team.can_update(current_user, team):
         raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    await log({
+        "model": "TEAM",
+        "action": "UPDATE",
+        "crud": False,
+        "team_id": team.id
+    })
+
     team = await crud.team.update(db=db, db_obj=team, obj_in=team_in)
+
     return team
 
 
@@ -122,10 +147,19 @@ async def read_team(
     Get team by ID.
     """
     team = await crud.team.get(db=db, id=id)
+
     if not team:
         raise HTTPException(status_code=404, detail="Team not found")
     if not crud.team.can_read(current_user, team):
         raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    await log({
+        "model": "TEAM",
+        "action": "GET",
+        "crud": False,
+        "team_id": team.id
+    })
+
     return team
 
 
@@ -140,9 +174,19 @@ async def delete_team(
     Delete an team.
     """
     team = await crud.team.get(db=db, id=id)
+
     if not team:
         raise HTTPException(status_code=404, detail="Team not found")
     if not crud.team.can_remove(current_user, team):
         raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    await log({
+        "model": "TEAM",
+        "action": "DELETE",
+        "crud": False,
+        "team_id": team.id
+    })
+
     await crud.team.remove(db=db, id=id)
+
     return None
