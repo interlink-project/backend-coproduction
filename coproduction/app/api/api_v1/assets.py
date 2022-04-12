@@ -27,6 +27,7 @@ async def list_assets(
     """
     Retrieve assets.
     """
+
     if not crud.asset.can_list(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
@@ -45,6 +46,8 @@ async def create_asset(
     """
     Create new asset.
     """
+
+
     if not crud.asset.can_create(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
@@ -67,12 +70,15 @@ async def create_asset(
             print("CREATING WITH ", response.json())
             assert response.status_code == 200
 
+        softwareinterlinker = response.json()
+
     except Exception as e:
         raise e
 
     asset = await crud.asset.create(
         db=db, asset=asset_in, coproductionprocess_id=task.objective.phase.coproductionprocess_id, creator=current_user)
 
+    # my post create new asset
     await log({
         "model": "ASSET",
         "action": "CREATE",
@@ -81,7 +87,9 @@ async def create_asset(
         "phase_id": asset.task.objective.phase_id,
         "objective_id": asset.task.objective_id,
         "task_id": asset.task_id,
-        "asset_id": asset.id
+        "asset_id": asset.id,
+        "softwareinterlinker_id": asset.softwareinterlinker_id,
+        "softwareinterlinker_name": softwareinterlinker.get("name")
     })
 
     return asset
@@ -136,6 +144,23 @@ async def instantiate_asset_from_knowledgeinterlinker(
             "task_id": task.id
         }
     ))
+
+    # my post create new asset from template
+    await log({
+        "model": "ASSET",
+        "action": "CREATE",
+        "crud": False,
+        "coproductionprocess_id": asset.task.objective.phase.coproductionprocess_id,
+        "phase_id": asset.task.objective.phase_id,
+        "objective_id": asset.task.objective_id,
+        "task_id": asset.task_id,
+        "asset_id": asset.id,
+        "knowledgeinterlinker_id": asset.knowledgeinterlinker_id,
+        "knowledgeinterlinker_name": interlinker.get("name"),
+        "softwareinterlinker_id": interlinker.get("softwareinterlinker").get("id"),
+        "softwareinterlinker_name": interlinker.get("softwareinterlinker").get("name")
+    })
+
     return {**jsonable_encoder(asset), **external_info}
 
 
@@ -210,6 +235,7 @@ async def update_asset(
         raise HTTPException(status_code=403, detail="Not enough permissions")
     asset = await crud.asset.update(db=db, db_obj=asset, obj_in=asset_in)
 
+    # my put
     await log({
         "model": "ASSET",
         "action": "UPDATE",
@@ -239,19 +265,21 @@ async def read_asset(
     if asset := await crud.asset.get(db=db, id=id):
         if not crud.asset.can_read(current_user, asset):
             raise HTTPException(status_code=403, detail="Not enough permissions")
-        return asset
 
-    await log({
-        "model": "ASSET",
-        "action": "GET",
-        "crud": False,
-        "coproductionprocess_id": asset.task.objective.phase.coproductionprocess_id,
-        "phase_id": asset.task.objective.phase_id,
-        "objective_id": asset.task.objective_id,
-        "task_id": asset.task_id,
-        "asset_id": asset.id,
-        "interlinker_id": asset.softwareinterlinker_id
-    })
+        # my get
+        await log({
+            "model": "ASSET",
+            "action": "GET",
+            "crud": False,
+            "coproductionprocess_id": asset.task.objective.phase.coproductionprocess_id,
+            "phase_id": asset.task.objective.phase_id,
+            "objective_id": asset.task.objective_id,
+            "task_id": asset.task_id,
+            "asset_id": asset.id,
+            "interlinker_id": asset.softwareinterlinker_id
+        })
+
+        return asset
 
     raise HTTPException(status_code=404, detail="Asset not found")
 
@@ -296,19 +324,22 @@ async def delete_asset(
         if not crud.asset.can_remove(current_user, asset):
             raise HTTPException(status_code=403, detail="Not enough permissions")
         await crud.asset.remove(db=db, id=id)
-        return None
 
-    await log({
-        "model": "ASSET",
-        "action": "DELETE",
-        "crud": False,
-        "coproductionprocess_id": asset.task.objective.phase.coproductionprocess_id,
-        "phase_id": asset.task.objective.phase_id,
-        "objective_id": asset.task.objective_id,
-        "task_id": asset.task_id,
-        "asset_id": asset.id,
-        "interlinker_id": asset.softwareinterlinker_id
-    })
+
+        # my delete
+        await log({
+            "model": "ASSET",
+            "action": "DELETE",
+            "crud": False,
+            "coproductionprocess_id": asset.task.objective.phase.coproductionprocess_id,
+            "phase_id": asset.task.objective.phase_id,
+            "objective_id": asset.task.objective_id,
+            "task_id": asset.task_id,
+            "asset_id": asset.id,
+            "interlinker_id": asset.softwareinterlinker_id
+        })
+
+        return None
 
     # TODO: DELETE to interlinker
     raise HTTPException(status_code=404, detail="Asset not found")
