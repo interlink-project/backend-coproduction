@@ -1,7 +1,6 @@
 import json
 import uuid
 from typing import TypedDict
-
 import requests
 from sqlalchemy import (
     Boolean,
@@ -19,6 +18,7 @@ from sqlalchemy.sql.expression import null
 
 from app.config import settings
 from app.general.db.base_class import Base as BaseModel
+from cached_property import cached_property
 
 
 class Asset(BaseModel):
@@ -49,6 +49,7 @@ class Asset(BaseModel):
         "polymorphic_on": type,
     }
 
+
 class InternalAsset(Asset):
     id = Column(
         UUID(as_uuid=True),
@@ -65,51 +66,62 @@ class InternalAsset(Asset):
         "polymorphic_identity": "internalasset",
     }
 
-    def set_links(self):
-        response = requests.get(
-            f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{self.softwareinterlinker_id}").json()
-
-        backend = response["backend"]
-        self.ext_link = f"{backend}/{self.external_asset_id}"
-
-        integration_data = response["integration"]
-        backend = integration_data["service_name"]
-        api_path = integration_data["api_path"]
-        self.int_link = f"http://{backend}{api_path}/{self.external_asset_id}"
-        self.caps = {
-            "clone": integration_data["clone"],
-            "view": integration_data["view"],
-            "edit": integration_data["edit"],
-            "delete": integration_data["delete"],
-            "download": integration_data["download"],
-        }
-        self.interlinker_data = {
-            "id": response["id"],
-            "name": response["name"],
-            "description": response["description"],
-            "logotype_link": response["logotype_link"],
-        }
-
-    # on init
-    @orm.reconstructor
-    def init_on_load(self):
-        self.set_links()
-
     def __repr__(self):
         return "<Asset %r>" % self.id
+    
+    @cached_property
+    def software_response(self):
+        return requests.get(
+            f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{self.softwareinterlinker_id}").json()
+    
+    @cached_property
+    def knowledge_response(self):
+        return requests.get(
+            f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{self.knowledgeinterlinker_id}").json()
 
     @property
-    def capabilities(self):
-        return self.caps
+    def knowledgeinterlinker(self):
+        return {
+            "id": self.knowledge_response.get("id"),
+            "name": self.knowledge_response.get("name"),
+            "description": self.knowledge_response.get("description"),
+            "logotype_link": self.knowledge_response.get("logotype_link"),
+        } if self.knowledge_response else None
 
     @property
     def link(self):
-        return self.ext_link
+        backend = self.software_response.get("backend")
+        return f"{backend}/{self.external_asset_id}"
 
-    # not exposed in out schema
     @property
     def internal_link(self):
-        return self.int_link
+        backend = self.software_response.get("integration").get("service_name")
+        api_path = self.software_response.get("integration").get("api_path")
+        return f"http://{backend}{api_path}/{self.external_asset_id}"
+
+    @property
+    def external_info(self):
+        return requests.get(self.internal_link).json()
+
+    @property
+    def softwareinterlinker(self):
+        return {
+            "id": self.software_response.get("id"),
+            "name": self.software_response.get("name"),
+            "description": self.software_response.get("description"),
+            "logotype_link": self.software_response.get("logotype_link"),
+        }
+
+    @property
+    def capabilities(self):
+        return {
+            "clone": self.software_response.get("integration").get("clone"),
+            "view": self.software_response.get("integration").get("view"),
+            "edit": self.software_response.get("integration").get("edit"),
+            "delete": self.software_response.get("integration").get("delete"),
+            "download": self.software_response.get("integration").get("download"),
+        }
+
 
 class ExternalAsset(Asset):
     id = Column(
@@ -123,7 +135,7 @@ class ExternalAsset(Asset):
     externalinterlinker_id = Column(UUID(as_uuid=True))
     name = Column(String)
     uri = Column(String)
-    
+
     @property
     def icon(self):
         return settings.COMPLETE_SERVER_NAME + self.icon_path if self.icon_path else ""

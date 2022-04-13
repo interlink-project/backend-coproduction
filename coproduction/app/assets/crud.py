@@ -68,8 +68,6 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
         #     "task_id": db_obj.task_id
         # })
         db.refresh(db_obj)
-        if type(asset) == InternalAssetCreate:
-            db_obj.set_links()
         return db_obj
     
     # CRUD Permissions

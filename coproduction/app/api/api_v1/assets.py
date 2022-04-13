@@ -53,18 +53,18 @@ async def create_asset(
 
     # check that interlinker in catalogue
     try:
+        url = None
         if type(asset_in) == schemas.InternalAssetCreate and asset_in.softwareinterlinker_id:
-            response = requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.softwareinterlinker_id}", headers={
-                "X-API-Key": "secret"
-            })
-            print("CREATING WITH ", response.json())
-            assert response.status_code == 200
-        if type(asset_in) == schemas.ExternalAssetCreate and asset_in.externalinterlinker_id:
-            response = requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.externalinterlinker_id}", headers={
-                "X-API-Key": "secret"
-            })
-            print("CREATING WITH ", response.json())
-            assert response.status_code == 200
+            url = f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.softwareinterlinker_id}"
+            
+        elif type(asset_in) == schemas.ExternalAssetCreate and asset_in.externalinterlinker_id:
+            url = f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.externalinterlinker_id}"
+
+        response = requests.get(url, headers={
+            "X-API-Key": "secret"
+        })
+        print("CREATING WITH ", response.json())
+        assert response.status_code == 200
 
     except Exception as e:
         raise e
@@ -89,7 +89,7 @@ class InstantiateSchema(BaseModel):
     knowledgeinterlinker_id: uuid.UUID
     task_id: uuid.UUID
 
-@router.post("/instantiate")
+@router.post("/instantiate", response_model=schemas.AssetOutFull)
 async def instantiate_asset_from_knowledgeinterlinker(
     *,
     asset_in: InstantiateSchema,
@@ -112,7 +112,7 @@ async def instantiate_asset_from_knowledgeinterlinker(
                 "X-API-Key": "secret"
             })
     interlinker = response.json()
-    print(interlinker)
+
     if response.status_code == 404 or not interlinker:
         raise HTTPException(status_code=404, detail="Knowledge interlinker not found")
 
@@ -125,7 +125,6 @@ async def instantiate_asset_from_knowledgeinterlinker(
             "Authorization": "Bearer " + token
         }).json()
 
-    print(external_info)
     asset = await crud.asset.create(db=db, coproductionprocess_id=task.objective.phase.coproductionprocess_id, creator=current_user, asset=schemas.InternalAssetCreate(
         **{
             "knowledgeinterlinker_id": asset_in.knowledgeinterlinker_id,
@@ -135,7 +134,7 @@ async def instantiate_asset_from_knowledgeinterlinker(
             "task_id": task.id
         }
     ))
-    return {**jsonable_encoder(asset), **external_info}
+    return asset
 
 
 @router.post("/{id}/clone", response_model=schemas.AssetOutFull)
@@ -189,7 +188,7 @@ async def clone_asset(
             name=asset.name,
             uri=asset.uri
         ), coproductionprocess_id=task.objective.phase.coproductionprocess_id, creator=current_user)
-    raise HTTPException(status_code=400, detail="Asset type not recognized")
+    raise HTTPException(status_code=500, detail="Asset type not recognized")
 
 @router.put("/{id}", response_model=schemas.AssetOutFull)
 async def update_asset(
