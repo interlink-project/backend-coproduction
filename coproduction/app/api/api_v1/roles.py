@@ -16,7 +16,7 @@ class RoleSwitch(BaseModel):
     new_role: uuid.UUID
     old_role: uuid.UUID
     team_id: Optional[uuid.UUID]
-    user_id: Optional[uuid.UUID]
+    user_id: Optional[str]
 
 @router.post("/switch")
 async def switch_role(
@@ -96,7 +96,6 @@ async def get_roles(
     Get role by ID.
     """
     if process := await crud.coproductionprocess.get(db=db, id=coproductionprocess_id):
-
         return process.roles
 
     raise HTTPException(status_code=404, detail="Coproductionprocess not found")

@@ -5,8 +5,8 @@ from fastapi import Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.general.db.session import SessionLocal
-from app.general.authentication import decode_token
 from app import crud, models
+from starlette_context import context
 
 def get_token_in_cookie(request):
     try:
@@ -44,10 +44,8 @@ async def get_current_user(
     db: Session = Depends(get_db),
     # current_token: str = Depends(get_current_token)
 ) -> Optional[models.User]:
-    from app.middleware import get_user
-
     try:
-        if user := get_user():
+        if user := context.data.get("user", None):
             return await crud.user.get(db=db, id=user["sub"])
         return None
     except Exception as e:

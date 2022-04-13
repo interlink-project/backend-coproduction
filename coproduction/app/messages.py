@@ -4,7 +4,7 @@ from base64 import b64encode
 import aiormq
 import json
 from uuid import UUID
-from app.middleware import get_user_id
+from starlette_context import context
 from contextvars import ContextVar
 
 _disable_logging: ContextVar[str] = ContextVar("disable_logging", default=False)
@@ -34,7 +34,7 @@ rabbitmq_password = os.environ.get("RABBITMQ_PASSWORD")
 async def log(data: dict):
     if is_logging_disabled():
         return
-    data["user_id"] = get_user_id()
+    data["user_id"] = context.data.get("user", {}).get("id", None)
     data["service"] = "coproduction"
 
     request = b64encode(json.dumps(data,cls=UUIDEncoder).encode())

@@ -38,9 +38,9 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
 
             # try to get favicon
             icons = favicon.get(asset.uri)
-            if len(icons) > 0:
-                icon = icons[0]
+            if len(icons) > 0 and (icon := icons[0]) and icon.format:
                 response = requests.get(icon.url, stream=True)
+                
                 icon_path = f'/app/static/assets/{uuid.uuid4()}.{icon.format}'
                 with open(icon_path, 'wb') as image:
                     for chunk in response.iter_content(1024):

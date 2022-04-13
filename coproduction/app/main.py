@@ -4,13 +4,26 @@ from starlette.middleware.cors import CORSMiddleware
 
 from app.api.api_v1 import api_router
 from app.config import settings
-from app.middleware import RequestContextMiddleware
+from starlette.middleware import Middleware
 
+from starlette_context import plugins, context
+from starlette_context.middleware import ContextMiddleware
+from app.middleware import UserPlugin, LanguagePlugin
+
+middleware = [
+    Middleware(
+        ContextMiddleware,
+        plugins=(
+            plugins.RequestIdPlugin(),
+            plugins.CorrelationIdPlugin(),
+            UserPlugin(),
+            LanguagePlugin()
+        )
+    )
+]
 app = FastAPI(
-    title=settings.PROJECT_NAME, docs_url="/docs", openapi_url=f"{settings.API_V1_STR}/openapi.json", root_path=settings.BASE_PATH
+    title=settings.PROJECT_NAME, docs_url="/docs", openapi_url=f"{settings.API_V1_STR}/openapi.json", root_path=settings.BASE_PATH, middleware=middleware
 )
-app.add_middleware(RequestContextMiddleware)
-
 
 @app.get("/")
 def main():
@@ -19,7 +32,7 @@ def main():
 
 @app.get("/healthcheck")
 def healthcheck():
-    return True
+    return context.data
 
 # Set all CORS enabled origins
 if settings.BACKEND_CORS_ORIGINS:
