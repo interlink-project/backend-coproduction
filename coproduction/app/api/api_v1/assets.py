@@ -70,7 +70,7 @@ async def create_asset(
             print("CREATING WITH ", response.json())
             assert response.status_code == 200
 
-        softwareinterlinker = response.json()
+        interlinker = response.json()
 
     except Exception as e:
         raise e
@@ -88,8 +88,10 @@ async def create_asset(
         "objective_id": asset.task.objective_id,
         "task_id": asset.task_id,
         "asset_id": asset.id,
-        "softwareinterlinker_id": asset.softwareinterlinker_id,
-        "softwareinterlinker_name": softwareinterlinker.get("name")
+        "knowledgeinterlinker_id": "",
+        "knowledgeinterlinker_name": "",
+        "softwareinterlinker_id": interlinker.get("id"),
+        "softwareinterlinker_name": interlinker.get("name")
     })
 
     return asset
@@ -235,17 +237,41 @@ async def update_asset(
         raise HTTPException(status_code=403, detail="Not enough permissions")
     asset = await crud.asset.update(db=db, db_obj=asset, obj_in=asset_in)
 
+
+    # check that interlinker in catalogue
+    try:
+        if type(asset_in) == schemas.InternalAssetCreate and asset_in.softwareinterlinker_id:
+            response = requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.softwareinterlinker_id}", headers={
+                "X-API-Key": "secret"
+            })
+            print("CREATING WITH ", response.json())
+            assert response.status_code == 200
+        if type(asset_in) == schemas.ExternalAssetCreate and asset_in.externalinterlinker_id:
+            response = requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.externalinterlinker_id}", headers={
+                "X-API-Key": "secret"
+            })
+            print("CREATING WITH ", response.json())
+            assert response.status_code == 200
+
+        interlinker = response.json()
+
+    except Exception as e:
+        raise e
+
     # my put
     await log({
         "model": "ASSET",
         "action": "UPDATE",
         "crud": False,
-        "coproductionprocess_id": asset.task.objective.phase.coproductionprocess.id,
-        "phase_id": asset.task.objective.phase.id,
-        "objective_id": asset.task.objective.id,
-        "task_id": asset.task.id,
+        "coproductionprocess_id": asset.task.objective.phase.coproductionprocess_id,
+        "phase_id": asset.task.objective.phase_id,
+        "objective_id": asset.task.objective_id,
+        "task_id": asset.task_id,
         "asset_id": asset.id,
-        "interlinker_id": asset.softwareinterlinker_id
+        "knowledgeinterlinker_id": asset.knowledgeinterlinker_id,
+        "knowledgeinterlinker_name": interlinker.get("name"),
+        "softwareinterlinker_id": interlinker.get("softwareinterlinker").get("id"),
+        "softwareinterlinker_name": interlinker.get("softwareinterlinker").get("name")
     })
 
     return asset
@@ -256,6 +282,7 @@ async def read_asset(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
+    asset_in: schemas.AssetPatch,
     current_user: Optional[models.User] = Depends(deps.get_current_user),
 ) -> Any:
     """
@@ -265,6 +292,30 @@ async def read_asset(
     if asset := await crud.asset.get(db=db, id=id):
         if not crud.asset.can_read(current_user, asset):
             raise HTTPException(status_code=403, detail="Not enough permissions")
+
+        #  check that interlinker in catalogue
+        try:
+            if type(asset_in) == schemas.InternalAssetCreate and asset_in.softwareinterlinker_id:
+                response = requests.get(
+                    f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.softwareinterlinker_id}",
+                    headers={
+                        "X-API-Key": "secret"
+                    })
+                print("CREATING WITH ", response.json())
+                assert response.status_code == 200
+            if type(asset_in) == schemas.ExternalAssetCreate and asset_in.externalinterlinker_id:
+                response = requests.get(
+                    f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.externalinterlinker_id}",
+                    headers={
+                        "X-API-Key": "secret"
+                    })
+                print("CREATING WITH ", response.json())
+                assert response.status_code == 200
+
+            interlinker = response.json()
+
+        except Exception as e:
+            raise e
 
         # my get
         await log({
@@ -276,7 +327,10 @@ async def read_asset(
             "objective_id": asset.task.objective_id,
             "task_id": asset.task_id,
             "asset_id": asset.id,
-            "interlinker_id": asset.softwareinterlinker_id
+            "knowledgeinterlinker_id": asset.knowledgeinterlinker_id,
+            "knowledgeinterlinker_name": interlinker.get("name"),
+            "softwareinterlinker_id": interlinker.get("softwareinterlinker").get("id"),
+            "softwareinterlinker_name": interlinker.get("softwareinterlinker").get("name")
         })
 
         return asset
@@ -314,6 +368,7 @@ async def delete_asset(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
+    asset_in: schemas.AssetPatch,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
@@ -326,6 +381,30 @@ async def delete_asset(
         await crud.asset.remove(db=db, id=id)
 
 
+        #  check that interlinker in catalogue
+        try:
+            if type(asset_in) == schemas.InternalAssetCreate and asset_in.softwareinterlinker_id:
+                response = requests.get(
+                    f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.softwareinterlinker_id}",
+                    headers={
+                        "X-API-Key": "secret"
+                    })
+                print("CREATING WITH ", response.json())
+                assert response.status_code == 200
+            if type(asset_in) == schemas.ExternalAssetCreate and asset_in.externalinterlinker_id:
+                response = requests.get(
+                    f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.externalinterlinker_id}",
+                    headers={
+                        "X-API-Key": "secret"
+                    })
+                print("CREATING WITH ", response.json())
+                assert response.status_code == 200
+
+            interlinker = response.json()
+
+        except Exception as e:
+            raise e
+
         # my delete
         await log({
             "model": "ASSET",
@@ -336,7 +415,10 @@ async def delete_asset(
             "objective_id": asset.task.objective_id,
             "task_id": asset.task_id,
             "asset_id": asset.id,
-            "interlinker_id": asset.softwareinterlinker_id
+            "knowledgeinterlinker_id": asset.knowledgeinterlinker_id,
+            "knowledgeinterlinker_name": interlinker.get("name"),
+            "softwareinterlinker_id": interlinker.get("softwareinterlinker").get("id"),
+            "softwareinterlinker_name": interlinker.get("softwareinterlinker").get("name")
         })
 
         return None
