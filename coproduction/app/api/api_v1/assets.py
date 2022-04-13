@@ -3,7 +3,6 @@ from typing import Any, List, Optional
 
 import requests
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
-from fastapi_pagination import Page
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -17,7 +16,7 @@ from app.messages import log
 router = APIRouter()
 
 
-@router.get("", response_model=Page[schemas.AssetOutFull])
+@router.get("", response_model=List[schemas.AssetOutFull])
 async def list_assets(
     db: Session = Depends(deps.get_db),
     coproductionprocess_id: Optional[uuid.UUID] = Query(None),

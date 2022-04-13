@@ -6,7 +6,6 @@ from app.schemas import AssetCreate, AssetPatch, ExternalAssetCreate, InternalAs
 from app.general.utils.CRUDBase import CRUDBase
 from app import models
 import uuid
-from fastapi_pagination.ext.sqlalchemy import paginate
 from app.messages import log
 from fastapi.encoders import jsonable_encoder
 import favicon
@@ -28,7 +27,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
         #     "coproductionprocess_id": coproductionprocess_id,
         #     "task_id": task_id
         # })
-        return paginate(db.query(Asset).filter(*queries))
+        return db.query(Asset).filter(*queries).all()
     
     async def create(self, db: Session, asset: AssetCreate, coproductionprocess_id: uuid.UUID, creator: models.User) -> Asset:
         data = jsonable_encoder(asset)

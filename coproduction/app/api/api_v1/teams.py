@@ -9,7 +9,6 @@ from app import crud, models, schemas
 from app.general import deps
 import aiofiles
 from slugify import slugify
-from fastapi_pagination import Page
 from pydantic import BaseModel
 
 from app.messages import log
@@ -17,7 +16,7 @@ from app.messages import log
 router = APIRouter()
 
 
-@router.get("", response_model=Page[schemas.TeamOutFull])
+@router.get("", response_model=List[schemas.TeamOutFull])
 async def list_teams(
     db: Session = Depends(deps.get_db),
     current_user: Optional[models.User] = Depends(deps.get_current_user),

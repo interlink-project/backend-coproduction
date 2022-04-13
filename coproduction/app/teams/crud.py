@@ -7,7 +7,6 @@ from app.schemas import TeamCreate, TeamPatch
 import uuid
 from app import models
 from app.users.crud import exportCrud as users_crud
-from fastapi_pagination.ext.sqlalchemy import paginate
 
 class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
     async def get_multi_filtered(
@@ -18,7 +17,7 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
         #     queries.append(Team.roles.any(models.Role.id.in_([coproductionprocess_id])))
         # else:
         #     queries.append(Team.is_public == False)
-        return paginate(db.query(Team).filter(*queries))
+        return db.query(Team).filter(*queries).all()
 
     async def get_by_name(self, db: Session, name: str) -> Optional[Team]:
         return db.query(Team).filter(Team.name == name).first()
