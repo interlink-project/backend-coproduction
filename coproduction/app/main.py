@@ -64,8 +64,3 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 
 from fastapi.staticfiles import StaticFiles
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
-
-from fastapi_pagination import add_pagination
-# PAGINATION
-add_pagination(app)
