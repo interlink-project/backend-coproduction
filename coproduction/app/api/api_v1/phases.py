@@ -153,4 +153,13 @@ async def delete_phase(
         "phase_id": phase.id
     })
     await crud.phase.remove(db=db, id=id)
+
+    await log({
+        "model": "PHASE",
+        "action": "DELETE",
+        "crud": False,
+        "coproductionprocess_id": phase.coproductionprocess_id,
+        "phase_id": phase.id
+    })
+
     return None

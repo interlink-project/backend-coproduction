@@ -96,6 +96,7 @@ async def get_roles(
     Get role by ID.
     """
     if process := await crud.coproductionprocess.get(db=db, id=coproductionprocess_id):
+
         return process.roles
 
     raise HTTPException(status_code=404, detail="Coproductionprocess not found")
@@ -228,6 +229,7 @@ async def remove_team(
                 "team_id": team.id,
                 "rol_id": role.id
             })
+
             await crud.role.remove_team(db=db, role=role, team=team)
             return True
         raise HTTPException(status_code=400, detail="Team not found")
@@ -254,12 +256,13 @@ async def remove_user(
 
             await log({
                 "model": "ROLE",
-                "action": "REMOVE USER",
+                "action": "DELETE USER",
                 "crud": False,
                 "coproductionprocess_id": role.coproductionprocess_id,
                 "user_id": user.id,
                 "rol_id": role.id
             })
+
             await crud.role.remove_user(db=db, role=role, user=user)
 
             return True

@@ -21,12 +21,12 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
         
         if task_id:
             queries.append(Asset.task_id == task_id)
-        # await log({
-        #     "model": self.modelName,
-        #     "action": "LIST",
-        #     "coproductionprocess_id": coproductionprocess_id,
-        #     "task_id": task_id
-        # })
+            await log({
+                "model": self.modelName,
+                "action": "LIST",
+                "coproductionprocess_id": coproductionprocess_id,
+                "task_id": task_id
+            })
         return db.query(Asset).filter(*queries).all()
     
     async def create(self, db: Session, asset: AssetCreate, coproductionprocess_id: uuid.UUID, creator: models.User) -> Asset:
@@ -59,14 +59,14 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
 
         db.add(db_obj)
         db.commit()
-        # await log({
-        #     "model": self.modelName,
-        #     "action": "CREATE",
-        #     "id": db_obj.id,
-        #     "crud": True,
-        #     "coproductionprocess_id": coproductionprocess_id,
-        #     "task_id": db_obj.task_id
-        # })
+        await log({
+            "model": self.modelName,
+            "action": "CREATE",
+            "id": db_obj.id,
+            "crud": True,
+            "coproductionprocess_id": coproductionprocess_id,
+            "task_id": db_obj.task_id
+        })
         db.refresh(db_obj)
         return db_obj
     

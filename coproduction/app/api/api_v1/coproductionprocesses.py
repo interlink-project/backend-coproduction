@@ -16,6 +16,8 @@ from app.locales import DEFAULT_LANGUAGE
 
 from app.messages import log
 
+from app.messages import log
+
 router = APIRouter()
 
 
@@ -242,6 +244,7 @@ async def read_coproductionprocess(
         "crud": False,
         "coproductionprocess_id": coproductionprocess.id,
     })
+
     return coproductionprocess
 
 
@@ -268,6 +271,7 @@ async def delete_coproductionprocess(
         "coproductionprocess_id": coproductionprocess.id,
     })
     await crud.coproductionprocess.remove(db=db, id=id)
+
     return None
 
 

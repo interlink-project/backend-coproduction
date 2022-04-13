@@ -29,7 +29,7 @@ async def insert_log(
     """
 
     await log({
-        "model": log_in.model,
+        "model": log_in.model.upper(),
         "action": log_in.action.upper(),
         "frontend": True,
         "object_id": log_in.object_id

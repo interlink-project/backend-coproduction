@@ -153,6 +153,9 @@ async def delete_objective(
         "phase_id": objective.phase_id,
         "objective_id": objective.id
     })
-    objective = await crud.objective.remove(db=db, id=id)
+
+
+    await crud.objective.remove(db=db, id=id)
+
     return None
 

@@ -138,4 +138,15 @@ async def delete_task(
         "task_id": task.id
     })
     await crud.task.remove(db=db, id=id)
+
+    await log({
+        "model": "TASK",
+        "action": "DELETE",
+        "crud": False,
+        "coproductionprocess_id": task.objective.phase.coproductionprocess_id,
+        "phase_id": task.objective.phase_id,
+        "objective_id": task.objective_id,
+        "task_id": task.id
+    })
+
     return None
