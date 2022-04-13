@@ -185,7 +185,5 @@ async def delete_team(
         "crud": False,
         "team_id": team.id
     })
-
     await crud.team.remove(db=db, id=id)
-
     return None

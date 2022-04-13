@@ -242,7 +242,6 @@ async def read_coproductionprocess(
         "crud": False,
         "coproductionprocess_id": coproductionprocess.id,
     })
-
     return coproductionprocess
 
 
@@ -261,7 +260,6 @@ async def delete_coproductionprocess(
         raise HTTPException(status_code=404, detail="CoproductionProcess not found")
     if not crud.coproductionprocess.can_remove(db=db, user=current_user, object=coproductionprocess):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    await crud.coproductionprocess.remove(db=db, id=id)
 
     await log({
         "model": "COPRODPROCESS",
@@ -269,7 +267,7 @@ async def delete_coproductionprocess(
         "crud": False,
         "coproductionprocess_id": coproductionprocess.id,
     })
-
+    await crud.coproductionprocess.remove(db=db, id=id)
     return None
 
 

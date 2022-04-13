@@ -294,20 +294,19 @@ async def delete_asset(
     if asset := await crud.asset.get(db=db, id=id):
         if not crud.asset.can_remove(current_user, asset):
             raise HTTPException(status_code=403, detail="Not enough permissions")
+        await log({
+            "model": "ASSET",
+            "action": "DELETE",
+            "crud": False,
+            "coproductionprocess_id": asset.task.objective.phase.coproductionprocess_id,
+            "phase_id": asset.task.objective.phase_id,
+            "objective_id": asset.task.objective_id,
+            "task_id": asset.task_id,
+            "asset_id": asset.id,
+            "interlinker_id": asset.softwareinterlinker_id
+        })
         await crud.asset.remove(db=db, id=id)
         return None
-
-    await log({
-        "model": "ASSET",
-        "action": "DELETE",
-        "crud": False,
-        "coproductionprocess_id": asset.task.objective.phase.coproductionprocess_id,
-        "phase_id": asset.task.objective.phase_id,
-        "objective_id": asset.task.objective_id,
-        "task_id": asset.task_id,
-        "asset_id": asset.id,
-        "interlinker_id": asset.softwareinterlinker_id
-    })
 
     # TODO: DELETE to interlinker
     raise HTTPException(status_code=404, detail="Asset not found")

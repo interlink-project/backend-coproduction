@@ -36,17 +36,20 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
             data["type"] = "externalasset"
 
             # try to get favicon
-            icons = favicon.get(asset.uri)
-            if len(icons) > 0 and (icon := icons[0]) and icon.format:
-                response = requests.get(icon.url, stream=True)
-                
-                icon_path = f'/app/static/assets/{uuid.uuid4()}.{icon.format}'
-                with open(icon_path, 'wb') as image:
-                    for chunk in response.iter_content(1024):
-                        image.write(chunk)
-                icon_path = icon_path.replace("/app", "")
-                print(icon_path)
-                data["icon_path"] = icon_path
+            try:
+                icons = favicon.get(asset.uri)
+                if len(icons) > 0 and (icon := icons[0]) and icon.format:
+                    response = requests.get(icon.url, stream=True)
+                    
+                    icon_path = f'/app/static/assets/{uuid.uuid4()}.{icon.format}'
+                    with open(icon_path, 'wb') as image:
+                        for chunk in response.iter_content(1024):
+                            image.write(chunk)
+                    icon_path = icon_path.replace("/app", "")
+                    print(icon_path)
+                    data["icon_path"] = icon_path
+            except:
+                pass
             db_obj = ExternalAsset(**data, creator=creator, coproductionprocess_id=coproductionprocess_id)
 
         if type(asset) == InternalAssetCreate:

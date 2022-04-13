@@ -128,8 +128,6 @@ async def delete_task(
         raise HTTPException(status_code=404, detail="Task not found")
     if not crud.task.can_remove(current_user, task):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    await crud.task.remove(db=db, id=id)
-
     await log({
         "model": "TASK",
         "action": "DELETE",
@@ -139,5 +137,5 @@ async def delete_task(
         "objective_id": task.objective_id,
         "task_id": task.id
     })
-
+    await crud.task.remove(db=db, id=id)
     return None

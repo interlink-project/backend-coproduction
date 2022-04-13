@@ -145,8 +145,6 @@ async def delete_objective(
     if not crud.objective.can_remove(current_user, objective):
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
-    objective = await crud.objective.remove(db=db, id=id)
-
     await log({
         "model": "OBJECTIVE",
         "action": "DELETE",
@@ -155,7 +153,6 @@ async def delete_objective(
         "phase_id": objective.phase_id,
         "objective_id": objective.id
     })
-
-
+    objective = await crud.objective.remove(db=db, id=id)
     return None
 

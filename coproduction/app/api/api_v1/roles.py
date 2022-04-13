@@ -228,7 +228,6 @@ async def remove_team(
                 "team_id": team.id,
                 "rol_id": role.id
             })
-
             await crud.role.remove_team(db=db, role=role, team=team)
             return True
         raise HTTPException(status_code=400, detail="Team not found")
@@ -261,7 +260,6 @@ async def remove_user(
                 "user_id": user.id,
                 "rol_id": role.id
             })
-
             await crud.role.remove_user(db=db, role=role, user=user)
 
             return True
