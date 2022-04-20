@@ -80,15 +80,6 @@ async def create_asset(
     except Exception as e:
         raise e
 
-    try:
-        external_info : dict = requests.post(interlinker.get("internal_link") + "/clone", headers={
-            "Authorization": "Bearer " + token
-        }).json()
-    except:
-        external_info : dict = requests.post(interlinker.get("link") + "/clone", headers={
-            "Authorization": "Bearer " + token
-        }).json()
-
     asset = await crud.asset.create(
         db=db, asset=asset_in, coproductionprocess_id=task.objective.phase.coproductionprocess_id, creator=current_user)
 
@@ -107,8 +98,8 @@ async def create_asset(
         "knowledgeinterlinker_name": "",
         "softwareinterlinker_id": interlinker.get("id"),
         "softwareinterlinker_name": interlinker.get("name"),
-        "externalinterlinker_id": external_info.get("id"),
-        "externalinterlinker_name": external_info.get("name")
+        "externalinterlinker_id": "",
+        "externalinterlinker_name": ""
     })
 
     return asset
