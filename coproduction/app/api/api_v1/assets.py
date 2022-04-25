@@ -128,7 +128,7 @@ async def instantiate_asset_from_knowledgeinterlinker(
 
     # TODO: check if interlinker can clone
     response = requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.knowledgeinterlinker_id}", headers={
-                "X-API-Key": "secret"
+                "Authorization": "Bearer " + token
             })
     interlinker = response.json()
 
@@ -253,14 +253,14 @@ async def update_asset(
     try:
         if type(asset_in) == schemas.InternalAssetCreate and asset_in.softwareinterlinker_id:
             response = requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.softwareinterlinker_id}", headers={
-                "X-API-Key": "secret"
+                "Authorization": "Bearer " + token
             })
             external = False
             print("CREATING WITH ", response.json())
             assert response.status_code == 200
         if type(asset_in) == schemas.ExternalAssetCreate and asset_in.externalinterlinker_id:
             response = requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.externalinterlinker_id}", headers={
-                "X-API-Key": "secret"
+                "Authorization": "Bearer " + token
             })
             external = True
             print("CREATING WITH ", response.json())
@@ -325,7 +325,7 @@ async def read_asset(
                 response = requests.get(
                     f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.softwareinterlinker_id}",
                     headers={
-                        "X-API-Key": "secret"
+                        "Authorization": "Bearer " + token
                     })
                 external = False
                 print("CREATING WITH ", response.json())
@@ -334,7 +334,7 @@ async def read_asset(
                 response = requests.get(
                     f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.externalinterlinker_id}",
                     headers={
-                        "X-API-Key": "secret"
+                        "Authorization": "Bearer " + token
                     })
                 external = True
                 print("CREATING WITH ", response.json())

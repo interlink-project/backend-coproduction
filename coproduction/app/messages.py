@@ -34,7 +34,11 @@ rabbitmq_password = os.environ.get("RABBITMQ_PASSWORD")
 async def log(data: dict):
     if is_logging_disabled():
         return
-    data["user_id"] = context.data.get("user", {}).get("sub", None)
+
+    try:
+        data["user_id"] = context.data.get("user", {}).get("sub", None)
+    except:
+        data["user_id"] = None
     data["service"] = "coproduction"
 
     request = b64encode(json.dumps(data,cls=UUIDEncoder).encode())
