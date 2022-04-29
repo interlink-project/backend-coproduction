@@ -34,6 +34,12 @@ async def list_assets(
 
     return asset
 
+def check_interlinker(id, token):
+    url = f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{id}"
+    response = requests.get(url, headers={ "Authorization": f"Bearer {token}" })
+    print("GOT", response.json())
+    assert response.status_code == 200
+    return response.json()
 
 @router.post("", response_model=schemas.AssetOutFull)
 async def create_asset(
@@ -47,7 +53,6 @@ async def create_asset(
     Create new asset.
     """
 
-
     if not crud.asset.can_create(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
@@ -56,35 +61,34 @@ async def create_asset(
         raise HTTPException(status_code=404, detail="Task not found")
 
     # check that interlinker in catalogue
-    try:
-        url = None
-        if type(asset_in) == schemas.InternalAssetCreate and asset_in.softwareinterlinker_id:
-            url = f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.softwareinterlinker_id}"
-            external = False
+    print(type(asset_in))
+    specific_log_data = {}
+    if type(asset_in) == schemas.InternalAssetCreate and asset_in.softwareinterlinker_id:
+        specific_log_data["type"] = "INTERNAL"
+        
+        softwareinterlinker = check_interlinker(asset_in.softwareinterlinker_id, token)
+        specific_log_data["softwareinterlinker_id"] = asset_in.softwareinterlinker_id
+        specific_log_data["softwareinterlinker_name"] = softwareinterlinker.get("name", "")
+        
+        if asset_in.knowledgeinterlinker_id:
+            knowledgeinterlinker = check_interlinker(asset_in.knowledgeinterlinker_id, token)
+            specific_log_data["knowledgeinterlinker_id"] = asset_in.knowledgeinterlinker_id
+            specific_log_data["knowledgeinterlinker_name"] = knowledgeinterlinker.get("name", "")
 
-        elif type(asset_in) == schemas.ExternalAssetCreate and asset_in.externalinterlinker_id:
-            url = f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.externalinterlinker_id}"
-            external = True
-        else:
-            url = f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.externalinterlinker_id}"
-            external = True
+    elif type(asset_in) == schemas.ExternalAssetCreate:
+        specific_log_data["type"] = "EXTERNAL"
+        if  asset_in.externalinterlinker_id:
+            interlinker = check_interlinker(asset_in.externalinterlinker_id, token)
+            specific_log_data["externalinterlinker_id"] = asset_in.externalinterlinker_id
+            specific_log_data["externalinterlinker_name"] = interlinker.get("name", "")
 
-        response = requests.get(url, headers={
-            "X-API-Key": "secret"
-        })
-        print("CREATING WITH ", response.json())
-        assert response.status_code == 200
-
-        interlinker = response.json()
-
-    except Exception as e:
-        raise e
 
     asset = await crud.asset.create(
         db=db, asset=asset_in, coproductionprocess_id=task.objective.phase.coproductionprocess_id, creator=current_user)
 
     # my post create new asset
     await log({
+        **{
         "model": "ASSET",
         "action": "CREATE",
         "crud": False,
@@ -93,13 +97,8 @@ async def create_asset(
         "objective_id": asset.task.objective_id,
         "task_id": asset.task_id,
         "asset_id": asset.id,
-        "external_interlinker": external,
-        "knowledgeinterlinker_id": "",
-        "knowledgeinterlinker_name": "",
-        "softwareinterlinker_id": interlinker.get("id"),
-        "softwareinterlinker_name": interlinker.get("name"),
-        "externalinterlinker_id": "",
-        "externalinterlinker_name": ""
+    },
+    **specific_log_data
     })
 
     return asset
