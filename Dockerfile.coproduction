@@ -35,6 +35,3 @@ CMD ["bash", "./start-dev.sh"]
 FROM builder as prod
 RUN poetry install --no-root --no-dev
 CMD ["bash", "./start-prod.sh"]
-
-FROM builder as worker
-CMD ["bash", "./worker-start.sh"]
