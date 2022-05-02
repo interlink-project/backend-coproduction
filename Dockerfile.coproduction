@@ -16,6 +16,9 @@ WORKDIR /app/
 # Copy poetry.lock* in case it doesn't exist in the repo
 COPY ./coproduction/pyproject.toml ./coproduction/poetry.lock* /app/
 COPY ./coproduction /app
+RUN chmod +x /app/start-dev.sh
+RUN chmod +x /app/start-prod.sh
+RUN chmod +x /app/worker-start.sh
 ENV PYTHONPATH=/app
 
 # this will only matter for celery
@@ -27,16 +30,11 @@ RUN poetry install --no-root
 RUN apt-get update \
   && apt-get install -y --no-install-recommends graphviz \
   && rm -rf /var/lib/apt/lists/*
-COPY ./coproduction/start-dev.sh ./start-dev.sh
-COPY ./coproduction/worker-start.sh worker-start.sh
-
-RUN chmod +x ./start-dev.sh ./worker-start.sh
 CMD ["bash", "./start-dev.sh"]
 
 FROM builder as prod
 RUN poetry install --no-root --no-dev
-COPY ./coproduction/start-prod.sh ./start-prod.sh
-COPY ./coproduction/worker-start.sh worker-start.sh
-
-RUN chmod +x ./start-prod.sh ./worker-start.sh
 CMD ["bash", "./start-prod.sh"]
+
+FROM builder as worker
+CMD ["bash", "./worker-start.sh"]

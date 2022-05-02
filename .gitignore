@@ -3,4 +3,3 @@
 docker-stack.yml
 .cache
 .DS_Store
-/coproduction/alembic/versions/
