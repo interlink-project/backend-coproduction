@@ -23,7 +23,7 @@ services:
       - SERVER_NAME=${DOMAIN?Variable not set}
       - PORT=${PORT}
       - BASE_PATH=/coproduction
-    command: ["bash", "./start-prod.sh"]
+    command: ["bash", "./start-dev.sh"]
     build:
       context: .
       dockerfile: Dockerfile.coproduction

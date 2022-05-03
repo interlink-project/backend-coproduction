@@ -1,17 +1,14 @@
 import uuid
 from datetime import datetime
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional
 
-from pydantic import BaseModel, validator
-from typing_extensions import Annotated
+from pydantic import BaseModel
 
 from app.config import settings
-from app.general.utils.AllOptional import AllOptional
-from app.roles.schemas import RoleBase, RoleOut, ExceptionOut
+from app.roles.schemas import RoleBase
 from pydantic_choices import choice
-from app.locales import SUPPORTED_LANGUAGE_CODES
 
-Languages = choice(SUPPORTED_LANGUAGE_CODES)
+Languages = choice(settings.ALLOWED_LANGUAGES_LIST)
 
 class CoproductionProcessBase(BaseModel):
     name: str

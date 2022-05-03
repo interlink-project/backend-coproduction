@@ -12,9 +12,6 @@ from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.config import settings
 from app.general import deps
-from app.locales import DEFAULT_LANGUAGE
-
-from app.messages import log
 
 from app.messages import log
 
@@ -106,28 +103,15 @@ async def set_logotype(
     raise HTTPException(status_code=404, detail="Coproduction process not found")
 
 
-class CoproductionSchemaSetter(BaseModel):
-    coproductionschema_id: uuid.UUID
-
-
 @router.post("/{id}/set_schema", response_model=schemas.CoproductionProcessOutFull )
 async def set_schema(
     *,
     id: uuid.UUID,
     db: Session = Depends(deps.get_db),
-    schema_setter: CoproductionSchemaSetter,
-    token: str = Depends(deps.get_current_token),
+    schema: dict,
 ) -> Any:
     if (coproductionprocess := await crud.coproductionprocess.get(db=db, id=id)):
-        try:
-            coproductionschema = requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/coproductionschemas/{schema_setter.coproductionschema_id}", headers={
-                "Authorization": "Bearer " + token,
-                "Accept-Language": coproductionprocess.language.value
-            }).json()
-        except Exception as e:
-            print(e)
-            raise HTTPException(status_code=404, detail="Coproduction schema not found")
-        return await crud.coproductionprocess.set_schema(db=db, coproductionschema=coproductionschema, coproductionprocess=coproductionprocess)
+        return await crud.coproductionprocess.set_schema(db=db, coproductionschema=schema, coproductionprocess=coproductionprocess)
     raise HTTPException(status_code=404, detail="Coproduction process not found")
 
 
