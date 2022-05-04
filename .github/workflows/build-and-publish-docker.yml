@@ -1,6 +1,9 @@
 name: build-and-publish-docker
 
 on:
+
+  workflow_dispatch:
+
   push:
     branches:
       - "master"
