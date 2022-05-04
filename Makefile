@@ -18,14 +18,11 @@ down: ## Stops all containers and removes volumes
 
 .PHONY: build
 build: ## Builds development containers
-	docker-compose -f docker-compose.devsolo.yml build
+	docker-compose -f docker-compose.devintegrated.yml build
 
 #######################
 ## RUN CONTAINERS
 #######################
-.PHONY: solo
-solo: down ## Starts solo development containers
-	docker-compose -f docker-compose.devsolo.yml up -d
 
 .PHONY: integrated
 integrated: down ## Starts integrated development containers
@@ -39,7 +36,7 @@ integrated: down ## Starts integrated development containers
 .PHONY: tests
 tests: ## Starts test container
 	#docker-compose exec coproduction pytest --cov=app --cov-report=term-missing app/tests
-	docker-compose exec -T coproduction pytest app/tests
+	docker-compose -f docker-compose.devintegrated.yml exec -T coproduction pytest app/tests
 
 .PHONY: testing
 testing: build solo tests down ## Builds containers, runs them, runs test container and deletes all containers
