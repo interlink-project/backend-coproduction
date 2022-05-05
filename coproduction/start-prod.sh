@@ -15,7 +15,7 @@ python /app/app/pre_start.py
 sleep 5
 
 # Run migrations
-alembic revision --autogenerate -m "Added initial table"
+alembic revision --autogenerate
 alembic upgrade head
 
 echo MIGRATIONS DONE
