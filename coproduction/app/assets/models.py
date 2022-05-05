@@ -95,8 +95,8 @@ class InternalAsset(Asset):
 
     @property
     def internal_link(self):
-        backend = self.software_response.get("integration").get("service_name")
-        api_path = self.software_response.get("integration").get("api_path")
+        backend = self.software_response.get("service_name")
+        api_path = self.software_response.get("api_path")
         return f"http://{backend}{api_path}/{self.external_asset_id}"
 
     @property
@@ -115,11 +115,11 @@ class InternalAsset(Asset):
     @property
     def capabilities(self):
         return {
-            "clone": self.software_response.get("integration").get("clone"),
-            "view": self.software_response.get("integration").get("view"),
-            "edit": self.software_response.get("integration").get("edit"),
-            "delete": self.software_response.get("integration").get("delete"),
-            "download": self.software_response.get("integration").get("download"),
+            "clone": self.software_response.get("clone"),
+            "view": self.software_response.get("view"),
+            "edit": self.software_response.get("edit"),
+            "delete": self.software_response.get("delete"),
+            "download": self.software_response.get("download"),
         }
 
 
