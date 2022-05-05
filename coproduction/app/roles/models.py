@@ -54,7 +54,7 @@ class Role(BaseModel):
     selectable = Column(Boolean, default=True)
 
     permissions = Column(
-        ARRAY(Enum(Permissions, create_constraint=False, native_enum=False)), default=list
+        ARRAY(Enum(Permissions, create_constraint=False, native_enum=False)), default=dict
     )
     coproductionprocess_id = Column(
         UUID(as_uuid=True), ForeignKey('coproductionprocess.id'))

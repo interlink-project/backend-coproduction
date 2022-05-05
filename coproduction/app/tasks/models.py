@@ -48,7 +48,7 @@ class Task(BaseModel):
 
     prerequisites_ids = association_proxy('prerequisites', 'id')
         
-    problemprofiles = Column(ARRAY(String), default=list)
+    problemprofiles = Column(ARRAY(String), default=dict)
     assets = relationship("Asset", back_populates="task", cascade="all,delete")
 
     status = Column(Enum(Status, create_constraint=False, native_enum=False), default=Status.awaiting)
