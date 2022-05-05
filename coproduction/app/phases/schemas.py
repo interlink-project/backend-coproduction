@@ -40,4 +40,4 @@ class Phase(PhaseBase):
 
 
 class PhaseOut(Phase):
-    prerequisites_ids: List[uuid.UUID]
+    pass

@@ -141,7 +141,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                         "prerequisites_ids": taskmetadata["prerequisites_ids"] or [],
                         "newObj": db_task,
                     }
-           
+        db.commit()
 
         for key, element in total.items():
             for pre_id in element["prerequisites_ids"]:

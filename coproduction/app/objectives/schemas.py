@@ -38,4 +38,4 @@ class Objective(ObjectiveBase):
 
 
 class ObjectiveOut(Objective):
-    prerequisites_ids: List[uuid.UUID]
+    pass

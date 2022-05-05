@@ -8,6 +8,7 @@ from app.general.utils.CRUDBase import CRUDBase
 from app.models import Task, Status, Phase, Objective
 from app.schemas import TaskCreate, TaskPatch
 from fastapi.encoders import jsonable_encoder
+from app.utils import recursive_check
 
 def calculate_status_and_progress(obj, key):
     statuses = [task.status for task in getattr(obj, key)]
@@ -61,21 +62,13 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
     async def add_prerequisite(self, db: Session, task: Task, prerequisite: Task, commit : bool = True) -> Task:
         if task == prerequisite:
             raise Exception("Same object")
+
+        recursive_check(task.id, prerequisite)
         task.prerequisites.append(prerequisite)
         if commit:
             db.commit()
             db.refresh(task)
         return task
-
-    async def remove(self, db: Session, *, id: uuid.UUID) -> Task:
-        obj = db.query(self.model).get(id)
-        db.delete(obj)
-        related = db.query(Task).filter(Task.prerequisites.any(Task.id == obj.id)).all()
-        for i in related:
-            i.prerequisites.remove(obj)
-        db.delete(obj)
-        db.commit()
-        return obj
 
     async def update(
         self,

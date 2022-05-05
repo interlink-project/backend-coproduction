@@ -36,4 +36,4 @@ class Task(TaskBase):
 
 
 class TaskOut(Task):
-    prerequisites_ids: List[uuid.UUID]
+    pass

@@ -17,11 +17,12 @@ from sqlalchemy_utils import aggregated
 
 from app.general.db.base_class import Base as BaseModel
 from app.tasks.models import Status, Task
+from sqlalchemy.ext.associationproxy import association_proxy
 
 prerequisites = Table(
     'phase_prerequisites', BaseModel.metadata,
     Column('phase_a_id', ForeignKey('phase.id'), primary_key=True),
-    Column('phase_b_id', ForeignKey('phase.id'), primary_key=True)
+    Column('phase_b_id', ForeignKey('phase.id', ondelete="CASCADE"), primary_key=True)
 )
 
 class Phase(BaseModel):
@@ -49,9 +50,7 @@ class Phase(BaseModel):
     def __repr__(self):
         return "<Phase %r>" % self.name
 
-    @property
-    def prerequisites_ids(self):
-        return [pr.id for pr in self.prerequisites]
+    prerequisites_ids = association_proxy('prerequisites', 'id')
 
     @aggregated('objectives.tasks', Column(Date))
     def end_date(self):

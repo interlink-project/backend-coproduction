@@ -9,6 +9,7 @@ from app.schemas import (
     ObjectivePatch
 )
 import uuid
+from app.utils import recursive_check
 
 class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
     async def create_from_metadata(self, db: Session, objectivemetadata: dict, phase: Phase = None, phase_id: uuid.UUID = None) -> Optional[Objective]:
@@ -45,21 +46,13 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
         if objective == prerequisite:
             raise Exception("Same object")
         # TODO: if objective in prerequisite.prerequisites => block
+
+        recursive_check(objective.id, prerequisite)
         objective.prerequisites.append(prerequisite)
         if commit:
             db.commit()
             db.refresh(objective)
         return objective
-
-    async def remove(self, db: Session, *, id: uuid.UUID) -> Objective:
-        obj = db.query(self.model).get(id)
-        db.delete(obj)
-        related = db.query(Objective).filter(Objective.prerequisites.any(Objective.id == obj.id)).all()
-        for i in related:
-            i.prerequisites.remove(obj)
-        db.delete(obj)
-        db.commit()
-        return obj
 
     # CRUD Permissions
     def can_create(self, user):

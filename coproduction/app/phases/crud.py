@@ -9,6 +9,7 @@ from app.schemas import (
     PhasePatch,
 )
 import uuid
+from app.utils import recursive_check
 
 class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
     async def create_from_metadata(self, db: Session, phasemetadata: dict, coproductionprocess_id: uuid.UUID) -> Optional[Phase]:
@@ -34,21 +35,13 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
     async def add_prerequisite(self, db: Session, phase: Phase, prerequisite: Phase, commit : bool = True) -> Phase:
         if phase == prerequisite:
             raise Exception("Same object")
+
+        recursive_check(phase.id, prerequisite)
         phase.prerequisites.append(prerequisite)
         if commit:
             db.commit()
             db.refresh(phase)
         return phase
-
-    async def remove(self, db: Session, *, id: uuid.UUID) -> Phase:
-        obj = db.query(self.model).get(id)
-        db.delete(obj)
-        related = db.query(Phase).filter(Phase.prerequisites.any(Phase.id == obj.id)).all()
-        for i in related:
-            i.prerequisites.remove(obj)
-        db.delete(obj)
-        db.commit()
-        return obj
 
     # CRUD Permissions
     def can_create(self, user):

@@ -16,11 +16,12 @@ from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from sqlalchemy.orm import relationship
 
 from app.general.db.base_class import Base as BaseModel
+from sqlalchemy.ext.associationproxy import association_proxy
 
 prerequisites = Table(
     'task_prerequisites', BaseModel.metadata,
     Column('task_a_id', ForeignKey('task.id'), primary_key=True),
-    Column('task_b_id', ForeignKey('task.id'), primary_key=True)
+    Column('task_b_id', ForeignKey('task.id', ondelete="CASCADE"), primary_key=True)
 )
 
 class Status(enum.Enum):
@@ -45,11 +46,8 @@ class Task(BaseModel):
                                  secondaryjoin=id == prerequisites.c.task_b_id,
                                  )
 
-    @property
-    def prerequisites_ids(self):
-        return [pr.id for pr in self.prerequisites]
+    prerequisites_ids = association_proxy('prerequisites', 'id')
         
-
     problemprofiles = Column(ARRAY(String), default=list)
     assets = relationship("Asset", back_populates="task", cascade="all,delete")
 

@@ -19,11 +19,12 @@ from sqlalchemy_utils import aggregated
 
 from app.general.db.base_class import Base as BaseModel
 from app.tasks.models import Status, Task
+from sqlalchemy.ext.associationproxy import association_proxy
 
 prerequisites = Table(
     'objective_prerequisites', BaseModel.metadata,
     Column('objective_a_id', ForeignKey('objective.id'), primary_key=True),
-    Column('objective_b_id', ForeignKey('objective.id'), primary_key=True)
+    Column('objective_b_id', ForeignKey('objective.id', ondelete="CASCADE"), primary_key=True)
 )
 
 
@@ -42,9 +43,7 @@ class Objective(BaseModel):
                                  secondaryjoin=id == prerequisites.c.objective_b_id,
                                  )
 
-    @property
-    def prerequisites_ids(self):
-        return [pr.id for pr in self.prerequisites]
+    prerequisites_ids = association_proxy('prerequisites', 'id')
 
     # belongs to a phase
     phase_id = Column(
