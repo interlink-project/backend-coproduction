@@ -105,6 +105,7 @@ async def create_asset(
 
 class InstantiateSchema(BaseModel):
     knowledgeinterlinker_id: uuid.UUID
+    language: str
     task_id: uuid.UUID
 
 @router.post("/instantiate", response_model=schemas.AssetOutFull)
@@ -125,9 +126,9 @@ async def instantiate_asset_from_knowledgeinterlinker(
     if not (task := await crud.task.get(db=db, id=asset_in.task_id)):
         raise HTTPException(status_code=404, detail="Task not found")
 
-    # TODO: check if interlinker can clone
     response = requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.knowledgeinterlinker_id}", headers={
-                "Authorization": "Bearer " + token
+                "Authorization": "Bearer " + token,
+                "Accept-Language": asset_in.language
             })
     interlinker = response.json()
 
