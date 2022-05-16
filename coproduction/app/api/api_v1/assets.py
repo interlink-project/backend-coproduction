@@ -408,7 +408,6 @@ async def delete_asset(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
-    asset_in: schemas.AssetPatch,
     current_user: models.User = Depends(deps.get_current_active_user),
     token: str = Depends(deps.get_current_active_token),
 ) -> Any:
@@ -417,44 +416,10 @@ async def delete_asset(
     """
 
     if asset := await crud.asset.get(db=db, id=id):
-
-        #  check that interlinker in catalogue
-        try:
-            if type(asset_in) == schemas.InternalAssetCreate and asset_in.softwareinterlinker_id:
-                response = requests.get(
-                    f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.softwareinterlinker_id}",
-                    headers={
-                        "X-API-Key": "secret"
-                    })
-                external = False
-                print("CREATING WITH ", response.json())
-                assert response.status_code == 200
-            if type(asset_in) == schemas.ExternalAssetCreate and asset_in.externalinterlinker_id:
-                response = requests.get(
-                    f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.externalinterlinker_id}",
-                    headers={
-                        "X-API-Key": "secret"
-                    })
-                external = True
-                print("CREATING WITH ", response.json())
-                assert response.status_code == 200
-
-            interlinker = response.json()
-
-        except Exception as e:
-            raise e
-
-        try:
-            external_info: dict = requests.post(interlinker.get("internal_link") + "/clone", headers={
-                "Authorization": "Bearer " + token
-            }).json()
-        except:
-            external_info: dict = requests.post(interlinker.get("link") + "/clone", headers={
-                "Authorization": "Bearer " + token
-            }).json()
-
-        # my delete
-        await log({
+        if not crud.asset.can_remove(current_user, asset):
+            raise HTTPException(status_code=403, detail="Not enough permissions")
+            
+        logData = {
             "model": "ASSET",
             "action": "DELETE",
             "crud": False,
@@ -463,18 +428,22 @@ async def delete_asset(
             "objective_id": asset.task.objective_id,
             "task_id": asset.task_id,
             "asset_id": asset.id,
-            "external_interlinker": external,
-            "knowledgeinterlinker_id": asset.knowledgeinterlinker_id,
-            "knowledgeinterlinker_name": interlinker.get("name"),
-            "softwareinterlinker_id": interlinker.get("softwareinterlinker").get("id"),
-            "softwareinterlinker_name": interlinker.get("softwareinterlinker").get("name"),
-            "externalinterlinker_id": external_info.get("id"),
-            "externalinterlinker_name": external_info.get("name")
-        })
+            
+        }
 
-
-        if not crud.asset.can_remove(current_user, asset):
-            raise HTTPException(status_code=403, detail="Not enough permissions")
+        if type(asset) == models.InternalAsset:
+            if ki := asset.knowledgeinterlinker:
+                logData["knowledgeinterlinker_id"] = ki.get("id")
+                logData["knowledgeinterlinker_name"] = ki.get("name")
+            if si := asset.softwareinterlinker:
+                logData["softwareinterlinker_id"] = si.get("id")
+                logData["softwareinterlinker_name"] = si.get("name")
+        elif type(asset) == models.ExternalAsset:
+            if ei := asset.externalinterlinker:
+                logData["externalinterlinker_id"] = ei.get("id")
+                logData["externalinterlinker_name"] = ei.get("name")
+        
+        await log(logData)
 
         await crud.asset.remove(db=db, id=id)
 

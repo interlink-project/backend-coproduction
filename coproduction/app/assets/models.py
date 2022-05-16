@@ -76,9 +76,10 @@ class InternalAsset(Asset):
     
     @cached_property
     def knowledge_response(self):
-        return requests.get(
-            f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{self.knowledgeinterlinker_id}").json()
-
+        if self.knowledgeinterlinker_id:
+            return requests.get(
+                f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{self.knowledgeinterlinker_id}").json()
+        return
     @property
     def knowledgeinterlinker(self):
         return {
@@ -110,7 +111,7 @@ class InternalAsset(Asset):
             "name": self.software_response.get("name"),
             "description": self.software_response.get("description"),
             "logotype_link": self.software_response.get("logotype_link"),
-        }
+        } if self.software_response else None
 
     @property
     def capabilities(self):
@@ -143,3 +144,19 @@ class ExternalAsset(Asset):
     __mapper_args__ = {
         "polymorphic_identity": "externalasset",
     }
+
+    @cached_property
+    def external_response(self):
+        if self.externalinterlinker_id:
+            return requests.get(
+                f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{self.externalinterlinker_id}").json()
+        return
+    
+    @property
+    def externalinterlinker(self):
+        return {
+            "id": self.external_response.get("id"),
+            "name": self.external_response.get("name"),
+            "description": self.external_response.get("description"),
+            "logotype_link": self.external_response.get("logotype_link"),
+        } if self.external_response else None
