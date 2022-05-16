@@ -58,4 +58,3 @@ async def log(data: dict):
             delivery_mode=2
         )
     )
-    print("MENSAJE ENVIADO POR RABBITMQ")

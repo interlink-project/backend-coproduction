@@ -8,3 +8,4 @@ IMPROVED
 
 FIXED
 • Asset deletion endpoint fixed
+• Print message removed when a message is sent through rabbitmq
