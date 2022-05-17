@@ -18,8 +18,6 @@ class CoproductionProcessBase(BaseModel):
     organization: Optional[str]
     challenges: Optional[str]
 
-    artefact_id: Optional[uuid.UUID]
-
 class CoproductionProcessCreate(CoproductionProcessBase):
     language: Languages
     team_id: Optional[uuid.UUID]

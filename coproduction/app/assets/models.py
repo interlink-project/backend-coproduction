@@ -14,7 +14,6 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import orm
-from sqlalchemy.sql.expression import null
 
 from app.config import settings
 from app.general.db.base_class import Base as BaseModel
@@ -26,23 +25,19 @@ class Asset(BaseModel):
     # discriminator
     type = Column(String)
 
-    task_id = Column(
-        UUID(as_uuid=True), ForeignKey("task.id")
-    )
-    task = orm.relationship("Task", back_populates="assets")
+    task_id = Column(UUID(as_uuid=True), ForeignKey("task.id", ondelete='CASCADE'))
+    task = orm.relationship("Task", backref=orm.backref('assets', passive_deletes=True))
 
     # also attach to the coproduction process to do not delete if task deleted
     coproductionprocess_id = Column(
-        UUID(as_uuid=True), ForeignKey("coproductionprocess.id")
+        UUID(as_uuid=True), ForeignKey("coproductionprocess.id", ondelete='CASCADE')
     )
     coproductionprocess = orm.relationship(
-        "CoproductionProcess", back_populates="assets")
+        "CoproductionProcess",backref=orm.backref('assets', passive_deletes=True))
 
     # created by
-    creator_id = Column(
-        String, ForeignKey("user.id")
-    )
-    creator = orm.relationship("User", back_populates="created_assets")
+    creator_id = Column(String, ForeignKey("user.id", use_alter=True, ondelete='SET NULL'))
+    creator = orm.relationship('User', foreign_keys=[creator_id], post_update=True, back_populates="created_assets")
 
     __mapper_args__ = {
         "polymorphic_identity": "asset",
@@ -53,7 +48,7 @@ class Asset(BaseModel):
 class InternalAsset(Asset):
     id = Column(
         UUID(as_uuid=True),
-        ForeignKey("asset.id"),
+        ForeignKey("asset.id", ondelete='CASCADE'),
         primary_key=True,
         default=uuid.uuid4,
     )

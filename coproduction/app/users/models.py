@@ -13,6 +13,7 @@ class User(BaseModel):
     created_coproductionprocesses = relationship("CoproductionProcess", back_populates="creator")
     created_teams = relationship("Team", back_populates="creator")
     created_assets = relationship("Asset", back_populates="creator")
+    
     team_ids = association_proxy('teams', 'id')
 
     #TODO property that gets info from auth microservice

@@ -14,7 +14,7 @@ from sqlalchemy import (
     func,
 )
 from sqlalchemy.dialects.postgresql import HSTORE, UUID
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy_utils import aggregated
 
 from app.general.db.base_class import Base as BaseModel
@@ -23,7 +23,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 
 prerequisites = Table(
     'objective_prerequisites', BaseModel.metadata,
-    Column('objective_a_id', ForeignKey('objective.id'), primary_key=True),
+    Column('objective_a_id', ForeignKey('objective.id', ondelete="CASCADE"), primary_key=True),
     Column('objective_b_id', ForeignKey('objective.id', ondelete="CASCADE"), primary_key=True)
 )
 
@@ -47,9 +47,9 @@ class Objective(BaseModel):
 
     # belongs to a phase
     phase_id = Column(
-        UUID(as_uuid=True), ForeignKey("phase.id")
+        UUID(as_uuid=True), ForeignKey("phase.id", ondelete='CASCADE')
     )
-    phase = relationship("Phase", back_populates="objectives")
+    phase = relationship("Phase", backref=backref('objectives', passive_deletes=True))
 
     @aggregated('tasks', Column(Date))
     def end_date(self):
@@ -59,7 +59,6 @@ class Objective(BaseModel):
     def start_date(self):
         return func.min(Task.start_date)
 
-    tasks = relationship("Task", back_populates="objective", cascade="all,delete")
     status = Column(Enum(Status, create_constraint=False,
                     native_enum=False), default=Status.awaiting)
     progress = Column(Numeric, default=0)

@@ -24,15 +24,6 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         # })
         return db.query(CoproductionProcess).filter(CoproductionProcess.name == name).first()
 
-    async def get_by_artefact(self, db: Session, artefact_id: uuid.UUID) -> Optional[CoproductionProcess]:
-        # await log({
-        #     "model": self.modelName,
-        #     "action": "GET_BY_ARTEFACT",
-        #     "crud": True,
-        #     "artefact_id": artefact_id
-        # })
-        return db.query(CoproductionProcess).filter(CoproductionProcess.artefact_id == artefact_id).first()
-
     async def get_multi_by_user(self, db: Session, user: User) -> Optional[List[CoproductionProcess]]:
         team_ids = user.team_ids
         # await log({
@@ -52,7 +43,6 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
     async def create(self, db: Session, *, coproductionprocess: CoproductionProcessCreate, creator: models.User, team: models.Team) -> CoproductionProcess:
         db_obj = CoproductionProcess(
-            artefact_id=coproductionprocess.artefact_id,
             # uses postgres
             name=coproductionprocess.name,
             description=coproductionprocess.description,

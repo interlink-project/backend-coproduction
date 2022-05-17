@@ -67,6 +67,7 @@ async def create_asset(
         specific_log_data["type"] = "INTERNAL"
         
         softwareinterlinker = check_interlinker(asset_in.softwareinterlinker_id, token)
+        specific_log_data["external_asset_id"] = asset_in.external_asset_id
         specific_log_data["softwareinterlinker_id"] = asset_in.softwareinterlinker_id
         specific_log_data["softwareinterlinker_name"] = softwareinterlinker.get("name", "")
         

@@ -56,10 +56,8 @@ class Role(BaseModel):
     permissions = Column(
         ARRAY(Enum(Permissions, create_constraint=False, native_enum=False)), default=dict
     )
-    coproductionprocess_id = Column(
-        UUID(as_uuid=True), ForeignKey('coproductionprocess.id'))
-    coproductionprocess = relationship('CoproductionProcess', foreign_keys=[
-                                       coproductionprocess_id], back_populates='roles')
+    coproductionprocess_id = Column(UUID(as_uuid=True), ForeignKey('coproductionprocess.id', ondelete='CASCADE'))
+    coproductionprocess = relationship('CoproductionProcess', foreign_keys=[coproductionprocess_id], backref=backref('roles', passive_deletes=True))
 
     users = relationship(
         "User",
@@ -70,7 +68,7 @@ class Role(BaseModel):
     teams = relationship(
         "Team",
         secondary=team_role_association_table,
-        back_populates="roles")
+        backref="roles")
     team_ids = association_proxy('teams', 'id')
 
     # @hybrid_property
@@ -91,17 +89,17 @@ class Exception(BaseModel):
     asset_id = Column(
         UUID(as_uuid=True), ForeignKey("asset.id", ondelete='CASCADE')
     )
-    asset = relationship("Asset", backref="exceptions")
+    asset = relationship("Asset", backref=backref('exceptions', passive_deletes=True))
 
     coproductionprocess_id = Column(
         UUID(as_uuid=True), ForeignKey("coproductionprocess.id", ondelete='CASCADE')
     )
-    coproductionprocess = relationship("CoproductionProcess", backref="exceptions")
+    coproductionprocess = relationship("CoproductionProcess", backref=backref('exceptions', passive_deletes=True))
 
     role_id = Column(
         UUID(as_uuid=True), ForeignKey("role.id", ondelete='CASCADE')
     )
-    role = relationship("Role", backref="exceptions")
+    role = relationship("Role", backref=backref('exceptions', passive_deletes=True))
 
     permission = Column(Enum(Permissions, create_constraint=False, native_enum=False))
     grant = Column(Boolean)

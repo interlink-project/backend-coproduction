@@ -35,27 +35,16 @@ class CoproductionProcess(BaseModel):
     organization = Column(Text, nullable=True)
     challenges = Column(Text, nullable=True)
 
-    @aggregated('phases', Column(Integer))
-    def phases_count(self):
-        return func.count('1')
-
-    phases = relationship(
-        "Phase", back_populates="coproductionprocess")
-    assets = relationship(
-        "Asset", back_populates="coproductionprocess")
-    artefact_id = Column(UUID(as_uuid=True))
-
     # created by
-    creator_id = Column(
-        String, ForeignKey("user.id")
-    )
-    creator = relationship("User", back_populates="created_coproductionprocesses")
-
-    # ACL
-    roles = relationship('Role', foreign_keys=[Role.coproductionprocess_id], back_populates='coproductionprocess')
+    creator_id = Column(String, ForeignKey("user.id", use_alter=True, ondelete='SET NULL'))
+    creator = relationship('User', foreign_keys=[creator_id], post_update=True, back_populates="created_coproductionprocesses")
 
     default_role_id = Column(UUID(as_uuid=True), ForeignKey('role.id', use_alter=True, ondelete='SET NULL'))
     default_role = relationship('Role', foreign_keys=[default_role_id], post_update=True)
+
+    @aggregated('phases', Column(Integer))
+    def phases_count(self):
+        return func.count('1')
 
     @property
     def logotype_link(self):
