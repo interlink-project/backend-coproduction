@@ -1,11 +1,8 @@
-VERSION: v1.1.3
+VERSION: v1.1.4
 
 NEW
-• First migration file
 
 IMPROVED
-• When a knowledge interlinker is instantiated, Accept-Language added to the request done to the catalogue microservice
+• Log endpoint removed
 
 FIXED
-• Asset deletion endpoint fixed
-• Print message removed when a message is sent through rabbitmq
