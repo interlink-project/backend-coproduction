@@ -31,19 +31,22 @@ rabbitmq_host = os.environ.get("RABBITMQ_HOST")
 rabbitmq_user = os.environ.get("RABBITMQ_USER")
 rabbitmq_password = os.environ.get("RABBITMQ_PASSWORD")
 
+url = "amqp://{}:{}@{}/".format(rabbitmq_user, rabbitmq_password, rabbitmq_host)
+
 async def log(data: dict):
     if is_logging_disabled():
         return
 
-    try:
+    if not "user_id" in data:
         data["user_id"] = context.data.get("user", {}).get("sub", None)
-    except:
-        data["user_id"] = None
+        if data["user_id"] == None:
+            raise Exception("user_id needed")
+            
     data["service"] = "coproduction"
 
     request = b64encode(json.dumps(data,cls=UUIDEncoder).encode())
     
-    connection = await aiormq.connect("amqp://{}:{}@{}/".format(rabbitmq_user, rabbitmq_password, rabbitmq_host))
+    connection = await aiormq.connect(url)
     channel = await connection.channel()
 
     await channel.exchange_declare(
@@ -56,5 +59,6 @@ async def log(data: dict):
         exchange=exchange_name,
         properties=aiormq.spec.Basic.Properties(
             delivery_mode=2
+            # Messages marked as 'persistent' that are delivered to 'durable' queues will be logged to disk. Durable queues are recovered in the event of a crash, along with any persistent messages they stored prior to the crash.
         )
     )

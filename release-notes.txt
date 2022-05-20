@@ -6,3 +6,4 @@ IMPROVED
 • Log endpoint removed
 
 FIXED
+• Pre start script waits for rabbit and catalogue
