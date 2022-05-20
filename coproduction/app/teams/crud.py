@@ -1,3 +1,4 @@
+from app.messages import log
 from typing import Any, Dict, Optional, List
 
 from sqlalchemy.orm import Session
@@ -36,6 +37,12 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
         team.users.append(user)
         db.commit()
         db.refresh(team)
+        await log({
+            "model": "TEAM",
+            "action": "ADD_USER",
+            "team_id": team.id,
+            "added_user_id": user.id
+        })
         return team
         
     async def create(self, db: Session, team: TeamCreate, creator: models.User) -> Team:

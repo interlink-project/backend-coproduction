@@ -38,9 +38,10 @@ async def log(data: dict):
         return
 
     if not "user_id" in data:
-        data["user_id"] = context.data.get("user", {}).get("sub", None)
-        if data["user_id"] == None:
-            raise Exception("user_id needed")
+        try:
+            data["user_id"] = context.data.get("user", {}).get("sub", None)
+        except Exception as e:
+            return
             
     data["service"] = "coproduction"
 

@@ -129,7 +129,6 @@ class ExternalAsset(Asset):
     name = Column(String)
     icon_path = Column(String)
     externalinterlinker_id = Column(UUID(as_uuid=True))
-    name = Column(String)
     uri = Column(String)
 
     @property
