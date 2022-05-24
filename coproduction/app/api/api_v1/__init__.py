@@ -7,9 +7,7 @@ from sqlalchemy.orm import Session
 from app.api.api_v1 import (
     assets,
     coproductionprocesses,
-    objectives,
-    phases,
-    tasks,
+    treeitems,
     teams,
     users,
     roles
@@ -20,12 +18,8 @@ api_router = APIRouter()
 api_router.include_router(coproductionprocesses.router,
                           prefix="/coproductionprocesses", tags=["coproductionprocesses"])
 
-api_router.include_router(phases.router,
-                          prefix="/phases", tags=["tree"])
-api_router.include_router(objectives.router,
-                          prefix="/objectives", tags=["tree"])
-api_router.include_router(tasks.router,
-                          prefix="/tasks", tags=["tree"])
+api_router.include_router(treeitems.router,
+                          prefix="/treeitems", tags=["tree"])
 api_router.include_router(assets.router,
                           prefix="/assets", tags=["tree"])
 

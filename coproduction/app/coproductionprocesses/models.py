@@ -42,10 +42,6 @@ class CoproductionProcess(BaseModel):
     default_role_id = Column(UUID(as_uuid=True), ForeignKey('role.id', use_alter=True, ondelete='SET NULL'))
     default_role = relationship('Role', foreign_keys=[default_role_id], post_update=True)
 
-    @aggregated('phases', Column(Integer))
-    def phases_count(self):
-        return func.count('1')
-
     @property
     def logotype_link(self):
         return settings.COMPLETE_SERVER_NAME + self.logotype if self.logotype else ""

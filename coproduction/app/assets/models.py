@@ -25,10 +25,10 @@ class Asset(BaseModel):
     # discriminator
     type = Column(String)
 
-    task_id = Column(UUID(as_uuid=True), ForeignKey("task.id", ondelete='CASCADE'))
-    task = orm.relationship("Task", backref=orm.backref('assets', passive_deletes=True))
+    treeitem_id = Column(UUID(as_uuid=True), ForeignKey("treeitem.id", ondelete='CASCADE'))
+    treeitem = orm.relationship("TreeItem", backref=orm.backref('assets', passive_deletes=True))
 
-    # also attach to the coproduction process to do not delete if task deleted
+    # also attach to the coproduction process to do not delete if treeitem deleted
     coproductionprocess_id = Column(
         UUID(as_uuid=True), ForeignKey("coproductionprocess.id", ondelete='CASCADE')
     )

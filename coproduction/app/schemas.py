@@ -2,12 +2,10 @@ from typing import List, Optional
 
 from app.assets.schemas import *
 from app.coproductionprocesses.schemas import *
-from app.objectives.schemas import *
-from app.phases.schemas import *
 from app.roles.schemas import *
-from app.tasks.schemas import *
 from app.teams.schemas import *
 from app.users.schemas import *
+from app.treeitems.schemas import *
 
 
 class BaseORM(BaseModel):
@@ -21,32 +19,6 @@ class UserOutFull(UserOut):
 
 class AssetOutFull(AssetOut):
     pass
-
-
-class TaskOutFull(TaskOut):
-    # assets: Optional[List[AssetOutFull]]
-    prerequisites_ids: List[uuid.UUID]
-
-    @validator('prerequisites_ids', pre=True)
-    def prerequisites_ids_to_list(cls, v):
-        return list(v)
-
-
-class ObjectiveOutFull(ObjectiveOut):
-    tasks: List[TaskOutFull]
-    prerequisites_ids: List[uuid.UUID]
-
-    @validator('prerequisites_ids', pre=True)
-    def prerequisites_ids_to_list(cls, v):
-        return list(v)
-
-class PhaseOutFull(PhaseOut):
-    objectives: List[ObjectiveOutFull]
-    prerequisites_ids: List[uuid.UUID]
-
-    @validator('prerequisites_ids', pre=True)
-    def prerequisites_ids_to_list(cls, v):
-        return list(v)
 
 
 class TeamOutFull(TeamOut):
@@ -63,3 +35,6 @@ class CoproductionProcessOutFull(CoproductionProcessOut):
 class RoleOutFull(RoleOut):
     users: List[UserOutFull]
     teams: List[TeamOutFull]
+
+class TreeItemOutFull(TreeItemOut):
+    children: List[TreeItemOut]

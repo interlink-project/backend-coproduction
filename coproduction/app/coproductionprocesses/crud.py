@@ -94,40 +94,49 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         total = {}
         for phasemetadata in coproductionschema.get("phasemetadatas", []):
             phasemetadata: dict
-            db_phase = await crud.phase.create_from_metadata(
+            db_phase = await crud.treeitem.create_from_metadata(
                 db=db,
-                phasemetadata=phasemetadata,
-                coproductionprocess_id=coproductionprocess.id,
+                metadata={
+                    **phasemetadata, 
+                    "type": models.Types.phase.value,
+                    "coproductionprocess_id": coproductionprocess.id
+                },
             )
 
             #  Add new phase object and the prerequisites for later loop
             total[phasemetadata["id"]] = {
-                "type": "phase",
                 "prerequisites_ids": phasemetadata["prerequisites_ids"] or [],
                 "newObj": db_phase,
             }
 
             for objectivemetadata in phasemetadata.get("objectivemetadatas", []):
                 objectivemetadata: dict
-                db_obj = await crud.objective.create_from_metadata(
+                db_obj = await crud.treeitem.create_from_metadata(
                     db=db,
-                    objectivemetadata=objectivemetadata,
-                    phase=db_phase,
+                    metadata={
+                        **objectivemetadata, 
+                        "type": models.Types.objective.value,
+                        "coproductionprocess_id": coproductionprocess.id,
+                    },
                 )
+                db_obj.parent = db_phase
                 #  Add new objective object and the prerequisites for later loop
                 total[objectivemetadata["id"]] = {
-                    "type": "objective",
                     "prerequisites_ids": objectivemetadata["prerequisites_ids"] or [],
                     "newObj": db_obj,
+                    "parent": db_phase
                 }
                 for taskmetadata in objectivemetadata.get("taskmetadatas", []):
-                    db_task = await crud.task.create_from_metadata(
+                    db_task = await crud.treeitem.create_from_metadata(
                         db=db,
-                        taskmetadata=taskmetadata,
-                        objective=db_obj,
+                        metadata={
+                            **taskmetadata, 
+                            "type": models.Types.task.value,
+                            "coproductionprocess_id": coproductionprocess.id,
+                        },
                     )
+                    db_task.parent = db_obj
                     total[taskmetadata["id"]] = {
-                        "type": "task",
                         "prerequisites_ids": taskmetadata["prerequisites_ids"] or [],
                         "newObj": db_task,
                     }
@@ -135,22 +144,9 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
         for key, element in total.items():
             for pre_id in element["prerequisites_ids"]:
-                
-                if element["type"] == "phase":
-                    await crud.phase.add_prerequisite(db=db, phase=element["newObj"], prerequisite=total[pre_id]["newObj"], commit=False)
-                if element["type"] == "objective":
-                    await crud.objective.add_prerequisite(db=db, objective=element["newObj"], prerequisite=total[pre_id]["newObj"], commit=False)
-                if element["type"] == "task":
-                    await crud.task.add_prerequisite(db=db, task=element["newObj"], prerequisite=total[pre_id]["newObj"], commit=False)
-        
+                await crud.treeitem.add_prerequisite(db=db, treeitem=element["newObj"], prerequisite=total[pre_id]["newObj"], commit=False)
         db.commit()
-        # await log({
-        #     "model": self.modelName,
-        #     "action": "SET_SCHEMA",
-        #     "crud": True,
-        #     "coproductionprocess_id": db_obj.id,
-        #     "coproductionschema_id": coproductionschema.get("id", None)
-        # })
+        
         db.refresh(coproductionprocess)
         return coproductionprocess
 

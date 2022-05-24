@@ -261,7 +261,7 @@ async def delete_coproductionprocess(
 
 # specific
 
-@router.get("/{id}/tree", response_model=Optional[List[schemas.PhaseOutFull]])
+@router.get("/{id}/tree", response_model=Optional[List[schemas.TreeItemOutFull]])
 async def get_coproductionprocess_tree(
     *,
     db: Session = Depends(deps.get_db),
@@ -276,4 +276,4 @@ async def get_coproductionprocess_tree(
         raise HTTPException(status_code=404, detail="CoproductionProcess not found")
     if not crud.coproductionprocess.can_read(db=db, user=current_user, object=coproductionprocess):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    return coproductionprocess.phases
+    return await crud.treeitem.get_tree(db=db, coproductionprocess_id=coproductionprocess.id)
