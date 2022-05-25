@@ -127,6 +127,7 @@ async def instantiate_asset_from_knowledgeinterlinker(
     if not (task := await crud.task.get(db=db, id=asset_in.task_id)):
         raise HTTPException(status_code=404, detail="Task not found")
 
+    # Gets the knowledge interlinker
     response = requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.knowledgeinterlinker_id}", headers={
                 "Authorization": "Bearer " + token,
                 "Accept-Language": asset_in.language
@@ -136,6 +137,7 @@ async def instantiate_asset_from_knowledgeinterlinker(
     if response.status_code == 404 or not interlinker:
         raise HTTPException(status_code=404, detail="Knowledge interlinker not found")
 
+    # Clones the genesis asset of the knowledge interlinker by calling the software interlinker's (used by the knowledge) /clone method
     try:
         external_info : dict = requests.post(interlinker.get("internal_link") + "/clone", headers={
             "Authorization": "Bearer " + token
@@ -144,6 +146,8 @@ async def instantiate_asset_from_knowledgeinterlinker(
         external_info : dict = requests.post(interlinker.get("link") + "/clone", headers={
             "Authorization": "Bearer " + token
         }).json()
+
+    # Creates an InternalAsset object with reference to the software interlinker that manages the asset, the knowledge interlinker that contained the genesis asset id and the id of the external resource
     asset = await crud.asset.create(db=db, coproductionprocess_id=task.objective.phase.coproductionprocess_id, creator=current_user, asset=schemas.InternalAssetCreate(
         **{
             "knowledgeinterlinker_id": asset_in.knowledgeinterlinker_id,
@@ -158,20 +162,18 @@ async def instantiate_asset_from_knowledgeinterlinker(
     await log({
         "model": "ASSET",
         "action": "CREATE",
+        "type": "INTERNAL",
         "crud": False,
         "coproductionprocess_id": asset.task.objective.phase.coproductionprocess_id,
         "phase_id": asset.task.objective.phase_id,
         "objective_id": asset.task.objective_id,
         "task_id": asset.task_id,
         "asset_id": asset.id,
-        "external_interlinker": False,
-        "interlinker_type": "SOFTWAREINTERLINKER EXTERNALINTERLINKER",
-        "knowledgeinterlinker_id": asset.knowledgeinterlinker_id,
+        "knowledgeinterlinker_id": interlinker.get("id"),
         "knowledgeinterlinker_name": interlinker.get("name"),
         "softwareinterlinker_id": interlinker.get("softwareinterlinker").get("id"),
         "softwareinterlinker_name": interlinker.get("softwareinterlinker").get("name"),
-        "externalinterlinker_id": external_info.get("id"),
-        "externalinterlinker_name": external_info.get("name")
+        "externalasset_id": external_info.get("id"),
     })
 
     return asset
@@ -229,6 +231,8 @@ async def clone_asset(
             uri=asset.uri
         ), coproductionprocess_id=task.objective.phase.coproductionprocess_id, creator=current_user)
     raise HTTPException(status_code=500, detail="Asset type not recognized")
+
+    # TODO: log
 
 @router.put("/{id}", response_model=schemas.AssetOutFull)
 async def update_asset(

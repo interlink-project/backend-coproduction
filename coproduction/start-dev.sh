@@ -5,17 +5,17 @@ HOST=${HOST:-0.0.0.0}
 PORT=${PORT}
 LOG_LEVEL=${LOG_LEVEL:-info}
 
-mkdir -p /app/static/coproductionprocesses || true
-mkdir -p /app/static/teams || true
-mkdir -p /app/static/assets || true
+mkdir -p /app/static/coproductionprocesses || true
+mkdir -p /app/static/teams || true
+mkdir -p /app/static/assets || true
 
 # Let the DB start
 python /app/app/pre_start.py
 
-# If not migrations, create models in DB automatically without migrations
-# python /app/app/create_models.py
+# Execute only-dev stuff
+python /app/app/development.py
 
-# NOW CHANGES IN DATAMODEL SHOULD BE MANAGED BY ALEMBIC. CHECK MAKEFILE make migrations message="message"
+# Changes in database are managed by alembic. CHECK MAKEFILE make migrations message="message"
 
 # Start Uvicorn with live reload
 exec uvicorn --reload --host $HOST --port $PORT --log-level $LOG_LEVEL "app.main:app"

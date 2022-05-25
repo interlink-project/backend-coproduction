@@ -1,9 +1,9 @@
-VERSION: v1.1.4
+VERSION: v1.1.5
 
 NEW
+• Py file for development stuff
 
 IMPROVED
-• Log endpoint removed
 
 FIXED
-• Pre start script waits for rabbit and catalogue
+• CRUD Base update fixed

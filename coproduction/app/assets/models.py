@@ -142,8 +142,7 @@ class ExternalAsset(Asset):
     @cached_property
     def external_response(self):
         if self.externalinterlinker_id:
-            return requests.get(
-                f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{self.externalinterlinker_id}").json()
+            return requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{self.externalinterlinker_id}").json()
         return
     
     @property

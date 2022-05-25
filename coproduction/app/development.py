@@ -13,8 +13,10 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
-    logger.info("Creating models")
-    BaseModel.metadata.create_all(bind=engine)
+    # logger.info("Creating models")
+    # BaseModel.metadata.create_all(bind=engine)
+    # logger.info("Models created")
+
     # create the pydot graph object by autoloading all tables via a bound metadata object
     graph = create_schema_graph(
         metadata=MetaData(settings.SQLALCHEMY_DATABASE_URI),
@@ -25,5 +27,5 @@ if __name__ == "__main__":
         concentrate=True,  # Don't try to join the relation lines together
     )
     graph.write_png("dbschema.png")  # write out the file
-    logger.info("Models created")
+    
 
