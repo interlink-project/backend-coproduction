@@ -2,6 +2,7 @@ VERSION: v1.1.5
 
 NEW
 • Py file for development stuff
+• Remove users from team
 
 IMPROVED
 

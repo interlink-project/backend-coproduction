@@ -44,6 +44,20 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
             "added_user_id": user.id
         })
         return team
+
+    async def remove_user(self, db: Session, team: Team, user: models.User) -> Team:
+        if team.creator_id != user.id:
+            team.users.remove(user)
+            db.commit()
+            db.refresh(team)
+            await log({
+                "model": "TEAM",
+                "action": "REMOVE_USER",
+                "team_id": team.id,
+                "removed_user_id": user.id
+            })
+            return team
+        raise Exception("Can not remove team creator")
         
     async def create(self, db: Session, team: TeamCreate, creator: models.User) -> Team:
         db_obj = Team(
