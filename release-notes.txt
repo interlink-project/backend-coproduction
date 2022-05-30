@@ -1,9 +1,8 @@
-VERSION: v1.1.6
+VERSION: v1.1.7
 
 NEW
-* KPIS script
+* KPIS endpoint
 
 IMPROVED
 
 FIXED
-* Coproduction process logging key fixed

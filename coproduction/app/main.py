@@ -9,6 +9,7 @@ from starlette.middleware import Middleware
 from starlette_context import plugins, context
 from starlette_context.middleware import ContextMiddleware
 from app.middleware import UserPlugin, LanguagePlugin
+from app.kpis import init
 
 middleware = [
     Middleware(
@@ -28,6 +29,11 @@ app = FastAPI(
 @app.get("/")
 def main():
     return RedirectResponse(url=f"{settings.BASE_PATH}/docs")
+
+
+@app.get("/kpis")
+async def kpis():
+    return await init()
 
 
 @app.get("/healthcheck")

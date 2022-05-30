@@ -23,7 +23,15 @@ def get_raw_query(q):
     if show_queries:
         print(str(q.statement.compile(dialect=postgresql.dialect()))) 
 
+
+def add(data, key, value):
+    if key in data:
+        return Exception("Key already present")
+    data[key] = value
+
 async def init():
+    data = {}
+
     db: Session = SessionLocal()
     set_logging_disabled(True)
 
@@ -34,7 +42,7 @@ async def init():
     coproductionprocesses_count = coproductionprocesses_count_query.count()
     
     get_raw_query(coproductionprocesses_count_query)
-    print("Number of coproductionprocesses:", coproductionprocesses_count)
+    add(data, "Number of coproductionprocesses:", coproductionprocesses_count)
 
     # Resources count
     assets_count_query = db.query(
@@ -43,7 +51,7 @@ async def init():
     assets_count = assets_count_query.count()
 
     get_raw_query(coproductionprocesses_count_query)
-    print("Number of assets created:", assets_count)
+    add(data, "Number of assets created:", assets_count)
 
     # Users count
     users_count_query = db.query(
@@ -52,7 +60,7 @@ async def init():
     users_count = users_count_query.count()
 
     get_raw_query(coproductionprocesses_count_query)
-    print("Number of users registered:", users_count)
+    add(data, "Number of users registered:", users_count)
 
     # Teams count
     teams_count_query = db.query(
@@ -61,11 +69,11 @@ async def init():
     teams_count = teams_count_query.count()
 
     get_raw_query(coproductionprocesses_count_query)
-    print("Number of teams created:", teams_count)
+    add(data, "Number of teams created:", teams_count)
 
     # Means
-    print("Mean of assets per coproductionprocess:", divide(assets_count, coproductionprocesses_count))
-    print("Mean of users per team:", divide(teams_count, users_count))
+    add(data, "Mean of assets per coproductionprocess:", divide(assets_count, coproductionprocesses_count))
+    add(data, "Mean of users per team:", divide(teams_count, users_count))
 
     # Languages
     languages_query = db.query(
@@ -74,7 +82,7 @@ async def init():
     languages = languages_query.all()
 
     get_raw_query(languages_query)
-    print("Different languages used:", languages)
+    add(data, "Different languages used:", languages)
 
     for key in ["en", "es", "it", "lv"]:
         languages_query = db.query(
@@ -83,7 +91,7 @@ async def init():
         languages = languages_query.count()
 
         get_raw_query(languages_query)
-        print(f"Processes in {key} language:", languages)
+        add(data, f"Processes in {key} language:", languages)
 
     # ASSETS
     number_of_assets_query = db.query(
@@ -92,7 +100,7 @@ async def init():
     number_of_assets_query_count = number_of_assets_query.count()
 
     get_raw_query(number_of_assets_query)
-    print("Number of assets:", number_of_assets_query_count)
+    add(data, "Number of assets:", number_of_assets_query_count)
 
     internal_assets_query = db.query(
             InternalAsset.id,
@@ -100,7 +108,7 @@ async def init():
     internal_assets_query_count = internal_assets_query.count()
 
     get_raw_query(internal_assets_query)
-    print("Number of internal assets:", internal_assets_query_count)
+    add(data, "Number of internal assets:", internal_assets_query_count)
 
     external_assets_query = db.query(
             ExternalAsset.id,
@@ -108,7 +116,7 @@ async def init():
     external_assets_query_count = external_assets_query.count()
 
     get_raw_query(external_assets_query)
-    print("Number of external assets:", external_assets_query_count)
+    add(data, "Number of external assets:", external_assets_query_count)
     
 
     # SOFTWARE INTERLINKERS
@@ -119,8 +127,8 @@ async def init():
     used_software_interlinkers_query_count = used_software_interlinkers_query.count()
 
     get_raw_query(used_software_interlinkers_query)
-    print("Used software interlinkers:", used_software_interlinkers_query_all)
-    print("Number of used software interlinkers:", used_software_interlinkers_query_count)
+    add(data, "Used software interlinkers:", used_software_interlinkers_query_all)
+    add(data, "Number of used software interlinkers:", used_software_interlinkers_query_count)
     
     # EXTERNAL SOFTWARE INTERLINKERS
     used_external_interlinkers_query = db.query(
@@ -132,8 +140,8 @@ async def init():
     used_external_interlinkers_query_count = used_external_interlinkers_query.count()
 
     get_raw_query(used_external_interlinkers_query)
-    print("Used external interlinkers:", used_external_interlinkers_query_all)
-    print("Number of used external interlinkers:", used_external_interlinkers_query_count)
+    add(data, "Used external interlinkers:", used_external_interlinkers_query_all)
+    add(data, "Number of used external interlinkers:", used_external_interlinkers_query_count)
 
     # KNOWLEDGE
     used_knowledge_interlinkers_query = db.query(
@@ -145,10 +153,12 @@ async def init():
     used_knowledge_interlinkers_query_count = used_knowledge_interlinkers_query.count()
 
     get_raw_query(used_knowledge_interlinkers_query)
-    print("Used knowledge interlinkers:", used_knowledge_interlinkers_query_all)
-    print("Number of used knowledge interlinkers:", used_knowledge_interlinkers_query_count)
+    add(data, "Used knowledge interlinkers:", used_knowledge_interlinkers_query_all)
+    add(data, "Number of used knowledge interlinkers:", used_knowledge_interlinkers_query_count)
 
+    print(data)
     db.close()
+    return data
 
 if __name__ == "__main__":
     logger.info("Creating initial data")
