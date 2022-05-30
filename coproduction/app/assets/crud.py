@@ -13,19 +13,19 @@ import favicon
 class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
 
     async def get_multi_filtered(
-        self, db: Session, coproductionprocess_id: uuid.UUID, task_id: uuid.UUID
+        self, db: Session, coproductionprocess_id: uuid.UUID, treeitem_id: uuid.UUID
     ) -> List[Asset]:
         queries = []
         if coproductionprocess_id:
             queries.append(Asset.coproductionprocess_id == coproductionprocess_id)
         
-        if task_id:
-            queries.append(Asset.task_id == task_id)
+        if treeitem_id:
+            queries.append(Asset.treeitem_id == treeitem_id)
             await log({
                 "model": self.modelName,
                 "action": "LIST",
                 "coproductionprocess_id": coproductionprocess_id,
-                "task_id": task_id
+                "treeitem_id": treeitem_id
             })
         return db.query(Asset).filter(*queries).all()
     
@@ -65,7 +65,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
             "id": db_obj.id,
             "crud": True,
             "coproductionprocess_id": coproductionprocess_id,
-            "task_id": db_obj.task_id
+            "treeitem_id": db_obj.treeitem_id
         })
         db.refresh(db_obj)
         return db_obj

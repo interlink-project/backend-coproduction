@@ -4,15 +4,17 @@ from enum import Enum
 from typing import List, Optional
 
 from pydantic import BaseModel, validator
+from .models import TreeItemTypes
 
 class TreeItemBase(BaseModel):
     name: str
     description: str
     coproductionprocess_id: Optional[uuid.UUID]
     parent_id: Optional[uuid.UUID]
+    type: TreeItemTypes
 
 class TreeItemCreate(TreeItemBase):
-    type: str
+    
     problemprofiles: Optional[list]
     status: Optional[str]
     _start_date: Optional[date]
@@ -30,7 +32,6 @@ class TreeItem(TreeItemBase):
     id: uuid.UUID
     created_at: datetime
     updated_at: Optional[datetime]
-    type: Optional[Enum]
 
     start_date: Optional[date]
     end_date: Optional[date]
@@ -43,6 +44,7 @@ class TreeItem(TreeItemBase):
 
 
 class TreeItemOut(TreeItem):
+    problemprofiles: list
     children_ids: List[uuid.UUID]
     prerequisites_ids: List[uuid.UUID]
 

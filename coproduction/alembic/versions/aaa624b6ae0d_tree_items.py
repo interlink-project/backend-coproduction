@@ -1,8 +1,8 @@
-"""treeitems
+"""tree-items
 
-Revision ID: 2178b408a424
+Revision ID: aaa624b6ae0d
 Revises: 
-Create Date: 2022-05-24 13:33:56.843438
+Create Date: 2022-05-26 12:47:50.587475
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '2178b408a424'
+revision = 'aaa624b6ae0d'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -93,7 +93,7 @@ def upgrade():
     sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['coproductionprocess_id'], ['coproductionprocess.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['creator_id'], ['user.id'], ondelete='SET NULL', use_alter=True),
-    sa.ForeignKeyConstraint(['parent_id'], ['treeitem.id'], ),
+    sa.ForeignKeyConstraint(['parent_id'], ['treeitem.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('asset',

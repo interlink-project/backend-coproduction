@@ -9,7 +9,7 @@ from app.general.utils.AllOptional import AllOptional
 
 
 class BaseAssetBase(BaseModel):
-    task_id: uuid.UUID
+    treeitem_id: uuid.UUID
 
 class BaseAssetCreate(BaseAssetBase):
     pass

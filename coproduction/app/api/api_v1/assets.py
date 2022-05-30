@@ -20,7 +20,7 @@ router = APIRouter()
 async def list_assets(
     db: Session = Depends(deps.get_db),
     coproductionprocess_id: Optional[uuid.UUID] = Query(None),
-    task_id: Optional[uuid.UUID] = Query(None),
+    treeitem_id: Optional[uuid.UUID] = Query(None),
     current_user: Optional[models.User] = Depends(deps.get_current_user),
 ) -> Any:
     """
@@ -30,7 +30,7 @@ async def list_assets(
     if not crud.asset.can_list(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
-    asset = await crud.asset.get_multi_filtered(db, task_id=task_id, coproductionprocess_id=coproductionprocess_id)
+    asset = await crud.asset.get_multi_filtered(db, treeitem_id=treeitem_id, coproductionprocess_id=coproductionprocess_id)
 
     return asset
 
@@ -56,9 +56,9 @@ async def create_asset(
     if not crud.asset.can_create(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
-    # first check if task exists
-    if not (task := await crud.task.get(db=db, id=asset_in.task_id)):
-        raise HTTPException(status_code=404, detail="Task not found")
+    # first check if treeitem exists
+    if not (treeitem := await crud.treeitem.get(db=db, id=asset_in.treeitem_id)):
+        raise HTTPException(status_code=404, detail="Treeitem not found")
 
     # check that interlinker in catalogue
     print(type(asset_in))
@@ -85,7 +85,7 @@ async def create_asset(
 
 
     asset = await crud.asset.create(
-        db=db, asset=asset_in, coproductionprocess_id=task.objective.phase.coproductionprocess_id, creator=current_user)
+        db=db, asset=asset_in, coproductionprocess_id=treeitem.parent.parent.coproductionprocess_id, creator=current_user)
 
     # my post create new asset
     await log({
@@ -93,10 +93,10 @@ async def create_asset(
         "model": "ASSET",
         "action": "CREATE",
         "crud": False,
-        "coproductionprocess_id": asset.task.objective.phase.coproductionprocess_id,
-        "phase_id": asset.task.objective.phase_id,
-        "objective_id": asset.task.objective_id,
-        "task_id": asset.task_id,
+        "coproductionprocess_id": asset.treeitem.parent.parent.coproductionprocess_id,
+        "phase_id": asset.treeitem.parent.parent_id,
+        "objective_id": asset.treeitem.parent_id,
+        "treeitem_id": asset.treeitem_id,
         "asset_id": asset.id,
     },
     **specific_log_data
@@ -107,7 +107,7 @@ async def create_asset(
 class InstantiateSchema(BaseModel):
     knowledgeinterlinker_id: uuid.UUID
     language: str
-    task_id: uuid.UUID
+    treeitem_id: uuid.UUID
 
 @router.post("/instantiate", response_model=schemas.AssetOutFull)
 async def instantiate_asset_from_knowledgeinterlinker(
@@ -123,9 +123,9 @@ async def instantiate_asset_from_knowledgeinterlinker(
     if not crud.asset.can_create(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
-    # first check if task exists
-    if not (task := await crud.task.get(db=db, id=asset_in.task_id)):
-        raise HTTPException(status_code=404, detail="Task not found")
+    # first check if treeitem exists
+    if not (treeitem := await crud.treeitem.get(db=db, id=asset_in.treeitem_id)):
+        raise HTTPException(status_code=404, detail="Treeitem not found")
 
     response = requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.knowledgeinterlinker_id}", headers={
                 "Authorization": "Bearer " + token,
@@ -144,13 +144,13 @@ async def instantiate_asset_from_knowledgeinterlinker(
         external_info : dict = requests.post(interlinker.get("link") + "/clone", headers={
             "Authorization": "Bearer " + token
         }).json()
-    asset = await crud.asset.create(db=db, coproductionprocess_id=task.objective.phase.coproductionprocess_id, creator=current_user, asset=schemas.InternalAssetCreate(
+    asset = await crud.asset.create(db=db, coproductionprocess_id=treeitem.parent.parent.coproductionprocess_id, creator=current_user, asset=schemas.InternalAssetCreate(
         **{
             "knowledgeinterlinker_id": asset_in.knowledgeinterlinker_id,
             "type": "internalasset",
             "softwareinterlinker_id": interlinker.get("softwareinterlinker_id"),
             "external_asset_id": external_info.get("id") or external_info.get("_id"),
-            "task_id": task.id
+            "treeitem_id": treeitem.id
         }
     ))
 
@@ -159,10 +159,10 @@ async def instantiate_asset_from_knowledgeinterlinker(
         "model": "ASSET",
         "action": "CREATE",
         "crud": False,
-        "coproductionprocess_id": asset.task.objective.phase.coproductionprocess_id,
-        "phase_id": asset.task.objective.phase_id,
-        "objective_id": asset.task.objective_id,
-        "task_id": asset.task_id,
+        "coproductionprocess_id": asset.treeitem.parent.parent.coproductionprocess_id,
+        "phase_id": asset.treeitem.parent.parent_id,
+        "objective_id": asset.treeitem.parent_id,
+        "treeitem_id": asset.treeitem_id,
         "asset_id": asset.id,
         "external_interlinker": False,
         "interlinker_type": "SOFTWAREINTERLINKER EXTERNALINTERLINKER",
@@ -195,10 +195,10 @@ async def clone_asset(
     if not (asset := await crud.asset.get(db=db, id=id)):
         raise HTTPException(status_code=404, detail="Asset not found")
 
-    # first check if task exists
-    task : models.Task
-    if not (task := await crud.task.get(db=db, id=asset.task_id)):
-        raise HTTPException(status_code=404, detail="Task not found")
+    # first check if treeitem exists
+    treeitem : models.TreeItem
+    if not (treeitem := await crud.treeitem.get(db=db, id=asset.treeitem_id)):
+        raise HTTPException(status_code=404, detail="Treeitem not found")
 
     if asset.type == "internalasset":
         try:
@@ -214,20 +214,20 @@ async def clone_asset(
 
         asset : models.InternalAsset
         return await crud.asset.create(db=db, asset=schemas.InternalAssetCreate(
-            task_id=asset.task_id,
+            treeitem_id=asset.treeitem_id,
             softwareinterlinker_id=asset.softwareinterlinker_id,
             knowledgeinterlinker_id=asset.knowledgeinterlinker_id,
             external_asset_id=external_id
-        ), coproductionprocess_id=task.objective.phase.coproductionprocess_id, creator=current_user)
+        ), coproductionprocess_id=treeitem.parent.parent.coproductionprocess_id, creator=current_user)
 
     if asset.type == "externalasset":
         asset : models.ExternalAsset
         return await crud.asset.create(db=db, asset=schemas.ExternalAssetCreate(
-            task_id=asset.task_id,
+            treeitem_id=asset.treeitem_id,
             externalinterlinker_id=asset.externalinterlinker_id,
             name=asset.name,
             uri=asset.uri
-        ), coproductionprocess_id=task.objective.phase.coproductionprocess_id, creator=current_user)
+        ), coproductionprocess_id=treeitem.parent.parent.coproductionprocess_id, creator=current_user)
     raise HTTPException(status_code=500, detail="Asset type not recognized")
 
 @router.put("/{id}", response_model=schemas.AssetOutFull)
@@ -286,10 +286,10 @@ async def update_asset(
         "model": "ASSET",
         "action": "UPDATE",
         "crud": False,
-        "coproductionprocess_id": asset.task.objective.phase.coproductionprocess_id,
-        "phase_id": asset.task.objective.phase_id,
-        "objective_id": asset.task.objective_id,
-        "task_id": asset.task_id,
+        "coproductionprocess_id": asset.treeitem.parent.parent.coproductionprocess_id,
+        "phase_id": asset.treeitem.parent.parent_id,
+        "objective_id": asset.treeitem.parent_id,
+        "treeitem_id": asset.treeitem_id,
         "asset_id": asset.id,
         "external_interlinker": external,
         "knowledgeinterlinker_id": asset.knowledgeinterlinker_id,
@@ -360,10 +360,10 @@ async def read_asset(
             "model": "ASSET",
             "action": "GET",
             "crud": False,
-            "coproductionprocess_id": asset.task.objective.phase.coproductionprocess_id,
-            "phase_id": asset.task.objective.phase_id,
-            "objective_id": asset.task.objective_id,
-            "task_id": asset.task_id,
+            "coproductionprocess_id": asset.treeitem.parent.parent.coproductionprocess_id,
+            "phase_id": asset.treeitem.parent.parent_id,
+            "objective_id": asset.treeitem.parent_id,
+            "treeitem_id": asset.treeitem_id,
             "asset_id": asset.id,
             "external_interlinker": external,
             "knowledgeinterlinker_id": asset.knowledgeinterlinker_id,
@@ -424,10 +424,10 @@ async def delete_asset(
             "model": "ASSET",
             "action": "DELETE",
             "crud": False,
-            "coproductionprocess_id": asset.task.objective.phase.coproductionprocess_id,
-            "phase_id": asset.task.objective.phase_id,
-            "objective_id": asset.task.objective_id,
-            "task_id": asset.task_id,
+            "coproductionprocess_id": asset.treeitem.parent.parent.coproductionprocess_id,
+            "phase_id": asset.treeitem.parent.parent_id,
+            "objective_id": asset.treeitem.parent_id,
+            "treeitem_id": asset.treeitem_id,
             "asset_id": asset.id,
             
         }

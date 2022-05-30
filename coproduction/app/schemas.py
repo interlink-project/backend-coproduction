@@ -37,4 +37,6 @@ class RoleOutFull(RoleOut):
     teams: List[TeamOutFull]
 
 class TreeItemOutFull(TreeItemOut):
-    children: List[TreeItemOut]
+    children: List["TreeItemOutFull"]
+
+TreeItemOutFull.update_forward_refs()

@@ -10,7 +10,7 @@ from app.general.utils.CRUDBase import CRUDBase
 from app.models import CoproductionProcess, Team, Role, User
 from app.roles.crud import exportCrud as exportRoleCrud
 from app.roles.models import AdministratorRole, DefaultRole, UnauthenticatedRole
-from app.schemas import CoproductionProcessCreate, CoproductionProcessPatch
+from app.schemas import CoproductionProcessCreate, CoproductionProcessPatch, TreeItemCreate
 from sqlalchemy import or_
 from app.messages import log
 
@@ -90,61 +90,50 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         db.refresh(db_obj)
         return db_obj
 
-    async def set_schema(self, db: Session, coproductionprocess: models.CoproductionProcess, coproductionschema: dict):
-        total = {}
-        for phasemetadata in coproductionschema.get("phasemetadatas", []):
-            phasemetadata: dict
-            db_phase = await crud.treeitem.create_from_metadata(
+    async def create_recursive(self, db, data, extra_add):
+        resume = {}
+        children = data.get("children", [])
+        del data["children"]
+        db_treeitem = await crud.treeitem.create(
                 db=db,
-                metadata={
-                    **phasemetadata, 
-                    "type": models.Types.phase.value,
-                    "coproductionprocess_id": coproductionprocess.id
-                },
+                treeitem=TreeItemCreate(**{
+                    **data, 
+                    **extra_add,                
+                }),
             )
-
-            #  Add new phase object and the prerequisites for later loop
-            total[phasemetadata["id"]] = {
-                "prerequisites_ids": phasemetadata["prerequisites_ids"] or [],
-                "newObj": db_phase,
+        resume = {
+            data["id"]: {
+                "prerequisites_ids": data["prerequisites_ids"] or [],
+                "newObj": db_treeitem,
             }
+        }
 
-            for objectivemetadata in phasemetadata.get("objectivemetadatas", []):
-                objectivemetadata: dict
-                db_obj = await crud.treeitem.create_from_metadata(
-                    db=db,
-                    metadata={
-                        **objectivemetadata, 
-                        "type": models.Types.objective.value,
-                        "coproductionprocess_id": coproductionprocess.id,
-                    },
-                )
-                db_obj.parent = db_phase
-                #  Add new objective object and the prerequisites for later loop
-                total[objectivemetadata["id"]] = {
-                    "prerequisites_ids": objectivemetadata["prerequisites_ids"] or [],
-                    "newObj": db_obj,
-                    "parent": db_phase
-                }
-                for taskmetadata in objectivemetadata.get("taskmetadatas", []):
-                    db_task = await crud.treeitem.create_from_metadata(
-                        db=db,
-                        metadata={
-                            **taskmetadata, 
-                            "type": models.Types.task.value,
-                            "coproductionprocess_id": coproductionprocess.id,
-                        },
-                    )
-                    db_task.parent = db_obj
-                    total[taskmetadata["id"]] = {
-                        "prerequisites_ids": taskmetadata["prerequisites_ids"] or [],
-                        "newObj": db_task,
-                    }
+        
+        for child in children:
+            child_ret = await self.create_recursive(db=db, data=child, extra_add={
+                "parent_id": db_treeitem.id
+            })
+            resume = {**resume, **child_ret}
+        return resume
+            
+
+    async def set_schema(self, db: Session, coproductionprocess: models.CoproductionProcess, coproductionschema: dict):
+        treeitems = coproductionschema.get("treeitems", [])
+
+        resume = {}
+        for treeitem in treeitems:
+            print("PROCESSING", treeitem.get("name"))
+            child_ret = await self.create_recursive(db=db, data=treeitem, extra_add={
+                "coproductionprocess_id": coproductionprocess.id
+            })
+            resume = {**resume, **child_ret}
+
+        print("RESUMEEE", resume)
         db.commit()
 
-        for key, element in total.items():
+        for key, element in resume.items():
             for pre_id in element["prerequisites_ids"]:
-                await crud.treeitem.add_prerequisite(db=db, treeitem=element["newObj"], prerequisite=total[pre_id]["newObj"], commit=False)
+                await crud.treeitem.add_prerequisite(db=db, treeitem=element["newObj"], prerequisite=resume[pre_id]["newObj"], commit=False)
         db.commit()
         
         db.refresh(coproductionprocess)
