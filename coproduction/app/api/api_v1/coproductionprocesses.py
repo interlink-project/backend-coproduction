@@ -34,7 +34,7 @@ async def list_coproductionprocesses(
     coproductionprocess = await crud.coproductionprocess.get_multi(db, skip=skip, limit=limit)
 
     # await log({
-    #     "model": "COPRODPROCESS",
+    #     "model": "COPRODUCTIONPROCESS",
     #     "action": "LIST",
     #     "crud": False,
     #     "coproductionprocess_id": coproductionprocess.id,
@@ -74,7 +74,7 @@ async def create_coproductionprocess(
     coproductionprocess = await crud.coproductionprocess.create(db=db, coproductionprocess=coproductionprocess_in, creator=current_user, team=team)
 
     await log({
-        "model": "COPRODPROCESS",
+        "model": "COPRODUCTIONPROCESS",
         "action": "CREATE",
         "crud": False,
         "coproductionprocess_id": coproductionprocess.id,
@@ -197,7 +197,7 @@ async def update_coproductionprocess(
         db=db, db_obj=coproductionprocess, obj_in=coproductionprocess_in)
 
     await log({
-        "model": "COPRODPROCESS",
+        "model": "COPRODUCTIONPROCESS",
         "action": "UPDATE",
         "crud": False,
         "coproductionprocess_id": coproductionprocess.id,
@@ -223,7 +223,7 @@ async def read_coproductionprocess(
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     await log({
-        "model": "COPRODPROCESS",
+        "model": "COPRODUCTIONPROCESS",
         "action": "GET",
         "crud": False,
         "coproductionprocess_id": coproductionprocess.id,
@@ -249,7 +249,7 @@ async def delete_coproductionprocess(
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     await log({
-        "model": "COPRODPROCESS",
+        "model": "COPRODUCTIONPROCESS",
         "action": "DELETE",
         "crud": False,
         "coproductionprocess_id": coproductionprocess.id,
