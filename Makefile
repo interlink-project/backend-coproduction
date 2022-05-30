@@ -58,3 +58,7 @@ applymigrations: ## Seed data
 seed: ## Seed data
 	docker-compose -f docker-compose.devintegrated.yml exec coproduction python /app/app/pre_start.py
 	docker-compose -f docker-compose.devintegrated.yml exec coproduction ./seed.sh
+
+.PHONY: kpis
+kpis: ## Show kpis
+	docker-compose -f docker-compose.devintegrated.yml exec coproduction python /app/app/kpis.py
