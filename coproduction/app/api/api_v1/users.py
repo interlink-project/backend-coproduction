@@ -5,20 +5,19 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.general import deps
+import requests
 
 router = APIRouter()
 
-@router.post("", response_model=schemas.UserOutFull)
-async def sync_user(
+@router.get("/me", response_model=schemas.UserOutFull)
+async def me(
     *,
     db: Session = Depends(deps.get_db),
-    user_in: schemas.UserCreate,
+    token: str = Depends(deps.get_current_active_token)
 ) -> Any:
     """
-    Create new user.
+    Get or create user.
     """
-    # TODO: only from auth micro
-    if user := await crud.user.get(db=db, id=user_in.id):
-        return user
-    return await crud.user.create(db=db, user=user_in)
-
+    cookies = {'auth_token': token}
+    response = requests.get(f"http://auth/auth/api/v1/users/me", cookies=cookies, timeout=3)
+    return await crud.user.get_or_create(db=db, data=response.json())

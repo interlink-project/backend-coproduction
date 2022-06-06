@@ -81,13 +81,8 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
         db_obj.default_role = default_role
         db.commit()
-        # await log({
-        #     "model": self.modelName,
-        #     "action": "CREATE",
-        #     "crud": True,
-        #     "coproductionprocess_id": db_obj.id,
-        # })
         db.refresh(db_obj)
+        await self.log_on_create(db_obj)
         return db_obj
 
     async def set_schema(self, db: Session, coproductionprocess: models.CoproductionProcess, coproductionschema: dict):
@@ -177,6 +172,13 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
             return obj
         return
 
+    # Override log methods
+    def enrich_log_data(self, coproductionprocess, logData):
+        logData["model"] = "COPRODUCTIONPROCESS"
+        logData["object_id"] = coproductionprocess.id
+        logData["coproductionprocess_id"] = coproductionprocess.id
+        return logData
+        
     # CRUD Permissions
     def can_create(self, user):
         return True
@@ -197,4 +199,4 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         return self.check_perm(db=db, user=user, object=object, perm="delete")
 
 
-exportCrud = CRUDCoproductionProcess(CoproductionProcess)
+exportCrud = CRUDCoproductionProcess(CoproductionProcess, logByDefault=True)

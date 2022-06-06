@@ -57,6 +57,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
         if commit:
             db.commit()
             db.refresh(db_obj)
+            await self.log_on_create(db_obj)
         return db_obj
 
     async def add_prerequisite(self, db: Session, task: Task, prerequisite: Task, commit : bool = True) -> Task:
@@ -104,7 +105,18 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
 
         db.commit()
         db.refresh(db_obj)
+        await self.log_on_update(db_obj)
         return db_obj
+
+    # Override log methods
+    def enrich_log_data(self, obj, logData):
+        logData["model"] = "TASK"
+        logData["object_id"] = obj.id
+        logData["coproductionprocess_id"] = obj.objective.phase.coproductionprocess_id
+        logData["phase_id"] = obj.objective.phase_id
+        logData["objective_id"] = obj.objective_id
+        logData["task_id"] = obj.id
+        return logData
 
     # CRUD Permissions
     def can_create(self, user):

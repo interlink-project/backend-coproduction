@@ -39,19 +39,7 @@ async def create_task(
     """
     if not crud.task.can_create(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    task = await crud.task.create(db=db, task=task_in)
-
-    await log({
-        "model": "TASK",
-        "action": "CREATE",
-        "crud": False,
-        "coproductionprocess_id": task.objective.phase.coproductionprocess_id,
-        "phase_id": task.objective.phase_id,
-        "objective_id": task.objective_id,
-        "task_id": task.id
-    })
-
-    return task
+    return await crud.task.create(db=db, task=task_in)
 
 
 @router.put("/{id}", response_model=schemas.TaskOutFull)
@@ -70,19 +58,7 @@ async def update_task(
         raise HTTPException(status_code=404, detail="Task not found")
     if not crud.task.can_update(current_user, task):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    task = await crud.task.update(db=db, db_obj=task, obj_in=task_in)
-
-    await log({
-        "model": "TASK",
-        "action": "UPDATE",
-        "crud": False,
-        "coproductionprocess_id": task.objective.phase.coproductionprocess_id,
-        "phase_id": task.objective.phase_id,
-        "objective_id": task.objective_id,
-        "task_id": task.id
-    })
-
-    return task
+    return await crud.task.update(db=db, db_obj=task, obj_in=task_in)
 
 
 @router.get("/{id}", response_model=schemas.TaskOutFull)
@@ -100,17 +76,6 @@ async def read_task(
         raise HTTPException(status_code=404, detail="Task not found")
     if not crud.task.can_read(current_user, task):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-
-    await log({
-        "model": "TASK",
-        "action": "GET",
-        "crud": False,
-        "coproductionprocess_id": task.objective.phase.coproductionprocess_id,
-        "phase_id": task.objective.phase_id,
-        "objective_id": task.objective_id,
-        "task_id": task.id
-    })
-
     return task
 
 @router.delete("/{id}", response_model=schemas.TaskOutFull)
@@ -128,25 +93,5 @@ async def delete_task(
         raise HTTPException(status_code=404, detail="Task not found")
     if not crud.task.can_remove(current_user, task):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    await log({
-        "model": "TASK",
-        "action": "DELETE",
-        "crud": False,
-        "coproductionprocess_id": task.objective.phase.coproductionprocess_id,
-        "phase_id": task.objective.phase_id,
-        "objective_id": task.objective_id,
-        "task_id": task.id
-    })
     await crud.task.remove(db=db, id=id)
-
-    await log({
-        "model": "TASK",
-        "action": "DELETE",
-        "crud": False,
-        "coproductionprocess_id": task.objective.phase.coproductionprocess_id,
-        "phase_id": task.objective.phase_id,
-        "objective_id": task.objective_id,
-        "task_id": task.id
-    })
-
     return None

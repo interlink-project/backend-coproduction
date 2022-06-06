@@ -21,7 +21,10 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
         return await self.create(db=db, objective=creator, phase=phase, commit=False)
 
     async def get_by_name(self, db: Session, name: str) -> Optional[Objective]:
-        return db.query(Objective).filter(Objective.name == name).first()
+        if res := db.query(Objective).filter(Objective.name == name).first():
+            await self.get_log(res)
+            return res
+        return
 
     async def create(self, db: Session, *, objective: ObjectiveCreate, phase: Phase = None, commit : bool = True) -> Objective:
         if phase and objective.phase_id:
@@ -40,6 +43,7 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
         if commit:
             db.commit()
             db.refresh(db_obj)
+            await self.log_on_create(db_obj)
         return db_obj
 
     async def add_prerequisite(self, db: Session, objective: Objective, prerequisite: Objective, commit : bool = True) -> Objective:
@@ -53,6 +57,15 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
             db.commit()
             db.refresh(objective)
         return objective
+
+    # Override log methods
+    def enrich_log_data(self, obj, logData):
+        logData["model"] = "OBJECTIVE"
+        logData["object_id"] = obj.id
+        logData["coproductionprocess_id"] = obj.phase.coproductionprocess_id
+        logData["phase_id"] = obj.phase_id
+        logData["objective_id"] = obj.id
+        return logData
 
     # CRUD Permissions
     def can_create(self, user):
@@ -71,4 +84,4 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
         return True
 
 
-exportCrud = CRUDObjective(Objective)
+exportCrud = CRUDObjective(Objective, logByDefault=True)

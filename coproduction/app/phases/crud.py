@@ -30,6 +30,7 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
         if commit:
             db.commit()
             db.refresh(db_obj)
+            await self.log_on_create(db_obj)
         return db_obj
 
     async def add_prerequisite(self, db: Session, phase: Phase, prerequisite: Phase, commit : bool = True) -> Phase:
@@ -42,6 +43,15 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
             db.commit()
             db.refresh(phase)
         return phase
+
+    # Override log methods
+    def enrich_log_data(self, obj, logData):
+        logData["model"] = "PHASE"
+        logData["object_id"] = obj.id
+        logData["coproductionprocess_id"] = obj.coproductionprocess_id
+        logData["phase_id"] = obj.id
+        return logData
+
 
     # CRUD Permissions
     def can_create(self, user):
@@ -58,6 +68,6 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
 
     def can_remove(self, user, object):
         return True
+    
 
-
-exportCrud = CRUDPhase(Phase)
+exportCrud = CRUDPhase(Phase, logByDefault=True)

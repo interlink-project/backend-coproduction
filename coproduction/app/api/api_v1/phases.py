@@ -23,10 +23,7 @@ async def list_phases(
     """
     if not crud.phase.can_list(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-
-    phase = await crud.phase.get_multi(db, skip=skip, limit=limit)
-
-    return phase
+    return await crud.phase.get_multi(db, skip=skip, limit=limit)
 
 
 @router.post("", response_model=schemas.PhaseOutFull)
@@ -41,18 +38,7 @@ async def create_phase(
     """
     if not crud.phase.can_create(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-
-    phase = await crud.phase.create(db=db, phase=phase_in)
-
-    await log({
-        "model": "PHASE",
-        "action": "CREATE",
-        "crud": False,
-        "coproductionprocess_id": phase.coproductionprocess_id,
-        "phase_id": phase.id
-    })
-
-    return phase
+    return await crud.phase.create(db=db, phase=phase_in)
 
 
 
@@ -88,18 +74,7 @@ async def update_phase(
         raise HTTPException(status_code=404, detail="Phase not found")
     if not crud.phase.can_update(current_user, phase):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-
-    phase = await crud.phase.update(db=db, db_obj=phase, obj_in=phase_in)
-
-    await log({
-        "model": "PHASE",
-        "action": "UPDATE",
-        "crud": False,
-        "coproductionprocess_id": phase.coproductionprocess_id,
-        "phase_id": phase.id
-    })
-
-    return phase
+    return await crud.phase.update(db=db, db_obj=phase, obj_in=phase_in)
 
 
 @router.get("/{id}", response_model=schemas.PhaseOutFull)
@@ -113,14 +88,6 @@ async def read_phase(
     Get phase by ID.
     """
     phase = await crud.phase.get(db=db, id=id)
-
-    await log({
-        "model": "PHASE",
-        "action": "GET",
-        "crud": False,
-        "coproductionprocess_id": phase.coproductionprocess_id,
-        "phase_id": phase.id
-    })
     if not phase:
         raise HTTPException(status_code=404, detail="Phase not found")
     if not crud.phase.can_read(current_user, phase):
@@ -144,22 +111,5 @@ async def delete_phase(
         raise HTTPException(status_code=404, detail="Phase not found")
     if not crud.phase.can_remove(current_user, phase):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-
-    await log({
-        "model": "PHASE",
-        "action": "DELETE",
-        "crud": False,
-        "coproductionprocess_id": phase.coproductionprocess_id,
-        "phase_id": phase.id
-    })
     await crud.phase.remove(db=db, id=id)
-
-    await log({
-        "model": "PHASE",
-        "action": "DELETE",
-        "crud": False,
-        "coproductionprocess_id": phase.coproductionprocess_id,
-        "phase_id": phase.id
-    })
-
     return None

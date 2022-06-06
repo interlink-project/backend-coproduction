@@ -21,12 +21,12 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
         
         if task_id:
             queries.append(Asset.task_id == task_id)
-            await log({
-                "model": self.modelName,
-                "action": "LIST",
-                "coproductionprocess_id": coproductionprocess_id,
-                "task_id": task_id
-            })
+            # await log({
+            #     "model": "ASSET",
+            #     "action": "LIST",
+            #     "coproductionprocess_id": coproductionprocess_id,
+            #     "task_id": task_id
+            # })
         return db.query(Asset).filter(*queries).all()
     
     async def create(self, db: Session, asset: AssetCreate, coproductionprocess_id: uuid.UUID, creator: models.User) -> Asset:
@@ -59,17 +59,34 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
 
         db.add(db_obj)
         db.commit()
-        await log({
-            "model": self.modelName,
-            "action": "CREATE",
-            "id": db_obj.id,
-            "crud": True,
-            "coproductionprocess_id": coproductionprocess_id,
-            "task_id": db_obj.task_id
-        })
         db.refresh(db_obj)
+        await self.log_on_create(db_obj)
         return db_obj
     
+    # Override log methods
+    def enrich_log_data(self, asset, logData):
+        logData["model"] = "ASSET"
+        logData["object_id"] = asset.id
+        logData["type"] = asset.type
+        logData["phase_id"] = asset.task.objective.phase_id
+        logData["objective_id"] = asset.task.objective_id
+        logData["task_id"] = asset.task_id
+        logData["coproductionprocess_id"] = asset.task.objective.phase.coproductionprocess_id
+
+        if type(asset) == models.InternalAsset:
+            if ki := asset.knowledgeinterlinker:
+                logData["knowledgeinterlinker_id"] = ki.get("id")
+                logData["knowledgeinterlinker_name"] = ki.get("name")
+            if si := asset.softwareinterlinker:
+                logData["softwareinterlinker_id"] = si.get("id")
+                logData["softwareinterlinker_name"] = si.get("name")
+        elif type(asset) == models.ExternalAsset:
+            if ei := asset.externalinterlinker:
+                logData["externalinterlinker_id"] = ei.get("id")
+                logData["externalinterlinker_name"] = ei.get("name")
+        return logData
+
+
     # CRUD Permissions
     def can_create(self, user):
         return True
@@ -86,4 +103,4 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
     def can_remove(self, user, object):
         return True
 
-exportCrud = CRUDAsset(Asset)
+exportCrud = CRUDAsset(Asset, logByDefault=True)

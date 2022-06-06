@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
-    def __init__(self, model: Type[ModelType]):
+    def __init__(self, model: Type[ModelType], logByDefault=False):
         """
         CRUD object with default methods to Create, Read, Patch, Delete (CRUD).
 
@@ -27,26 +27,19 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
         * `model`: A SQLAlchemy model class
         * `schema`: A Pydantic model (schema) class
         """
+        self.logByDefault = logByDefault
         self.modelName = model.__name__.upper()
         self.model = model
 
     async def get(self, db: Session, id: uuid.UUID) -> Optional[ModelType]:
         if obj := db.query(self.model).filter(self.model.id == id).first():
-            await log({
-                "model": self.modelName,
-                "action": "GET",
-                "id": id
-            })
+            await self.get_log(obj)
             return obj
         return
 
     async def get_multi(
         self, db: Session, *, skip: int = 0, limit: int = 100
     ) -> List[ModelType]:
-        await log({
-            "model": self.modelName,
-            "action": "LIST",
-        })
         return db.query(self.model).order_by(self.model.created_at.asc()).offset(skip).limit(limit).all()
 
     async def create(self, db: Session, *, obj_in: CreateSchemaType) -> ModelType:
@@ -54,12 +47,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
         db_obj = self.model(**obj_in_data)  # type: ignore
         db.add(db_obj)
         db.commit()
-        await log({
-            "model": self.modelName,
-            "action": "CREATE",
-            "id": db_obj.id
-        })
         db.refresh(db_obj)
+        await self.log_on_create(db_obj)
         return db_obj
 
     async def update(
@@ -80,24 +69,48 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
                 setattr(db_obj, field, value)
         db.add(db_obj)
         db.commit()
-        await log({
-            "model": self.modelName,
-            "action": "UPDATE",
-            "id": db_obj.id
-        })
         db.refresh(db_obj)
+        await self.log_on_update(db_obj)
         return db_obj
 
     async def remove(self, db: Session, *, id: uuid.UUID) -> ModelType:
         obj = db.query(self.model).get(id)
+        await self.log_on_remove(obj)
         db.delete(obj)
         db.commit()
-        await log({
-            "model": self.modelName,
-            "action": "DELETE",
-            "id": id
-        })
         return obj
+
+    # LOGS
+    async def get_log(self, obj):
+        # enriched : dict  = self.enrich_log_data(obj, {
+        #     "action": "GET"
+        # })
+        # await log(enriched)
+        pass
+        
+    async def log_on_create(self, obj):
+        enriched : dict  = self.enrich_log_data(obj, {
+            "action": "CREATE"
+        })
+        await log(enriched)
+    
+    async def log_on_update(self, obj):
+        enriched : dict = self.enrich_log_data(obj, {
+            "action": "UPDATE"
+        })
+        await log(enriched)
+        
+    async def log_on_remove(self, obj):
+        enriched : dict  = self.enrich_log_data(obj, {
+            "action": "DELETE"
+        })
+        await log(enriched)
+
+    def enrich_log_data(self, obj, logData) -> dict:
+        logData["model"] = self.modelName
+        logData["object_id"] = obj.id
+        return logData
+
 
     # CRUD Permissions
     def can_create(self, user):

@@ -14,6 +14,11 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
         self, db: Session, coproductionprocess_id: uuid.UUID
     ) -> List[Team]:
         queries = []
+        # await log({
+        #         "model": "TEAM",
+        #         "action": "LIST",
+        #         "coproductionprocess_id": coproductionprocess_id,
+        #     })
         # if coproductionprocess_id:
         #     queries.append(Team.roles.any(models.Role.id.in_([coproductionprocess_id])))
         # else:
@@ -21,9 +26,19 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
         return db.query(Team).filter(*queries).all()
 
     async def get_by_name(self, db: Session, name: str) -> Optional[Team]:
+        # await log({
+        #         "model": "TEAM",
+        #         "action": "LIST",
+        #         "name": name,
+        #     })
         return db.query(Team).filter(Team.name == name).first()
 
     async def get_multi_by_user(self, db: Session, user_id: str) -> Optional[List[Team]]:
+        # await log({
+        #         "model": "TEAM",
+        #         "action": "LIST",
+        #         "user_id": user_id,
+        #     })
         return db.query(
             Team,
         ).filter(Team.users.any(models.User.id.in_([user_id]))).all()
@@ -37,12 +52,11 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
         team.users.append(user)
         db.commit()
         db.refresh(team)
-        await log({
+        await log(self.enrich_log_data(team, {
             "model": "TEAM",
             "action": "ADD_USER",
-            "team_id": team.id,
             "added_user_id": user.id
-        })
+        }))
         return team
 
     async def remove_user(self, db: Session, team: Team, user: models.User) -> Team:
@@ -50,12 +64,11 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
             team.users.remove(user)
             db.commit()
             db.refresh(team)
-            await log({
+            await log(self.enrich_log_data(team, {
                 "model": "TEAM",
                 "action": "REMOVE_USER",
-                "team_id": team.id,
                 "removed_user_id": user.id
-            })
+            }))
             return team
         raise Exception("Can not remove team creator")
         
@@ -73,8 +86,16 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
             
         db.commit()
         db.refresh(db_obj)
+        await self.log_on_create(db_obj)
         return db_obj
-        
+    
+    # Override log methods
+    def enrich_log_data(self, obj, logData):
+        logData["model"] = "TEAM"
+        logData["object_id"] = obj.id
+        logData["team_id"] = obj.id
+        return logData
+
     # CRUD Permissions
     def can_create(self, user):
         return True

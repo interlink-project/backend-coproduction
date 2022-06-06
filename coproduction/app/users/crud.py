@@ -6,21 +6,23 @@ from app.models import User
 from app.schemas import UserCreate, UserPatch
 
 class CRUDUser(CRUDBase[User, UserCreate, UserPatch]):
-    async def get(self, db: Session, id: str) -> Optional[User]:
-        return db.query(User).filter(User.id == id).first()
-    
     async def get_multi_by_ids(self, db: Session, ids: list) -> Optional[User]:
         return db.query(User).filter(User.id.in_(ids)).all()
 
-    async def create(self, db: Session, user: UserCreate) -> User:
-        print(f"CREATING USER {user.id}")
-        db_obj = User(
-            id=user.id,
-        )
-        db.add(db_obj)
-        db.commit()
-        db.refresh(db_obj)
-        return db_obj
+    async def get_or_create(self, db: Session, data: dict) -> Optional[User]:
+        if "sub" in data:
+            data["id"] = data.get("sub")
+            if user := await self.get(db=db, id=data.get("id")):
+                return user
+            else:
+                return await self.create(db=db, obj_in=UserCreate(**data))
+        raise Exception("Sub not in data")
+
+    # Override log methods
+    def enrich_log_data(self, obj, logData):
+        logData["model"] = "USER"
+        logData["object_id"] = obj.id
+        return logData
 
     # CRUD Permissions
     def can_create(self, user):
@@ -39,4 +41,4 @@ class CRUDUser(CRUDBase[User, UserCreate, UserPatch]):
         return True
 
 
-exportCrud = CRUDUser(User)
+exportCrud = CRUDUser(User, logByDefault=True)

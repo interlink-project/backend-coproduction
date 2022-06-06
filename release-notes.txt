@@ -1,8 +1,9 @@
-VERSION: v1.1.7
+VERSION: v1.1.8
 
 NEW
-* KPIS endpoint
+* Overridable log functions
 
 IMPROVED
+* Logging functions called on crud.
 
 FIXED

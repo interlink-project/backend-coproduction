@@ -71,19 +71,7 @@ async def create_role(
     """
     Create role
     """
-
-    role = await crud.role.create(db=db, role=role)
-
-    await log({
-        "model": "ROLE",
-        "action": "CREATE",
-        "crud": False,
-        "coproductionprocess_id": role.coproductionprocess_id,
-        "rol_id": role.id
-    })
-
-
-    return role
+    return await crud.role.create(db=db, obj_in=role)
 
 @router.get("", response_model=List[schemas.RoleOutFull])
 async def get_roles(
@@ -96,9 +84,7 @@ async def get_roles(
     Get role by ID.
     """
     if process := await crud.coproductionprocess.get(db=db, id=coproductionprocess_id):
-
         return process.roles
-
     raise HTTPException(status_code=404, detail="Coproductionprocess not found")
 
 @router.get("/{id}", response_model=schemas.RoleOutFull)
@@ -112,17 +98,7 @@ async def get_role(
     Get role by ID.
     """
     if role := await crud.role.get(db=db, id=id):
-
-        await log({
-            "model": "ROLE",
-            "action": "GET",
-            "crud": False,
-            "coproductionprocess_id": role.coproductionprocess_id,
-            "rol_id": role.id
-        })
-
         return role
-
     raise HTTPException(status_code=404, detail="Role not found")
 
 @router.put("/{id}", response_model=schemas.RoleOutFull)
@@ -137,17 +113,7 @@ async def update_role(
     Patch role by ID.
     """
     if role := await crud.role.get(db=db, id=id):
-
-        await log({
-            "model": "ROLE",
-            "action": "UPDATE",
-            "crud": False,
-            "coproductionprocess_id": role.coproductionprocess_id,
-            "rol_id": role.id
-        })
-
         return await crud.role.update(db=db, db_obj=role, obj_in=role_in)
-
     raise HTTPException(status_code=404, detail="Role not found")
 
 
@@ -162,15 +128,6 @@ async def delete_role(
     Delete role by ID.
     """
     if role := await crud.role.get(db=db, id=id):
-
-        await log({
-            "model": "ROLE",
-            "action": "DELETE ROLE",
-            "crud": False,
-            "coproductionprocess_id": role.coproductionprocess_id,
-            "rol_id": role.id
-        })
-
         return await crud.role.remove(db=db, id=role.id)
 
     raise HTTPException(status_code=404, detail="Role not found")
@@ -192,15 +149,6 @@ async def add_team(
     if role := await crud.role.get(db=db, id=id):
         if team := await crud.team.get(db=db, id=team_in.team_id):
             await crud.role.add_team(db=db, role=role, team=team)
-
-            await log({
-                "model": "ROLE",
-                "action": "CREATE",
-                "crud": False,
-                "coproductionprocess_id": role.coproductionprocess_id,
-                "team_id": team.id,
-                "rol_id": role.id
-            })
             return True
         raise HTTPException(status_code=400, detail="Team not found")
 
@@ -220,16 +168,6 @@ async def remove_team(
     """
     if role := await crud.role.get(db=db, id=id):
         if team := await crud.team.get(db=db, id=team_in.team_id):
-
-            await log({
-                "model": "ROLE",
-                "action": "REMOVE TEAM",
-                "crud": False,
-                "coproductionprocess_id": role.coproductionprocess_id,
-                "team_id": team.id,
-                "rol_id": role.id
-            })
-
             await crud.role.remove_team(db=db, role=role, team=team)
             return True
         raise HTTPException(status_code=400, detail="Team not found")
@@ -253,18 +191,7 @@ async def remove_user(
     """
     if role := await crud.role.get(db=db, id=id):
         if user := await crud.user.get(db=db, id=user_in.user_id):
-
-            await log({
-                "model": "ROLE",
-                "action": "DELETE USER",
-                "crud": False,
-                "coproductionprocess_id": role.coproductionprocess_id,
-                "user_id": user.id,
-                "rol_id": role.id
-            })
-
             await crud.role.remove_user(db=db, role=role, user=user)
-
             return True
         raise HTTPException(status_code=400, detail="User not found")
 

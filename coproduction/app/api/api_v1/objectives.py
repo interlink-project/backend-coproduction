@@ -6,8 +6,6 @@ from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.general import deps
 
-from app.messages import log
-
 router = APIRouter()
 
 
@@ -40,19 +38,7 @@ async def create_objective(
     """
     if not crud.objective.can_create(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-
-    objective = await crud.objective.create(db=db, objective=objective_in)
-
-    await log({
-        "model": "OBJECTIVE",
-        "action": "CREATE",
-        "crud": False,
-        "coproductionprocess_id": objective.phase.coproductionprocess_id,
-        "phase_id": objective.phase_id,
-        "objective_id": objective.id
-    })
-
-    return objective
+    return await crud.objective.create(db=db, objective=objective_in)
 
 
 @router.get("/{id}/tasks", response_model=List[schemas.TaskOut])
@@ -86,19 +72,7 @@ async def update_objective(
         raise HTTPException(status_code=404, detail="Objective not found")
     if not crud.objective.can_update(current_user, objective):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-
-    objective = await crud.objective.update(db=db, db_obj=objective, obj_in=objective_in)
-
-    await log({
-        "model": "OBJECTIVE",
-        "action": "UPDATE",
-        "crud": False,
-        "coproductionprocess_id": objective.phase.coproductionprocess_id,
-        "phase_id": objective.phase_id,
-        "objective_id": objective.id
-    })
-
-    return objective
+    return await crud.objective.update(db=db, db_obj=objective, obj_in=objective_in)
 
 
 @router.get("/{id}", response_model=schemas.ObjectiveOutFull)
@@ -116,16 +90,6 @@ async def read_objective(
         raise HTTPException(status_code=404, detail="Objective not found")
     if not crud.objective.can_read(current_user, objective):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-
-    await log({
-        "model": "OBJECTIVE",
-        "action": "GET",
-        "crud": False,
-        "coproductionprocess_id": objective.phase.coproductionprocess_id,
-        "phase_id": objective.phase_id,
-        "objective_id": objective.id
-    })
-
     return objective
 
 
@@ -144,18 +108,6 @@ async def delete_objective(
         raise HTTPException(status_code=404, detail="Objective not found")
     if not crud.objective.can_remove(current_user, objective):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-
-    await log({
-        "model": "OBJECTIVE",
-        "action": "DELETE",
-        "crud": False,
-        "coproductionprocess_id": objective.phase.coproductionprocess_id,
-        "phase_id": objective.phase_id,
-        "objective_id": objective.id
-    })
-
-
     await crud.objective.remove(db=db, id=id)
-
     return None
 
