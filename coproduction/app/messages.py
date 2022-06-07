@@ -4,6 +4,7 @@ from base64 import b64encode
 import aiormq
 import json
 from uuid import UUID
+import requests
 from starlette_context import context
 from contextvars import ContextVar
 
@@ -43,22 +44,23 @@ async def log(data: dict):
             
     data["service"] = "coproduction"
 
-    request = b64encode(json.dumps(data,cls=UUIDEncoder).encode())
-    
-    connection = await aiormq.connect(url)
-    channel = await connection.channel()
-
-    await channel.exchange_declare(
-        exchange=exchange_name, exchange_type='direct'
-    )
-
-    await channel.basic_publish(
-        request, 
-        routing_key='logging', 
-        exchange=exchange_name,
-        properties=aiormq.spec.Basic.Properties(
-            delivery_mode=2
-            # Messages marked as 'persistent' that are delivered to 'durable' queues will be logged to disk. Durable queues are recovered in the event of a crash, along with any persistent messages they stored prior to the crash.
-        )
-    )
-    print("message sent")
+    # request = b64encode(json.dumps(data,cls=UUIDEncoder).encode())
+    # 
+    # connection = await aiormq.connect(url)
+    # channel = await connection.channel()
+    # 
+    # await channel.exchange_declare(
+    #     exchange=exchange_name, exchange_type='direct'
+    # )
+    # 
+    # await channel.basic_publish(
+    #     request, 
+    #     routing_key='logging', 
+    #     exchange=exchange_name,
+    #     properties=aiormq.spec.Basic.Properties(
+    #         delivery_mode=2
+    #         # Messages marked as 'persistent' that are delivered to 'durable' queues will be logged to disk. Durable queues are recovered in the event of a crash, along with any persistent messages they stored prior to the crash.
+    #     )
+    # )
+    res = requests.post("http://logging/api/v1/log", data=json.dumps(data,cls=UUIDEncoder), timeout=2)
+    print("message sent", res.json())
