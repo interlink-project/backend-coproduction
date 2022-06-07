@@ -87,12 +87,12 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
     async def set_schema(self, db: Session, coproductionprocess: models.CoproductionProcess, coproductionschema: dict):
         total = {}
-        for phasemetadata in coproductionschema.get("phasemetadatas", []):
+        for phasemetadata in coproductionschema.get("children", []):
             phasemetadata: dict
             db_phase = await crud.phase.create_from_metadata(
                 db=db,
                 phasemetadata=phasemetadata,
-                coproductionprocess_id=coproductionprocess.id,
+                coproductionprocess=coproductionprocess,
             )
 
             #  Add new phase object and the prerequisites for later loop
@@ -102,7 +102,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                 "newObj": db_phase,
             }
 
-            for objectivemetadata in phasemetadata.get("objectivemetadatas", []):
+            for objectivemetadata in phasemetadata.get("children", []):
                 objectivemetadata: dict
                 db_obj = await crud.objective.create_from_metadata(
                     db=db,
@@ -115,7 +115,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                     "prerequisites_ids": objectivemetadata["prerequisites_ids"] or [],
                     "newObj": db_obj,
                 }
-                for taskmetadata in objectivemetadata.get("taskmetadatas", []):
+                for taskmetadata in objectivemetadata.get("children", []):
                     db_task = await crud.task.create_from_metadata(
                         db=db,
                         taskmetadata=taskmetadata,

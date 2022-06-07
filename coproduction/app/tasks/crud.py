@@ -10,8 +10,8 @@ from app.schemas import TaskCreate, TaskPatch
 from fastapi.encoders import jsonable_encoder
 from app.utils import recursive_check
 
-def calculate_status_and_progress(obj, key):
-    statuses = [task.status for task in getattr(obj, key)]
+def calculate_status_and_progress(obj):
+    statuses = [task.status for task in getattr(obj, "children")]
     status = Status.awaiting
     if all([x == Status.finished for x in statuses]):
         status = Status.finished
@@ -26,13 +26,9 @@ def calculate_status_and_progress(obj, key):
     return status, progress
 
 class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
-    async def create_from_metadata(self, db: Session, taskmetadata: dict, objective: Objective = None, objective_id: uuid.UUID = None) -> Optional[Task]:
-        if objective and objective_id:
-            raise Exception("Specify only one objective")
-        if not objective and not objective_id:
-            raise Exception("Objective not specified")
+    async def create_from_metadata(self, db: Session, taskmetadata: dict, objective: Objective = None) -> Optional[Task]:
         taskmetadata["problemprofiles"] = [pp["id"] for pp in taskmetadata.get("problemprofiles", [])]
-        creator = TaskCreate(**taskmetadata, objective_id=objective_id)
+        creator = TaskCreate(**taskmetadata)
         return await self.create(db=db, task=creator, objective=objective, commit=False)
 
     async def get_by_name(self, db: Session, name: str) -> Optional[Task]:
@@ -91,14 +87,14 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
         if db_obj.objective:
             # update objective
             objective : Objective = db_obj.objective
-            status, progress = calculate_status_and_progress(objective, "tasks")
+            status, progress = calculate_status_and_progress(objective)
             setattr(db_obj.objective, "status", status)
             setattr(db_obj.objective, "progress", progress)
             db.add(objective)
 
             # update phase
             phase : Phase = db_obj.objective.phase
-            status, progress = calculate_status_and_progress(phase, "objectives")
+            status, progress = calculate_status_and_progress(phase)
             setattr(phase, "status", status)
             setattr(phase, "progress", progress)
             db.add(phase)

@@ -12,12 +12,8 @@ import uuid
 from app.utils import recursive_check
 
 class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
-    async def create_from_metadata(self, db: Session, objectivemetadata: dict, phase: Phase = None, phase_id: uuid.UUID = None) -> Optional[Objective]:
-        if phase and phase_id:
-            raise Exception("Specify only one phase")
-        if not phase and not phase_id:
-            raise Exception("Phase not specified")
-        creator = ObjectiveCreate(**objectivemetadata, phase_id=phase_id)
+    async def create_from_metadata(self, db: Session, objectivemetadata: dict, phase: Phase) -> Optional[Objective]:
+        creator = ObjectiveCreate(**objectivemetadata)
         return await self.create(db=db, objective=creator, phase=phase, commit=False)
 
     async def get_by_name(self, db: Session, name: str) -> Optional[Objective]:
@@ -31,11 +27,10 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
             raise Exception("Specify only one objective")
         if not phase and not objective.phase_id:
             raise Exception("Objective not specified")
+
         db_obj = Objective(
             name=objective.name,
             description=objective.description,
-            progress=objective.progress,
-            # relations
             phase=phase,
             phase_id=objective.phase_id,
         )

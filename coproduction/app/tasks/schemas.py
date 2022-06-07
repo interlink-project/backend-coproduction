@@ -3,37 +3,25 @@ import uuid
 from datetime import date, datetime
 from typing import List, Optional
 from pydantic import BaseModel
+from app.treeitems.schemas import *
 
-
-class TaskBase(BaseModel):
+class TaskCreate(TreeItemCreate):
+    objective_id: Optional[uuid.UUID]
     problemprofiles: list
-    name: str
-    description: str
+    status: Optional[str]
     start_date: Optional[date]
     end_date: Optional[date]
-    objective_id: uuid.UUID
 
-class TaskCreate(TaskBase):
-    objective_id: Optional[uuid.UUID]
-
-class TaskPatch(TaskBase):
+class TaskPatch(TreeItemPatch):
     problemprofiles: Optional[list]
-    objective_id: Optional[uuid.UUID]
     status: Optional[str]
-    name: Optional[str]
-    description: Optional[str]
+    start_date: Optional[date]
+    end_date: Optional[date]
 
-
-class Task(TaskBase):
-    id: uuid.UUID
-    created_at: datetime
-    updated_at: Optional[datetime]
-
-    status: Optional[Enum]
-
+class Task(TreeItem, TaskCreate):
     class Config:
         orm_mode = True
 
 
-class TaskOut(Task):
+class TaskOut(Task, TreeItemOut):
     pass

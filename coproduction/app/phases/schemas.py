@@ -1,43 +1,20 @@
 import uuid
-from datetime import date, datetime
-from enum import Enum
-from typing import List, Optional
 
-from pydantic import BaseModel
-
-from app.general.utils.AllOptional import AllOptional
-
-class PhaseBase(BaseModel):
-    coproductionprocess_id: uuid.UUID
-    name: str
-    description: str
+from app.treeitems.schemas import *
 
 
-class PhaseCreate(PhaseBase):
-    pass
+class PhaseCreate(TreeItemCreate):
+    coproductionprocess_id: Optional[uuid.UUID]
 
-class PhaseInternalPatch(PhaseBase, metaclass=AllOptional):
-    status: Optional[Enum]
-    progress: Optional[int]
 
-class PhasePatch(PhaseBase, metaclass=AllOptional):
+class PhasePatch(TreeItemPatch):
     pass
 
 
-class Phase(PhaseBase):
-    id: uuid.UUID
-    created_at: datetime
-    updated_at: Optional[datetime]
-
-    start_date: Optional[date]
-    end_date: Optional[date]
-    
-    status: Optional[Enum]
-    progress: Optional[int]
-    
+class Phase(PhaseCreate, TreeItem):
     class Config:
         orm_mode = True
 
 
-class PhaseOut(Phase):
+class PhaseOut(Phase, TreeItemOut):
     pass

@@ -24,29 +24,14 @@ class AssetOutFull(AssetOut):
 
 
 class TaskOutFull(TaskOut):
-    # assets: Optional[List[AssetOutFull]]
-    prerequisites_ids: List[uuid.UUID]
-
-    @validator('prerequisites_ids', pre=True)
-    def prerequisites_ids_to_list(cls, v):
-        return list(v)
+    pass
 
 
 class ObjectiveOutFull(ObjectiveOut):
-    tasks: List[TaskOutFull]
-    prerequisites_ids: List[uuid.UUID]
-
-    @validator('prerequisites_ids', pre=True)
-    def prerequisites_ids_to_list(cls, v):
-        return list(v)
+    children: List[TaskOutFull]
 
 class PhaseOutFull(PhaseOut):
-    objectives: List[ObjectiveOutFull]
-    prerequisites_ids: List[uuid.UUID]
-
-    @validator('prerequisites_ids', pre=True)
-    def prerequisites_ids_to_list(cls, v):
-        return list(v)
+    children: List[ObjectiveOutFull]
 
 
 class TeamOutFull(TeamOut):

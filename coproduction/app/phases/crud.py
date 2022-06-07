@@ -10,20 +10,26 @@ from app.schemas import (
 )
 import uuid
 from app.utils import recursive_check
+from app import models
 
 class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
-    async def create_from_metadata(self, db: Session, phasemetadata: dict, coproductionprocess_id: uuid.UUID) -> Optional[Phase]:
-        creator = PhaseCreate(**phasemetadata, coproductionprocess_id=coproductionprocess_id)
-        return await self.create(db=db, phase=creator, commit=False)
+    async def create_from_metadata(self, db: Session, phasemetadata: dict, coproductionprocess: models.CoproductionProcess) -> Optional[Phase]:
+        creator = PhaseCreate(**phasemetadata)
+        return await self.create(db=db, phase=creator, coproductionprocess=coproductionprocess, commit=False)
 
     async def get_by_name(self, db: Session, name: str) -> Optional[Phase]:
         return db.query(Phase).filter(Phase.name == name).first()
 
-    async def create(self, db: Session, *, phase: PhaseCreate, commit : bool = True) -> Phase:
+    async def create(self, db: Session, *, phase: PhaseCreate, coproductionprocess: models.CoproductionProcess, commit : bool = True) -> Phase:
+        if coproductionprocess and phase.coproductionprocess_id:
+            raise Exception("Specify only one coproductionprocess")
+        if not coproductionprocess and not phase.coproductionprocess_id:
+            raise Exception("Coproductionprocess not specified")
+        
         db_obj = Phase(
             name=phase.name,
             description=phase.description,
-            # relations
+            coproductionprocess=coproductionprocess,
             coproductionprocess_id=phase.coproductionprocess_id,
         )
         db.add(db_obj)
