@@ -22,7 +22,7 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
 
     async def get_by_name(self, db: Session, name: str) -> Optional[Objective]:
         if res := db.query(Objective).filter(Objective.name == name).first():
-            await self.get_log(res)
+            await self.log_on_get(res)
             return res
         return
 

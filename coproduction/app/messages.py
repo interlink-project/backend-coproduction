@@ -35,13 +35,11 @@ url = "amqp://{}:{}@{}/".format(rabbitmq_user, rabbitmq_password, rabbitmq_host)
 
 async def log(data: dict):
     if is_logging_disabled():
+        print("logging disabled")
         return
 
     if not "user_id" in data:
-        try:
-            data["user_id"] = context.data.get("user", {}).get("sub", None)
-        except Exception as e:
-            return
+        data["user_id"] = context.data.get("user", {}).get("sub", "anonymous")
             
     data["service"] = "coproduction"
 
@@ -63,3 +61,4 @@ async def log(data: dict):
             # Messages marked as 'persistent' that are delivered to 'durable' queues will be logged to disk. Durable queues are recovered in the event of a crash, along with any persistent messages they stored prior to the crash.
         )
     )
+    print("message sent")

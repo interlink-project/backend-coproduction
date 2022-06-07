@@ -33,7 +33,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
 
     async def get(self, db: Session, id: uuid.UUID) -> Optional[ModelType]:
         if obj := db.query(self.model).filter(self.model.id == id).first():
-            await self.get_log(obj)
+            await self.log_on_get(obj)
             return obj
         return
 
@@ -81,7 +81,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
         return obj
 
     # LOGS
-    async def get_log(self, obj):
+    async def log_on_get(self, obj):
         # enriched : dict  = self.enrich_log_data(obj, {
         #     "action": "GET"
         # })
