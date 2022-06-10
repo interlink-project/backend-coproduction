@@ -9,6 +9,7 @@ from app.models import Task, Status, Phase, Objective
 from app.schemas import TaskCreate, TaskPatch
 from fastapi.encoders import jsonable_encoder
 from app.utils import recursive_check
+from datetime import datetime
 
 def calculate_status_and_progress(obj):
     statuses = [task.status for task in getattr(obj, "children")]
@@ -26,8 +27,10 @@ def calculate_status_and_progress(obj):
     return status, progress
 
 class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
-    async def create_from_metadata(self, db: Session, taskmetadata: dict, objective: Objective = None) -> Optional[Task]:
+    async def create_from_metadata(self, db: Session, taskmetadata: dict, objective: Objective = None, schema_id = uuid.UUID) -> Optional[Task]:
         taskmetadata["problemprofiles"] = [pp["id"] for pp in taskmetadata.get("problemprofiles", [])]
+        taskmetadata["from_schema"] = schema_id
+        taskmetadata["from_item"] = taskmetadata.get("id")
         creator = TaskCreate(**taskmetadata)
         return await self.create(db=db, task=creator, objective=objective, commit=False)
 
@@ -41,6 +44,8 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
             raise Exception("Objective not specified")
         
         db_obj = Task(
+            from_item=task.from_item,
+            from_schema=task.from_schema,
             name=task.name,
             description=task.description,
             objective=objective,
@@ -113,6 +118,21 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
         logData["objective_id"] = obj.objective_id
         logData["task_id"] = obj.id
         return logData
+
+    async def remove(self, db: Session, *, id: uuid.UUID, user_id: str) -> Task:
+        obj = db.query(self.model).get(id)
+        await self.log_on_remove(obj)
+        setattr(obj, "disabled_on", datetime.now())
+        setattr(obj, "disabler_id", user_id)
+        # db.delete(obj)
+
+        objective : Objective = obj.objective
+        status, progress = calculate_status_and_progress(objective)
+        setattr(obj.objective, "status", status)
+        setattr(obj.objective, "progress", progress)
+        db.add(objective)
+        db.commit()
+        return obj
 
     # CRUD Permissions
     def can_create(self, user):

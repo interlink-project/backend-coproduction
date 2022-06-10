@@ -24,4 +24,4 @@ class Task(TreeItem, TaskCreate):
 
 
 class TaskOut(Task, TreeItemOut):
-    pass
+    phase_id: uuid.UUID

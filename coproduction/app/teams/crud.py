@@ -11,42 +11,18 @@ from app.users.crud import exportCrud as users_crud
 
 class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
     async def get_multi_filtered(
-        self, db: Session, coproductionprocess_id: uuid.UUID
+        self, db: Session
     ) -> List[Team]:
         queries = []
-        # await log({
-        #         "model": "TEAM",
-        #         "action": "LIST",
-        #         "coproductionprocess_id": coproductionprocess_id,
-        #     })
-        # if coproductionprocess_id:
-        #     queries.append(Team.roles.any(models.Role.id.in_([coproductionprocess_id])))
-        # else:
-        #     queries.append(Team.is_public == False)
         return db.query(Team).filter(*queries).all()
 
     async def get_by_name(self, db: Session, name: str) -> Optional[Team]:
-        # await log({
-        #         "model": "TEAM",
-        #         "action": "LIST",
-        #         "name": name,
-        #     })
         return db.query(Team).filter(Team.name == name).first()
 
     async def get_multi_by_user(self, db: Session, user_id: str) -> Optional[List[Team]]:
-        # await log({
-        #         "model": "TEAM",
-        #         "action": "LIST",
-        #         "user_id": user_id,
-        #     })
         return db.query(
             Team,
         ).filter(Team.users.any(models.User.id.in_([user_id]))).all()
-    
-    # async def get_multi_by_process(self, db: Session, coproductionprocess_id: uuid.UUID) -> Optional[List[Team]]:
-    #     return db.query(
-    #         Team,
-    #     ).filter(Team.roles.any(models.Role.id.in_([coproductionprocess_id]))).all()
 
     async def add_user(self, db: Session, team: Team, user: models.User) -> Team:
         team.users.append(user)
@@ -78,12 +54,12 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
             description=team.description,
             creator=creator
         )
-        db.add(db_obj)
-        db.commit()
-
         for user in await users_crud.get_multi_by_ids(db=db, ids=team.user_ids):
             db_obj.users.append(user)
-            
+
+        db_obj.administrators.append(creator)
+        
+        db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
         await self.log_on_create(db_obj)
@@ -107,10 +83,10 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
         return True
 
     def can_update(self, user, object):
-        return True
+        return user in object.administrators
 
     def can_remove(self, user, object):
-        return True
+        return user in object.administrators
 
 
 exportCrud = CRUDTeam(Team)

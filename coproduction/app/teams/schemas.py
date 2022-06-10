@@ -35,3 +35,4 @@ class TeamOut(Team):
     logotype_link: Optional[str]
     users: Optional[List[UserOut]]
     creator_id: Optional[str]
+    type: str

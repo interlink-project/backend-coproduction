@@ -5,10 +5,10 @@ from app.treeitems.schemas import *
 
 class PhaseCreate(TreeItemCreate):
     coproductionprocess_id: Optional[uuid.UUID]
-
+    is_part_of_codelivery: bool
 
 class PhasePatch(TreeItemPatch):
-    pass
+    is_part_of_codelivery: Optional[bool]
 
 
 class Phase(PhaseCreate, TreeItem):

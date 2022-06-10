@@ -5,4 +5,5 @@ from app.tasks.crud import exportCrud as task
 from app.assets.crud import exportCrud as asset
 from app.teams.crud import exportCrud as team
 from app.users.crud import exportCrud as user
-from app.roles.crud import exportCrud as role
+from app.organizations.crud import exportCrud as organization
+from app.permissions.crud import exportCrud as permission

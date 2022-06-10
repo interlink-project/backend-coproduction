@@ -5,11 +5,14 @@ from sqlalchemy import (
     Date,
     ForeignKey,
     String,
+    Integer,
+    func
 )
 from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from sqlalchemy.orm import backref, relationship
 
 from app.treeitems.models import TreeItem
+from sqlalchemy_utils import aggregated
 
 
 class Task(TreeItem):
@@ -31,9 +34,21 @@ class Task(TreeItem):
     start_date = Column(Date, nullable=True)
     end_date = Column(Date, nullable=True)
 
+    @aggregated('assets', Column(Integer))
+    def assets_count(self):
+        return func.count('1')
+
     __mapper_args__ = {
         "polymorphic_identity": "task",
     }
+    
+    @property
+    def coproductionprocess(self):
+        return self.objective.phase.coproductionprocess
 
+    @property
+    def phase_id(self):
+        return self.objective.phase_id
+        
     def __repr__(self):
         return "<Task %r>" % self.name

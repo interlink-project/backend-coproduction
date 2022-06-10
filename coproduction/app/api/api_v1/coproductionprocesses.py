@@ -5,6 +5,7 @@ from typing import Any, List, Optional
 import aiofiles
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from pydantic import BaseModel
+import requests
 from slugify import slugify
 from sqlalchemy.orm import Session
 
@@ -53,10 +54,7 @@ async def create_coproductionprocess(
     """
     if not crud.coproductionprocess.can_create(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    team = None
-    if coproductionprocess_in.team_id and not (team := await crud.team.get(db=db, id=coproductionprocess_in.team_id)):
-        raise HTTPException(status_code=400, detail="Team does not exist")
-    return await crud.coproductionprocess.create(db=db, coproductionprocess=coproductionprocess_in, creator=current_user, team=team)
+    return await crud.coproductionprocess.create(db=db, coproductionprocess=coproductionprocess_in, creator=current_user)
 
 
 @router.post("/{id}/logotype", response_model=schemas.CoproductionProcessOutFull)
@@ -117,21 +115,6 @@ async def add_team(
 
 class UserIn(BaseModel):
     user_id: str
-
-@router.get("/{id}/my_roles")
-async def get_my_roles(
-    *,
-    db: Session = Depends(deps.get_db),
-    id: uuid.UUID,
-    current_user: Optional[models.User] = Depends(deps.get_current_user),
-) -> Any:
-    """
-    Get role by ID.
-    """
-    if process := await crud.coproductionprocess.get(db=db, id=id):
-        return await crud.role.get_roles_of_user_for_coproductionprocess(db=db, coproductionprocess=process, user=current_user)
-    raise HTTPException(status_code=404, detail="Coproductionprocess not found")
-
 
 @router.post("/{id}/add_user")
 async def add_user(
@@ -229,3 +212,21 @@ async def get_coproductionprocess_tree(
     if not crud.coproductionprocess.can_read(db=db, user=current_user, object=coproductionprocess):
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return coproductionprocess.children
+
+
+# specific
+
+@router.get("/{id}/activity")
+async def get_activity(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: uuid.UUID,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Get coproductionprocess activity.
+    """
+    coproductionprocess = await crud.coproductionprocess.get(db=db, id=id)
+    if not coproductionprocess:
+        raise HTTPException(status_code=404, detail="CoproductionProcess not found")
+    return requests.get(f"http://logging/api/v1/log?coproductionprocess_ids={id}&size=20").json()

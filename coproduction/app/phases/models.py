@@ -4,13 +4,15 @@ from sqlalchemy import (
     Date,
     ForeignKey,
     Numeric,
+    Integer,
     func,
+    Boolean
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy_utils import aggregated
 
-from app.tasks.models import Task
+from app.objectives.models import Objective
 from app.treeitems.models import TreeItem
 
 class Phase(TreeItem):
@@ -20,6 +22,8 @@ class Phase(TreeItem):
         primary_key=True,
         default=uuid.uuid4,
     )
+    is_part_of_codelivery = Column(Boolean, default=False)
+
     # they belong to a process
     coproductionprocess_id = Column(
         UUID(as_uuid=True), ForeignKey("coproductionprocess.id", ondelete='CASCADE')
@@ -29,11 +33,15 @@ class Phase(TreeItem):
     # Infered state from objectives
     @aggregated('children', Column(Date))
     def end_date(self):
-        return func.max(Task.end_date)
+        return func.max(Objective.end_date)
 
     @aggregated('children', Column(Date))
     def start_date(self):
-        return func.min(Task.start_date)
+        return func.min(Objective.start_date)
+
+    @aggregated('children', Column(Integer))
+    def assets_count(self):
+        return func.sum(Objective.assets_count)
 
     progress = Column(Numeric, default=0)
     

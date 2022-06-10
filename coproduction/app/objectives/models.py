@@ -6,6 +6,7 @@ from sqlalchemy import (
     ForeignKey,
     Numeric,
     func,
+    Integer
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship
@@ -37,6 +38,10 @@ class Objective(TreeItem):
     def start_date(self):
         return func.min(Task.start_date)
 
+    @aggregated('children', Column(Integer))
+    def assets_count(self):
+        return func.sum(Task.assets_count)
+
     progress = Column(Numeric, default=0)
 
     __mapper_args__ = {
@@ -45,3 +50,7 @@ class Objective(TreeItem):
 
     def __repr__(self):
         return "<Objective %r>" % self.name
+
+    @property
+    def coproductionprocess(self):
+        return self.phase.coproductionprocess

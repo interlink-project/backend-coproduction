@@ -13,7 +13,9 @@ from app.utils import recursive_check
 from app import models
 
 class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
-    async def create_from_metadata(self, db: Session, phasemetadata: dict, coproductionprocess: models.CoproductionProcess) -> Optional[Phase]:
+    async def create_from_metadata(self, db: Session, phasemetadata: dict, coproductionprocess: models.CoproductionProcess, schema_id: uuid.UUID) -> Optional[Phase]:
+        phasemetadata["from_schema"] = schema_id
+        phasemetadata["from_item"] = phasemetadata.get("id")
         creator = PhaseCreate(**phasemetadata)
         return await self.create(db=db, phase=creator, coproductionprocess=coproductionprocess, commit=False)
 
@@ -27,6 +29,8 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
             raise Exception("Coproductionprocess not specified")
         
         db_obj = Phase(
+            from_item=phase.from_item,
+            from_schema=phase.from_schema,
             name=phase.name,
             description=phase.description,
             coproductionprocess=coproductionprocess,

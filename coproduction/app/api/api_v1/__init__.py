@@ -12,7 +12,7 @@ from app.api.api_v1 import (
     tasks,
     teams,
     users,
-    roles
+    permissions
 )
 
 api_router = APIRouter()
@@ -32,8 +32,8 @@ api_router.include_router(assets.router,
 api_router.include_router(teams.router,
                           prefix="/teams", tags=["teammanagement"])
 
-api_router.include_router(roles.router,
-                          prefix="/roles", tags=["teammanagement"])
+api_router.include_router(permissions.router,
+                          prefix="/permissions", tags=["teammanagement"])
 api_router.include_router(users.router,
                           prefix="/users", tags=["teammanagement"])
 

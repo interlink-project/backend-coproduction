@@ -5,23 +5,22 @@ from typing import Any, List, Optional
 from pydantic import BaseModel
 
 from app.config import settings
-from app.roles.schemas import RoleBase
+from app.permissions.schemas import PermissionBase
 from pydantic_choices import choice
 
 Languages = choice(settings.ALLOWED_LANGUAGES_LIST)
 
 class CoproductionProcessBase(BaseModel):
+    schema_used: Optional[uuid.UUID]
     name: str
     description: Optional[str]
     aim: Optional[str]
     idea: Optional[str]
-    organization: Optional[str]
+    organization_id: Optional[uuid.UUID]
     challenges: Optional[str]
 
 class CoproductionProcessCreate(CoproductionProcessBase):
     language: Languages
-    team_id: Optional[uuid.UUID]
-    roles: Optional[List[RoleBase]]
 
     class Config:
         arbitrary_types_allowed = True

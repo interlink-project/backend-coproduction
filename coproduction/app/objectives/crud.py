@@ -12,7 +12,9 @@ import uuid
 from app.utils import recursive_check
 
 class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
-    async def create_from_metadata(self, db: Session, objectivemetadata: dict, phase: Phase) -> Optional[Objective]:
+    async def create_from_metadata(self, db: Session, objectivemetadata: dict, phase: Phase, schema_id: uuid.UUID) -> Optional[Objective]:
+        objectivemetadata["from_schema"] = schema_id
+        objectivemetadata["from_item"] = objectivemetadata.get("id")
         creator = ObjectiveCreate(**objectivemetadata)
         return await self.create(db=db, objective=creator, phase=phase, commit=False)
 
@@ -29,6 +31,8 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
             raise Exception("Objective not specified")
 
         db_obj = Objective(
+            from_item=objective.from_item,
+            from_schema=objective.from_schema,
             name=objective.name,
             description=objective.description,
             phase=phase,

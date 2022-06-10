@@ -93,5 +93,5 @@ async def delete_task(
         raise HTTPException(status_code=404, detail="Task not found")
     if not crud.task.can_remove(current_user, task):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    await crud.task.remove(db=db, id=id)
+    await crud.task.remove(db=db, id=id, user_id=current_user.id)
     return None

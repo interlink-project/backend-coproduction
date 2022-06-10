@@ -5,8 +5,9 @@ from app.objectives.models import *
 from app.tasks.models import *
 from app.teams.models import *
 from app.users.models import *
-from app.roles.models import *
 from app.treeitems.models import *
+from app.organizations.models import *
+from app.permissions.models import *
 
 # @event.listens_for(Objective, "after_update")
 # def after_objective_update(mapper, connection, instance):

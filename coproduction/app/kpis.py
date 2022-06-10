@@ -16,7 +16,8 @@ show_queries = False
 
 def divide(x, y):
     if y == 0:
-        print("Y should be greater than 0", x, y)
+        print(f"Y ({y}) should be greater than 0")
+        return 0
     return x / y
 
 def get_raw_query(q):
@@ -30,7 +31,20 @@ def add(data, key, value):
     data[key] = value
 
 async def init():
-    data = {}
+    data = {
+        "coproductionprocesses": {
+            "count": 0
+        },
+        "teams": {
+            "count": 0
+        },
+        "users": {
+            "count": 0
+        },
+        "assets": {
+            "count": {}
+        },
+    }
 
     db: Session = SessionLocal()
     set_logging_disabled(True)
@@ -42,38 +56,7 @@ async def init():
     coproductionprocesses_count = coproductionprocesses_count_query.count()
     
     get_raw_query(coproductionprocesses_count_query)
-    add(data, "Number of coproductionprocesses:", coproductionprocesses_count)
-
-    # Resources count
-    assets_count_query = db.query(
-            Asset.id
-        )
-    assets_count = assets_count_query.count()
-
-    get_raw_query(coproductionprocesses_count_query)
-    add(data, "Number of assets created:", assets_count)
-
-    # Users count
-    users_count_query = db.query(
-            User.id
-        )
-    users_count = users_count_query.count()
-
-    get_raw_query(coproductionprocesses_count_query)
-    add(data, "Number of users registered:", users_count)
-
-    # Teams count
-    teams_count_query = db.query(
-            Team.id
-        )
-    teams_count = teams_count_query.count()
-
-    get_raw_query(coproductionprocesses_count_query)
-    add(data, "Number of teams created:", teams_count)
-
-    # Means
-    add(data, "Mean of assets per coproductionprocess:", divide(assets_count, coproductionprocesses_count))
-    add(data, "Mean of users per team:", divide(teams_count, users_count))
+    data["coproductionprocesses"]["count"] = coproductionprocesses_count
 
     # Languages
     languages_query = db.query(
@@ -82,16 +65,35 @@ async def init():
     languages = languages_query.all()
 
     get_raw_query(languages_query)
-    add(data, "Different languages used:", languages)
+    data["coproductionprocesses"]["languages"] = {"used": languages}
 
     for key in ["en", "es", "it", "lv"]:
         languages_query = db.query(
                 CoproductionProcess.language
             ).filter(CoproductionProcess.language == key)
-        languages = languages_query.count()
+        process_in_lang_count = languages_query.count()
 
         get_raw_query(languages_query)
-        add(data, f"Processes in {key} language:", languages)
+        data["coproductionprocesses"]["languages"][key] = process_in_lang_count
+
+    # Users count
+    users_count_query = db.query(
+            User.id
+        )
+    users_count = users_count_query.count()
+
+    get_raw_query(coproductionprocesses_count_query)
+    data["users"]["count"] = users_count
+
+    # Teams count
+    teams_count_query = db.query(
+            Team.id
+        )
+    teams_count = teams_count_query.count()
+
+    get_raw_query(coproductionprocesses_count_query)
+    data["teams"]["count"] = teams_count
+
 
     # ASSETS
     number_of_assets_query = db.query(
@@ -100,7 +102,7 @@ async def init():
     number_of_assets_query_count = number_of_assets_query.count()
 
     get_raw_query(number_of_assets_query)
-    add(data, "Number of assets:", number_of_assets_query_count)
+    data["assets"]["count"] = {"total": number_of_assets_query_count}
 
     internal_assets_query = db.query(
             InternalAsset.id,
@@ -108,7 +110,7 @@ async def init():
     internal_assets_query_count = internal_assets_query.count()
 
     get_raw_query(internal_assets_query)
-    add(data, "Number of internal assets:", internal_assets_query_count)
+    data["assets"]["count"]["internal"] = internal_assets_query_count
 
     external_assets_query = db.query(
             ExternalAsset.id,
@@ -116,47 +118,57 @@ async def init():
     external_assets_query_count = external_assets_query.count()
 
     get_raw_query(external_assets_query)
-    add(data, "Number of external assets:", external_assets_query_count)
+    data["assets"]["count"]["external"] = external_assets_query_count
     
+    # Means
+    data["coproductionprocesses"]["assets_mean"] = divide(number_of_assets_query_count, coproductionprocesses_count)
+    data["teams"]["users_mean"] = divide(teams_count, users_count)
 
     # SOFTWARE INTERLINKERS
     used_software_interlinkers_query = db.query(
             InternalAsset.softwareinterlinker_id,
-        ).group_by(InternalAsset.softwareinterlinker_id)
+        )
     used_software_interlinkers_query_all = used_software_interlinkers_query.all()
     used_software_interlinkers_query_count = used_software_interlinkers_query.count()
 
     get_raw_query(used_software_interlinkers_query)
-    add(data, "Used software interlinkers:", used_software_interlinkers_query_all)
-    add(data, "Number of used software interlinkers:", used_software_interlinkers_query_count)
-    
+
     # EXTERNAL SOFTWARE INTERLINKERS
     used_external_interlinkers_query = db.query(
             ExternalAsset.externalinterlinker_id,
         ).filter(
             ExternalAsset.externalinterlinker_id != None
-        ).group_by(ExternalAsset.externalinterlinker_id)
+        )
     used_external_interlinkers_query_all = used_external_interlinkers_query.all()
     used_external_interlinkers_query_count = used_external_interlinkers_query.count()
 
     get_raw_query(used_external_interlinkers_query)
-    add(data, "Used external interlinkers:", used_external_interlinkers_query_all)
-    add(data, "Number of used external interlinkers:", used_external_interlinkers_query_count)
 
     # KNOWLEDGE
     used_knowledge_interlinkers_query = db.query(
             InternalAsset.knowledgeinterlinker_id,
         ).filter(
             InternalAsset.knowledgeinterlinker_id != None
-        ).group_by(InternalAsset.knowledgeinterlinker_id)
+        )
     used_knowledge_interlinkers_query_all = used_knowledge_interlinkers_query.all()
     used_knowledge_interlinkers_query_count = used_knowledge_interlinkers_query.count()
 
     get_raw_query(used_knowledge_interlinkers_query)
-    add(data, "Used knowledge interlinkers:", used_knowledge_interlinkers_query_all)
-    add(data, "Number of used knowledge interlinkers:", used_knowledge_interlinkers_query_count)
 
-    print(data)
+    data["assets"]["interlinkers"] = {
+        "softwareinterlinkers": {
+            "total": used_software_interlinkers_query_count,
+            "which": used_software_interlinkers_query_all
+        },
+        "knowledgeinterlinkers": {
+            "total": used_knowledge_interlinkers_query_count,
+            "which": used_knowledge_interlinkers_query_all
+        },
+        "externalinterlinkers": {
+            "total": used_external_interlinkers_query_count,
+            "which": used_external_interlinkers_query_all
+        }
+    }
     db.close()
     return data
 

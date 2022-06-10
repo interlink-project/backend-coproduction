@@ -12,21 +12,21 @@ from app.messages import log
 
 router = APIRouter()
 
-class RoleSwitch(BaseModel):
-    new_role: uuid.UUID
-    old_role: uuid.UUID
+class PermissionSwitch(BaseModel):
+    new_permission: uuid.UUID
+    old_permission: uuid.UUID
     team_id: Optional[uuid.UUID]
     user_id: Optional[str]
 
 @router.post("/switch")
-async def switch_role(
+async def switch_permission(
     *,
     db: Session = Depends(deps.get_db),
-    switch_in: RoleSwitch,
+    switch_in: PermissionSwitch,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Switch roles
+    Switch permissions
     """
     user = None
     team = None
@@ -41,96 +41,96 @@ async def switch_role(
     if user and team:
         raise HTTPException(status_code=400, detail="Please, specify only a team or a user")
 
-    new_role = await crud.role.get(db=db, id=switch_in.new_role)
-    old_role = await crud.role.get(db=db, id=switch_in.old_role)
-    if not old_role or not new_role:
-        raise HTTPException(status_code=400, detail="At least one of the roles does not exist")
+    new_permission = await crud.permission.get(db=db, id=switch_in.new_permission)
+    old_permission = await crud.permission.get(db=db, id=switch_in.old_permission)
+    if not old_permission or not new_permission:
+        raise HTTPException(status_code=400, detail="At least one of the permissions does not exist")
     
-    if new_role.coproductionprocess_id != old_role.coproductionprocess_id:
-        raise HTTPException(status_code=400, detail="Creators role can not be modified")
-    if old_role.coproductionprocess.creator_id == switch_in.user_id:
-        raise HTTPException(status_code=400, detail="Role of the creator can not be modified")
+    if new_permission.treeitem_id != old_permission.treeitem_id:
+        raise HTTPException(status_code=400, detail="Creators permission can not be modified")
+    if old_permission.treeitem.creator_id == switch_in.user_id:
+        raise HTTPException(status_code=400, detail="Permission of the creator can not be modified")
 
     if user:
-        old_role.users.remove(user)
-        new_role.users.append(user)
+        old_permission.users.remove(user)
+        new_permission.users.append(user)
     if team:
-        old_role.teams.remove(team)
-        new_role.teams.append(team)
+        old_permission.teams.remove(team)
+        new_permission.teams.append(team)
     
     db.commit()
     return True
     
-@router.post("", response_model=schemas.RoleOut)
-async def create_role(
+@router.post("", response_model=schemas.PermissionOut)
+async def create_permission(
     *,
     db: Session = Depends(deps.get_db),
-    role: schemas.RoleCreate,
+    permission: schemas.PermissionCreate,
     current_user: Optional[models.User] = Depends(deps.get_current_user),
 ) -> Any:
     """
-    Create role
+    Create permission
     """
-    return await crud.role.create(db=db, obj_in=role)
+    return await crud.permission.create(db=db, obj_in=permission)
 
-@router.get("", response_model=List[schemas.RoleOutFull])
-async def get_roles(
+@router.get("", response_model=List[schemas.PermissionOutFull])
+async def get_permissions(
     *,
     db: Session = Depends(deps.get_db),
-    coproductionprocess_id: uuid.UUID = Query(None),
+    treeitem_id: uuid.UUID = Query(None),
     current_user: Optional[models.User] = Depends(deps.get_current_user),
 ) -> Any:
     """
-    Get role by ID.
+    Get permission by ID.
     """
-    if process := await crud.coproductionprocess.get(db=db, id=coproductionprocess_id):
-        return process.roles
-    raise HTTPException(status_code=404, detail="Coproductionprocess not found")
+    if process := await crud.treeitem.get(db=db, id=treeitem_id):
+        return process.permissions
+    raise HTTPException(status_code=404, detail="treeitem not found")
 
-@router.get("/{id}", response_model=schemas.RoleOutFull)
-async def get_role(
+@router.get("/{id}", response_model=schemas.PermissionOutFull)
+async def get_permission(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
     current_user: Optional[models.User] = Depends(deps.get_current_user),
 ) -> Any:
     """
-    Get role by ID.
+    Get permission by ID.
     """
-    if role := await crud.role.get(db=db, id=id):
-        return role
-    raise HTTPException(status_code=404, detail="Role not found")
+    if permission := await crud.permission.get(db=db, id=id):
+        return permission
+    raise HTTPException(status_code=404, detail="Permission not found")
 
-@router.put("/{id}", response_model=schemas.RoleOutFull)
-async def update_role(
+@router.put("/{id}", response_model=schemas.PermissionOutFull)
+async def update_permission(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
-    role_in: schemas.RolePatch,
+    permission_in: schemas.PermissionPatch,
     current_user: Optional[models.User] = Depends(deps.get_current_user),
 ) -> Any:
     """
-    Patch role by ID.
+    Patch permission by ID.
     """
-    if role := await crud.role.get(db=db, id=id):
-        return await crud.role.update(db=db, db_obj=role, obj_in=role_in)
-    raise HTTPException(status_code=404, detail="Role not found")
+    if permission := await crud.permission.get(db=db, id=id):
+        return await crud.permission.update(db=db, db_obj=permission, obj_in=permission_in)
+    raise HTTPException(status_code=404, detail="Permission not found")
 
 
 @router.delete("/{id}")
-async def delete_role(
+async def delete_permission(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
     current_user: Optional[models.User] = Depends(deps.get_current_user),
 ) -> Any:
     """
-    Delete role by ID.
+    Delete permission by ID.
     """
-    if role := await crud.role.get(db=db, id=id):
-        return await crud.role.remove(db=db, id=role.id)
+    if permission := await crud.permission.get(db=db, id=id):
+        return await crud.permission.remove(db=db, id=permission.id)
 
-    raise HTTPException(status_code=404, detail="Role not found")
+    raise HTTPException(status_code=404, detail="Permission not found")
  
 class TeamIn(BaseModel):
     team_id: uuid.UUID
@@ -144,15 +144,15 @@ async def add_team(
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Add team to role
+    Add team to permission
     """
-    if role := await crud.role.get(db=db, id=id):
+    if permission := await crud.permission.get(db=db, id=id):
         if team := await crud.team.get(db=db, id=team_in.team_id):
-            await crud.role.add_team(db=db, role=role, team=team)
+            await crud.permission.add_team(db=db, permission=permission, team=team)
             return True
         raise HTTPException(status_code=400, detail="Team not found")
 
-    raise HTTPException(status_code=404, detail="Role not found")
+    raise HTTPException(status_code=404, detail="Permission not found")
 
 
 @router.post("/{id}/remove_team")
@@ -164,15 +164,15 @@ async def remove_team(
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Add team to role
+    Add team to permission
     """
-    if role := await crud.role.get(db=db, id=id):
+    if permission := await crud.permission.get(db=db, id=id):
         if team := await crud.team.get(db=db, id=team_in.team_id):
-            await crud.role.remove_team(db=db, role=role, team=team)
+            await crud.permission.remove_team(db=db, permission=permission, team=team)
             return True
         raise HTTPException(status_code=400, detail="Team not found")
 
-    raise HTTPException(status_code=404, detail="Role not found")
+    raise HTTPException(status_code=404, detail="Permission not found")
     
     
 class UserIn(BaseModel):
@@ -187,12 +187,12 @@ async def remove_user(
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Add user to role
+    Add user to permission
     """
-    if role := await crud.role.get(db=db, id=id):
+    if permission := await crud.permission.get(db=db, id=id):
         if user := await crud.user.get(db=db, id=user_in.user_id):
-            await crud.role.remove_user(db=db, role=role, user=user)
+            await crud.permission.remove_user(db=db, permission=permission, user=user)
             return True
         raise HTTPException(status_code=400, detail="User not found")
 
-    raise HTTPException(status_code=404, detail="Role not found")
+    raise HTTPException(status_code=404, detail="Permission not found")

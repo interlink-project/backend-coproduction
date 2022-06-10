@@ -10,15 +10,16 @@ from app.messages import log
 from fastapi.encoders import jsonable_encoder
 import favicon
 
+
 class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
 
     async def get_multi_filtered(
-        self, db: Session, coproductionprocess_id: uuid.UUID, task_id: uuid.UUID
+        self, db: Session, coproductionprocess_id: uuid.UUID = None, task_id: uuid.UUID = None
     ) -> List[Asset]:
         queries = []
         if coproductionprocess_id:
             queries.append(Asset.coproductionprocess_id == coproductionprocess_id)
-        
+
         if task_id:
             queries.append(Asset.task_id == task_id)
             # await log({
@@ -28,7 +29,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
             #     "task_id": task_id
             # })
         return db.query(Asset).filter(*queries).all()
-    
+
     async def create(self, db: Session, asset: AssetCreate, coproductionprocess_id: uuid.UUID, creator: models.User) -> Asset:
         data = jsonable_encoder(asset)
         if type(asset) == ExternalAssetCreate:
@@ -40,7 +41,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                 icons = favicon.get(asset.uri)
                 if len(icons) > 0 and (icon := icons[0]) and icon.format:
                     response = requests.get(icon.url, stream=True)
-                    
+
                     icon_path = f'/app/static/assets/{uuid.uuid4()}.{icon.format}'
                     with open(icon_path, 'wb') as image:
                         for chunk in response.iter_content(1024):
@@ -50,19 +51,21 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                     data["icon_path"] = icon_path
             except:
                 pass
-            db_obj = ExternalAsset(**data, creator=creator, coproductionprocess_id=coproductionprocess_id)
+            db_obj = ExternalAsset(**data, creator=creator,
+                                   coproductionprocess_id=coproductionprocess_id)
 
         if type(asset) == InternalAssetCreate:
             print("IS INTERNAL")
             data["type"] = "internalasset"
-            db_obj = InternalAsset(**data, creator=creator, coproductionprocess_id=coproductionprocess_id)
+            db_obj = InternalAsset(**data, creator=creator,
+                                   coproductionprocess_id=coproductionprocess_id)
 
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
         await self.log_on_create(db_obj)
         return db_obj
-    
+
     # Override log methods
     def enrich_log_data(self, asset, logData):
         logData["model"] = "ASSET"
@@ -86,21 +89,22 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                 logData["externalinterlinker_name"] = ei.get("name")
         return logData
 
-
     # CRUD Permissions
-    def can_create(self, user):
-        return True
 
-    def can_list(self, user):
-        return True
+    def can_create(self, db, user, task: models.TreeItem):
+        return task.user_can(db=db, user=user, permission="create_assets_permission")
 
-    def can_read(self, user, object):
-        return True
+    def can_list(self, db, user, task: models.TreeItem):
+        return task.user_can(db=db, user=user, permission="view_assets_permission")
 
-    def can_update(self, user, object):
-        return True
+    def can_read(self, db, user, asset: Asset):
+        return asset.task.user_can(db=db, user=user, permission="view_assets_permission")
 
-    def can_remove(self, user, object):
-        return True
+    def can_update(self, db, user, asset: Asset):
+        return asset.task.user_can(db=db, user=user, permission="create_assets_permission")
+
+    def can_remove(self, db, user, asset: Asset):
+        return asset.task.user_can(db=db, user=user, permission="delete_assets_permission")
+
 
 exportCrud = CRUDAsset(Asset, logByDefault=True)

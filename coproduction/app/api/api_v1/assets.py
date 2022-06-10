@@ -17,18 +17,21 @@ router = APIRouter()
 
 @router.get("", response_model=List[schemas.AssetOutFull])
 async def list_assets(
+    task_id: uuid.UUID,
     db: Session = Depends(deps.get_db),
-    coproductionprocess_id: Optional[uuid.UUID] = Query(None),
-    task_id: Optional[uuid.UUID] = Query(None),
+    # coproductionprocess_id: Optional[uuid.UUID] = Query(None),
     current_user: Optional[models.User] = Depends(deps.get_current_user),
 ) -> Any:
     """
     Retrieve assets.
     """
+    # check that task exists
+    if not (task := await crud.task.get(db=db, id=task_id)):
+        raise HTTPException(status_code=404, detail="Task not found")
 
-    if not crud.asset.can_list(current_user):
+    if not crud.asset.can_list(db, current_user, task):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    return await crud.asset.get_multi_filtered(db, task_id=task_id, coproductionprocess_id=coproductionprocess_id)
+    return await crud.asset.get_multi_filtered(db, task_id=task_id)
 
 
 def check_interlinker(id, token):
@@ -49,13 +52,12 @@ async def create_asset(
     """
     Create new asset.
     """
-
-    if not crud.asset.can_create(current_user):
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-
     # check that task exists
     if not (task := await crud.task.get(db=db, id=asset_in.task_id)):
         raise HTTPException(status_code=404, detail="Task not found")
+
+    if not crud.asset.can_create(db, current_user, task):
+        raise HTTPException(status_code=403, detail="Not enough permissions")
 
     # check that interlinker exists
     if type(asset_in) == schemas.InternalAssetCreate and asset_in.softwareinterlinker_id:
@@ -90,12 +92,12 @@ async def instantiate_asset_from_knowledgeinterlinker(
     """
     Create new asset.
     """
-    if not crud.asset.can_create(current_user):
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-
     # first check if task exists
     if not (task := await crud.task.get(db=db, id=asset_in.task_id)):
         raise HTTPException(status_code=404, detail="Task not found")
+
+    if not crud.asset.can_create(db, current_user, task):
+        raise HTTPException(status_code=403, detail="Not enough permissions")
 
     # Gets the knowledge interlinker
     response = requests.get(f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{asset_in.knowledgeinterlinker_id}", headers={
@@ -109,21 +111,22 @@ async def instantiate_asset_from_knowledgeinterlinker(
 
     # Clones the genesis asset of the knowledge interlinker by calling the software interlinker's (used by the knowledge) /clone method
     try:
-        external_info: dict = requests.post(interlinker.get("internal_link") + "/clone", headers={
+        data_from_interlinker: dict = requests.post(interlinker.get("internal_link") + "/clone", headers={
             "Authorization": "Bearer " + token
         }).json()
     except:
-        external_info: dict = requests.post(interlinker.get("link") + "/clone", headers={
+        data_from_interlinker: dict = requests.post(interlinker.get("link") + "/clone", headers={
             "Authorization": "Bearer " + token
         }).json()
 
+    external_asset_id = data_from_interlinker["id"] if "id" in data_from_interlinker else data_from_interlinker["_id"]
     # Creates an InternalAsset object with reference to the software interlinker that manages the asset, the knowledge interlinker that contained the genesis asset id and the id of the external resource
     return await crud.asset.create(db=db, coproductionprocess_id=task.objective.phase.coproductionprocess_id, creator=current_user, asset=schemas.InternalAssetCreate(
         **{
             "knowledgeinterlinker_id": asset_in.knowledgeinterlinker_id,
             "type": "internalasset",
             "softwareinterlinker_id": interlinker.get("softwareinterlinker_id"),
-            "external_asset_id": external_info.get("id") or external_info.get("_id"),
+            "external_asset_id": external_asset_id,
             "task_id": task.id
         }
     ))
@@ -140,36 +143,37 @@ async def clone_asset(
     """
     Clone asset.
     """
-    if not crud.asset.can_create(current_user):
+    # first check if task exists
+    task: models.Task
+    if not (task := await crud.task.get(db=db, id=asset.task_id)):
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    if not crud.asset.can_create(db, current_user, task):
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     asset: models.Asset
     if not (asset := await crud.asset.get(db=db, id=id)):
         raise HTTPException(status_code=404, detail="Asset not found")
 
-    # first check if task exists
-    task: models.Task
-    if not (task := await crud.task.get(db=db, id=asset.task_id)):
-        raise HTTPException(status_code=404, detail="Task not found")
-
+    # TODO: check that the software interlinker of the original asset has the clone capability
     if asset.type == "internalasset":
         try:
-            external_info = requests.post(asset.internal_link + "/clone", headers={
+            data_from_interlinker = requests.post(asset.internal_link + "/clone", headers={
                 "Authorization": "Bearer " + token
             }).json()
         except:
-            external_info = requests.post(asset.link + "/clone", headers={
+            data_from_interlinker = requests.post(asset.link + "/clone", headers={
                 "Authorization": "Bearer " + token
             }).json()
 
-        external_id = external_info["id"] if "id" in external_info else external_info["_id"]
+        external_asset_id = data_from_interlinker["id"] if "id" in data_from_interlinker else data_from_interlinker["_id"]
 
         asset: models.InternalAsset
         db_asset = await crud.asset.create(db=db, asset=schemas.InternalAssetCreate(
             task_id=asset.task_id,
             softwareinterlinker_id=asset.softwareinterlinker_id,
             knowledgeinterlinker_id=asset.knowledgeinterlinker_id,
-            external_asset_id=external_id
+            external_asset_id=external_asset_id
         ), coproductionprocess_id=task.objective.phase.coproductionprocess_id, creator=current_user)
 
     elif asset.type == "externalasset":
@@ -202,7 +206,7 @@ async def update_asset(
     asset = await crud.asset.get(db=db, id=id)
     if not asset:
         raise HTTPException(status_code=404, detail="Asset not found")
-    if not crud.asset.can_update(current_user, asset):
+    if not crud.asset.can_update(db, current_user, asset):
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return await crud.asset.update(db=db, db_obj=asset, obj_in=asset_in)
 
@@ -221,7 +225,7 @@ async def read_asset(
     """
 
     if asset := await crud.asset.get(db=db, id=id):
-        if not crud.asset.can_read(current_user, asset):
+        if not crud.asset.can_read(db, current_user, asset):
             raise HTTPException(status_code=403, detail="Not enough permissions")
         return asset
     raise HTTPException(status_code=404, detail="Asset not found")
@@ -233,6 +237,7 @@ async def read_internal_asset(
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
     token: str = Depends(deps.get_current_active_token),
+    current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Get asset by ID.
@@ -240,6 +245,9 @@ async def read_internal_asset(
 
     if asset := await crud.asset.get(db=db, id=id):
         if asset.type == "internalasset":
+            if not crud.asset.can_read(db, current_user, asset):
+                raise HTTPException(status_code=403, detail="Not enough permissions")
+
             print("Retrieving internal ", asset.link)
             await log(crud.asset.enrich_log_data(asset, {
                 "action": "GET"
@@ -269,7 +277,7 @@ async def delete_asset(
     """
 
     if asset := await crud.asset.get(db=db, id=id):
-        if not crud.asset.can_remove(current_user, asset):
+        if not crud.asset.can_remove(db, current_user, asset):
             raise HTTPException(status_code=403, detail="Not enough permissions")
         await crud.asset.remove(db=db, id=id)
         return None
