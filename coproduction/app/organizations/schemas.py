@@ -1,30 +1,49 @@
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
-from pydantic import BaseModel
-from .models import OrganizationTypes
+from pydantic import BaseModel, validator
+from .models import OrganizationTypes, TeamCreationPermissions
 
 class OrganizationBase(BaseModel):
-    name: str
-    description: Optional[str]
+    name_translations: dict
+    description_translations: Optional[dict]
+    icon: Optional[str]
     logotype: Optional[str]
     type: OrganizationTypes
+    team_creation_permission: Optional[TeamCreationPermissions]
+    public: Optional[bool]
     
 class OrganizationCreate(OrganizationBase):
     pass
 
 class OrganizationPatch(OrganizationCreate):
-    name:  Optional[str]
+    name_translations: Optional[dict]
+    type: Optional[OrganizationTypes]
 
 class Organization(OrganizationBase):
     id: uuid.UUID
     created_at: datetime
     updated_at: Optional[datetime]
-    
+    name: str
+    description: Optional[str]
+    creator_id: Optional[str]
+
     class Config:
         orm_mode = True
 
 
 class OrganizationOut(Organization):
+    icon_link: Optional[str] 
     logotype_link: Optional[str] 
+    administrators_ids: List[str]
+    team_ids: List[uuid.UUID]
+    your_participation: list
+
+    @validator('administrators_ids', pre=True)
+    def administrators_ids_to_list(cls, v):
+        return list(v)
+    
+    @validator('team_ids', pre=True)
+    def team_ids_to_list(cls, v):
+        return list(v)

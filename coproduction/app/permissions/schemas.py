@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Extra
 
 class PermissionBase(BaseModel):
     edit_treeitem_permission: Optional[bool]
@@ -11,12 +11,10 @@ class PermissionBase(BaseModel):
     create_assets_permission: Optional[bool]
     delete_assets_permission: Optional[bool]
 
-class PermissionCreate(PermissionBase):
+class PermissionCreate(PermissionBase, extra=Extra.allow):
     user_id: Optional[uuid.UUID]
     team_id: Optional[uuid.UUID]
-
     treeitem_id: uuid.UUID
-    coproductionprocess_id: uuid.UUID
 
 class PermissionPatch(BaseModel):
     pass
@@ -26,6 +24,8 @@ class Permission(PermissionCreate):
     created_at: datetime
     updated_at: Optional[datetime]
 
+    creator_id: str
+    
     class Config:
         orm_mode = True
 

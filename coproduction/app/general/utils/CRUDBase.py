@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.general.db.base_class import Base
 from app.messages import log
+from app.users.models import User
 
 ModelType = TypeVar("ModelType", bound=Base)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
@@ -42,9 +43,15 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
     ) -> List[ModelType]:
         return db.query(self.model).order_by(self.model.created_at.asc()).offset(skip).limit(limit).all()
 
-    async def create(self, db: Session, *, obj_in: CreateSchemaType) -> ModelType:
+    async def create(self, db: Session, *, obj_in: CreateSchemaType, creator: User = None, set_creator_admin: bool = False) -> ModelType:
         obj_in_data = jsonable_encoder(obj_in)
         db_obj = self.model(**obj_in_data)  # type: ignore
+
+        if creator:
+            db_obj.creator_id = creator.id
+            if set_creator_admin:
+                db_obj.administrators.append(creator)
+                
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)

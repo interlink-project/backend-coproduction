@@ -14,7 +14,10 @@ from functools import lru_cache
 
 class Permission(BaseModel):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    
+    # created by
+    creator_id = Column(String, ForeignKey("user.id", use_alter=True, ondelete='SET NULL'))
+    creator = relationship('User', foreign_keys=[creator_id], post_update=True, backref="created_permissions")
+
     # for
     user_id = Column(String, ForeignKey('user.id', ondelete='CASCADE'))
     user = relationship('User', foreign_keys=[user_id], backref=backref('permissions', passive_deletes=True))

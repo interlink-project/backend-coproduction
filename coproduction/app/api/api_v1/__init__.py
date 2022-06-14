@@ -12,7 +12,8 @@ from app.api.api_v1 import (
     tasks,
     teams,
     users,
-    permissions
+    permissions,
+    organizations
 )
 
 api_router = APIRouter()
@@ -36,6 +37,8 @@ api_router.include_router(permissions.router,
                           prefix="/permissions", tags=["teammanagement"])
 api_router.include_router(users.router,
                           prefix="/users", tags=["teammanagement"])
+api_router.include_router(organizations.router,
+                          prefix="/organizations", tags=["teammanagement"])
 
 @api_router.get("/")
 async def main():

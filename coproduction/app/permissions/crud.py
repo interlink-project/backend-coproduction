@@ -24,8 +24,6 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
         return True
 
     def can_remove(self, user, object):
-        if not object.deletable:
-            return False
         return True
 
 exportCrud = CRUDPermission(Permission, logByDefault=True)

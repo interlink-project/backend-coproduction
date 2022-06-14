@@ -22,7 +22,7 @@ prerequisites = Table(
 )
 
 
-class Status(enum.Enum):
+class Status(str, enum.Enum):
     awaiting = "awaiting"
     in_progress = "in_progress"
     finished = "finished"
@@ -67,7 +67,7 @@ class TreeItem(BaseModel):
         "polymorphic_on": type,
     }
 
-    def get_permissions(self, db: Session, user: User):
+    def get_permissions_for_user(self, db: Session, user: User):
         # If admin, grant all
         if user in self.coproductionprocess.administrators:
             return GRANT_ALL
@@ -90,23 +90,14 @@ class TreeItem(BaseModel):
 
     @property
     def user_permissions(self):
-        db = Session.object_session(self)
-        try:
-            if user := context.data.get("user", None):
-                db_user = db.query(
-                    User
-                ).filter(
-                    User.id == user["sub"]
-                ).first()
-            return self.get_permissions(db=db, user=db_user)
+        from app.general.deps import get_current_user_from_context
 
-        except Exception as e:
-            print(str(e))
-            return DENY_ALL
+        db = Session.object_session(self)
+        if user := get_current_user_from_context(db=db):
+            return self.get_permissions_for_user(db=db, user=user)
+        return DENY_ALL
 
     def user_can(self, db: Session, user: User, permission: str):
         if permission in PERMS:
-            res = self.get_permissions(db=db, user=user)[permission]
-            print("PUEDE", permission, res)
-            return res
+            return self.get_permissions_for_user(db=db, user=user)[permission]
         raise Exception(permission + " is not a valid permission")

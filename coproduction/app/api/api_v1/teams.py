@@ -17,20 +17,12 @@ router = APIRouter()
 @router.get("", response_model=List[schemas.TeamOutFull])
 async def list_teams(
     db: Session = Depends(deps.get_db),
-    current_user: Optional[models.User] = Depends(deps.get_current_user),
-    coproductionprocess_id: uuid.UUID = Query(None),
+    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
+    or_public: bool = Query(True),
+    and_public: bool = Query(True),
+    organization_id: uuid.UUID = Query(None),
 ) -> Any:
-    return await crud.team.get_multi_filtered(db, coproductionprocess_id)
-
-@router.get("/mine", response_model=List[schemas.TeamOutFull])
-async def list_my_teams(
-    db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
-) -> Any:
-    """
-    Retrieve teams.
-    """
-    return await crud.team.get_multi_by_user(db, user_id=current_user.id)
+    return await crud.team.get_multi(db=db, user_id=current_user.id, organization_id=organization_id, or_public=or_public, and_public=and_public)
 
 @router.post("", response_model=schemas.TeamOutFull)
 async def create_team(
@@ -43,9 +35,11 @@ async def create_team(
     Create new team.
     """
     team = await crud.team.get_by_name(db=db, name=team_in.name)
-
     if not team:
-        return await crud.team.create(db=db, team=team_in, creator=current_user)
+        if team_in.organization_id and await crud.team.can_create(db=db, organization_id=team_in.organization_id, user=current_user):
+            return await crud.team.create(db=db, obj_in=team_in, creator=current_user)
+        else:
+            raise HTTPException(status_code=403, detail="You can not create a team for this organization")
 
     raise HTTPException(status_code=400, detail="Team already exists")
 

@@ -63,27 +63,6 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
         return admins.union(user_permissions).union(team_permissions).all()
 
-    async def create(self, db: Session, *, coproductionprocess: CoproductionProcessCreate, creator: models.User) -> CoproductionProcess:
-        db_obj = CoproductionProcess(
-            # uses postgres
-            schema_used=coproductionprocess.schema_used,
-            name=coproductionprocess.name,
-            description=coproductionprocess.description,
-            language=coproductionprocess.language,
-            aim=coproductionprocess.aim,
-            idea=coproductionprocess.idea,
-            organization_id=coproductionprocess.organization_id,
-            challenges=coproductionprocess.challenges,
-            # relations
-            creator=creator,
-        )
-        db_obj.administrators.append(creator)
-        db.add(db_obj)
-        db.commit()
-        db.refresh(db_obj)
-        await self.log_on_create(db_obj)
-        return db_obj
-
     async def set_schema(self, db: Session, coproductionprocess: models.CoproductionProcess, coproductionschema: dict):
         total = {}
         schema_id = coproductionschema.get("id")
@@ -204,14 +183,11 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                 Permission.team_id.in_(user.team_ids)
             )
         )
-        print(first.all())
         second = db.query(CoproductionProcess).filter(
             CoproductionProcess.id == object.id
         ).filter(
             CoproductionProcess.administrators.any(models.User.id.in_([user.id]))
         )
-        print(second.all())
-
         return len(second.union(first).all()) > 0
 
     def can_update(self, db: Session, user, object):

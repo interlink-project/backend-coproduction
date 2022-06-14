@@ -37,7 +37,7 @@ class CoproductionProcess(BaseModel):
     creator_id = Column(String, ForeignKey(
         "user.id", use_alter=True, ondelete='SET NULL'))
     creator = relationship('User', foreign_keys=[
-                           creator_id], post_update=True, back_populates="created_coproductionprocesses")
+                           creator_id], post_update=True, backref="created_coproductionprocesses")
     administrators = relationship(
         "User",
         secondary=coproductionprocess_administrators_association_table,

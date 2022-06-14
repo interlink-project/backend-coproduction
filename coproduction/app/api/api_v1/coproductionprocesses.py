@@ -27,7 +27,7 @@ async def list_coproductionprocesses(
     """
     if not crud.coproductionprocess.can_list(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    return await crud.coproductionprocess.get_multi(db, skip=skip, limit=limit)
+    return await crud.coproductionprocess.get_multi(db, user=current_user, skip=skip, limit=limit)
 
 @router.get("/mine", response_model=List[schemas.CoproductionProcessOut])
 async def list_my_coproductionprocesses(
@@ -39,7 +39,7 @@ async def list_my_coproductionprocesses(
     """
     if not crud.coproductionprocess.can_list(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    return await crud.coproductionprocess.get_multi_by_user(db, user=current_user)
+    return await crud.coproductionprocess.get_multi(db, )
 
 
 @router.post("", response_model=schemas.CoproductionProcessOutFull)
@@ -54,7 +54,7 @@ async def create_coproductionprocess(
     """
     if not crud.coproductionprocess.can_create(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    return await crud.coproductionprocess.create(db=db, coproductionprocess=coproductionprocess_in, creator=current_user)
+    return await crud.coproductionprocess.create(db=db, obj_in=coproductionprocess_in, creator=current_user, set_creator_admin=True)
 
 
 @router.post("/{id}/logotype", response_model=schemas.CoproductionProcessOutFull)
@@ -66,14 +66,16 @@ async def set_logotype(
     file: UploadFile = File(...),
 ) -> Any:
     if (coproductionprocess := await crud.coproductionprocess.get(db=db, id=id)):
-        name = slugify(coproductionprocess.name)
-        filename, extension = os.path.splitext(file.filename)
-        out_file_path = f"/static/coproductionprocesses/{name}{extension}"
+        if await crud.coproductionprocess.can_update(db=db, user=current_user, object=coproductionprocess):
+            name = slugify(coproductionprocess.name)
+            filename, extension = os.path.splitext(file.filename)
+            out_file_path = f"/static/coproductionprocesses/{name}{extension}"
 
-        async with aiofiles.open("/app" + out_file_path, 'wb') as out_file:
-            content = await file.read()  # async read
-            await out_file.write(content)  # async write
-        return await crud.coproductionprocess.update(db=db, db_obj=coproductionprocess, obj_in=schemas.CoproductionProcessPatch(logotype=out_file_path))
+            async with aiofiles.open("/app" + out_file_path, 'wb') as out_file:
+                content = await file.read()  # async read
+                await out_file.write(content)  # async write
+            return await crud.coproductionprocess.update(db=db, db_obj=coproductionprocess, obj_in=schemas.CoproductionProcessPatch(logotype=out_file_path))
+        raise HTTPException(status_code=403, detail="You are not allowed to update this coproductionprocess")
     raise HTTPException(status_code=404, detail="Coproduction process not found")
 
 
@@ -82,16 +84,17 @@ async def set_schema(
     *,
     id: uuid.UUID,
     db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_user),
     schema: dict,
 ) -> Any:
     if (coproductionprocess := await crud.coproductionprocess.get(db=db, id=id)):
-        return await crud.coproductionprocess.set_schema(db=db, coproductionschema=schema, coproductionprocess=coproductionprocess)
+        if current_user in coproductionprocess.administrators:
+            return await crud.coproductionprocess.set_schema(db=db, coproductionschema=schema, coproductionprocess=coproductionprocess)
+        raise HTTPException(status_code=404, detail="Only administrators can set an schema")
     raise HTTPException(status_code=404, detail="Coproduction process not found")
-
 
 class TeamIn(BaseModel):
     team_id: uuid.UUID
-
 
 @router.post("/{id}/add_team")
 async def add_team(

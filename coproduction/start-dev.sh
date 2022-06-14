@@ -8,6 +8,7 @@ LOG_LEVEL=${LOG_LEVEL:-info}
 mkdir -p /app/static/coproductionprocesses || true
 mkdir -p /app/static/teams || true
 mkdir -p /app/static/assets || true
+mkdir -p /app/static/organizations || true
 
 # Let the DB start
 python /app/app/pre_start.py

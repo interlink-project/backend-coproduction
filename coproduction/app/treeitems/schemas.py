@@ -1,9 +1,7 @@
-from enum import Enum
 import uuid
 from datetime import datetime, date
 from typing import List, Optional
 
-from app.general.utils.AllOptional import AllOptional
 from pydantic import BaseModel, validator
 from .models import Status
 
@@ -24,14 +22,15 @@ class TreeItem(TreeItemCreate):
     type: str
     created_at: datetime
     updated_at: Optional[datetime]
-    assets_count: Optional[int]
+    assets_count: Optional[int] = 0
     prerequisites_ids: List[uuid.UUID]
     
     start_date: Optional[date]
     end_date: Optional[date]
     status: Optional[Status]
     progress: Optional[int]
-    creator_id: Optional[uuid.UUID]
+    
+    creator_id: Optional[str]
     disabler_id: Optional[str]
     disabled: Optional[datetime]
 

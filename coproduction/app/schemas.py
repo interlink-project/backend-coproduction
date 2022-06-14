@@ -24,8 +24,16 @@ class AssetOutFull(AssetOut):
     pass
 
 
-class PermissionOutFull(PermissionOut):
+class OrganizationOutFull(OrganizationOut):
     pass
+
+
+class TeamOutFull(TeamOut):
+    organization: OrganizationOut
+
+
+class PermissionOutFull(PermissionOut):
+    team: TeamOut
 
 
 class TreeItemOutFull(TreeItemOut):
@@ -45,14 +53,5 @@ class PhaseOutFull(PhaseOut, TreeItemOutFull):
     children: List[ObjectiveOutFull]
 
 
-class TeamOutFull(TeamOut):
-    pass
-
-
 class CoproductionProcessOutFull(CoproductionProcessOut):
     pass
-
-
-class OrganizationOutFull(OrganizationOut):
-    pass
-

@@ -7,6 +7,7 @@ from tenacity import after_log, before_log, retry, stop_after_attempt, wait_fixe
 from app.config import settings
 from app.general.db.session import SessionLocal
 from app.messages import log
+from app.initial_data import init
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -68,6 +69,7 @@ async def main() -> None:
     wait_for_database()
     await wait_for_rabbit()
     wait_for_catalogue()
+    await init()
     logger.info("Services finished initializing")
 
 

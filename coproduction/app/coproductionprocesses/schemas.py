@@ -2,10 +2,10 @@ import uuid
 from datetime import datetime
 from typing import Any, List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from app.config import settings
-from app.permissions.schemas import PermissionBase
+from app.permissions.schemas import PermissionOut
 from pydantic_choices import choice
 
 Languages = choice(settings.ALLOWED_LANGUAGES_LIST)
@@ -44,6 +44,12 @@ class CoproductionProcess(CoproductionProcessBase):
 
 
 class CoproductionProcessOut(CoproductionProcess):
-    phases_count: Optional[int]
+    phases_count: Optional[int] = 0
     logotype_link: Optional[str] 
     language: Any
+    permissions: List[PermissionOut]
+    administrators_ids: List[str]
+
+    @validator('administrators_ids', pre=True)
+    def administrators_ids_to_list(cls, v):
+        return list(v)

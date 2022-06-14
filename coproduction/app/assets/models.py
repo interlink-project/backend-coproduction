@@ -37,7 +37,7 @@ class Asset(BaseModel):
 
     # created by
     creator_id = Column(String, ForeignKey("user.id", use_alter=True, ondelete='SET NULL'))
-    creator = orm.relationship('User', foreign_keys=[creator_id], post_update=True, back_populates="created_assets")
+    creator = orm.relationship('User', foreign_keys=[creator_id], post_update=True, backref="created_assets")
 
     __mapper_args__ = {
         "polymorphic_identity": "asset",
