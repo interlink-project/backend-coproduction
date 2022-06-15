@@ -22,7 +22,7 @@ class CRUDOrganization(CRUDBase[Organization, OrganizationCreate, OrganizationPa
                     Organization.administrators.any(models.User.id.in_([user.id]))
                 )
             query3 = db.query(Organization).join(models.Team).filter(
-                    models.Team.id.in_(user.team_ids)
+                    models.Team.id.in_(user.teams_ids)
                 )
             query = query.union(query2).union(query3) 
         return query.order_by(Organization.created_at.asc()).offset(skip).limit(limit).all()        
@@ -50,17 +50,14 @@ class CRUDOrganization(CRUDBase[Organization, OrganizationCreate, OrganizationPa
     def can_list(self, user):
         return True
 
-    def check_perm(self, db: Session, user: models.User, object, perm):
+    async def can_read(self, db: Session, user, object):
         return True
 
-    async def can_read(self, db: Session, user, object):
-        return object in await self.get_multi(db=db, user=user)
+    def can_update(self, user, object):
+        return user in object.administrators
 
-    def can_update(self, db: Session, user, object):
-        return self.check_perm(db=db, user=user, object=object, perm="update")
-
-    def can_remove(self, db: Session, user, object):
-        return self.check_perm(db=db, user=user, object=object, perm="delete")
+    def can_remove(self, user, object):
+        return user in object.administrators
 
 
 exportCrud = CRUDOrganization(Organization, logByDefault=True)

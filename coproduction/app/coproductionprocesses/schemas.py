@@ -49,7 +49,8 @@ class CoproductionProcessOut(CoproductionProcess):
     language: Any
     permissions: List[PermissionOut]
     administrators_ids: List[str]
-
+    user_participation: list
+    
     @validator('administrators_ids', pre=True)
     def administrators_ids_to_list(cls, v):
         return list(v)

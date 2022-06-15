@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app import schemas
 from app.general.utils.CRUDBase import CRUDBase
-from app.models import Task, Status, Phase, Objective
+from app.models import Task, Status, Phase, Objective, User
 from app.schemas import TaskCreate, TaskPatch
 from fastapi.encoders import jsonable_encoder
 from app.utils import recursive_check
@@ -37,23 +37,16 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
     async def get_by_name(self, db: Session, name: str) -> Optional[Task]:
         return db.query(Task).filter(Task.name == name).first()
 
-    async def create(self, db: Session, *, task: TaskCreate, objective: Objective = None, commit : bool = True) -> Task:
+    async def create(self, db: Session, *, task: TaskCreate, objective: Objective = None, commit : bool = True, creator: User = None) -> Task:
         if objective and task.objective_id:
             raise Exception("Specify only one objective")
         if not objective and not task.objective_id:
             raise Exception("Objective not specified")
-        
-        db_obj = Task(
-            from_item=task.from_item,
-            from_schema=task.from_schema,
-            name=task.name,
-            description=task.description,
-            objective=objective,
-            objective_id=task.objective_id,
-            problemprofiles=task.problemprofiles,
-            start_date=task.start_date,
-            end_date=task.end_date
-        )
+        obj_in_data = jsonable_encoder(task)
+        db_obj = self.model(**obj_in_data, objective=objective)
+        if creator:
+            db_obj.creator_id = creator.id
+                
         db.add(db_obj)
         if commit:
             db.commit()

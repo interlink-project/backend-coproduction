@@ -49,5 +49,9 @@ class Phase(TreeItem):
         "polymorphic_identity": "phase",
     }
 
+    @property
+    def path_ids(self):
+        return [self.id]
+
     def __repr__(self):
         return "<Phase %r>" % self.name

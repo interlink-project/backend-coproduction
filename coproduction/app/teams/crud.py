@@ -113,7 +113,7 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
                 return user in org.administrators
             elif org.team_creation_permission == models.TeamCreationPermissions.members:
                 return org in db.query(models.Organization).join(Team).filter(
-                    Team.id.in_(user.team_ids)
+                    Team.id.in_(user.teams_ids)
                 ).all()
         return True
 

@@ -37,13 +37,13 @@ class OrganizationOut(Organization):
     icon_link: Optional[str] 
     logotype_link: Optional[str] 
     administrators_ids: List[str]
-    team_ids: List[uuid.UUID]
-    your_participation: list
+    teams_ids: List[uuid.UUID]
+    user_participation: list
 
     @validator('administrators_ids', pre=True)
     def administrators_ids_to_list(cls, v):
         return list(v)
     
-    @validator('team_ids', pre=True)
-    def team_ids_to_list(cls, v):
+    @validator('teams_ids', pre=True)
+    def teams_ids_to_list(cls, v):
         return list(v)

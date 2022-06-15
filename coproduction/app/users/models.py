@@ -16,7 +16,7 @@ class User(BaseModel):
     zoneinfo = Column(String)
     locale = Column(String)
     
-    team_ids = association_proxy('teams', 'id')
+    teams_ids = association_proxy('teams', 'id')
 
     #TODO property that gets info from auth microservice
     def __repr__(self) -> str:

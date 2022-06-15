@@ -11,6 +11,7 @@ from app.permissions.crud import exportCrud as exportPermissionCrud
 from app.schemas import CoproductionProcessCreate, CoproductionProcessPatch
 from fastapi.encoders import jsonable_encoder
 
+
 class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessCreate, CoproductionProcessPatch]):
     async def get_by_name(self, db: Session, name: str) -> Optional[CoproductionProcess]:
         # await log({
@@ -26,7 +27,6 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         #     "model": self.modelName,
         #     "action": "LIST",
         # })
-
         admins = db.query(
             CoproductionProcess
         ).join(
@@ -40,28 +40,12 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         ).join(
             CoproductionProcess.permissions
         ).filter(
-            Permission.user_id == user.id
+            or_(
+                Permission.user_id == user.id,
+                Permission.team_id.in_(user.teams_ids)
+            )
         )
-        team_permissions = db.query(
-            CoproductionProcess
-        ).join(
-            CoproductionProcess.permissions
-        ).filter(
-            Permission.team_id.in_(user.team_ids)
-        )
-        """
-        team_permissions = db.query(
-            CoproductionProcess
-        ).join(
-            CoproductionProcess.permissions
-        ).filter(
-            Permission.permission_id == Permission.id
-        ).filter(
-            Permission.team_id.in_(user.team_ids)
-        )
-        """
-
-        return admins.union(user_permissions).union(team_permissions).all()
+        return admins.union(user_permissions).all()
 
     async def set_schema(self, db: Session, coproductionprocess: models.CoproductionProcess, coproductionschema: dict):
         total = {}
@@ -112,14 +96,14 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
         for key, element in total.items():
             for pre_id in element["prerequisites_ids"]:
-                
+
                 if element["type"] == "phase":
                     await crud.phase.add_prerequisite(db=db, phase=element["newObj"], prerequisite=total[pre_id]["newObj"], commit=False)
                 if element["type"] == "objective":
                     await crud.objective.add_prerequisite(db=db, objective=element["newObj"], prerequisite=total[pre_id]["newObj"], commit=False)
                 if element["type"] == "task":
                     await crud.task.add_prerequisite(db=db, task=element["newObj"], prerequisite=total[pre_id]["newObj"], commit=False)
-        
+
         coproductionprocess.schema_used = coproductionschema.get("id")
         db.commit()
         # await log({
@@ -161,7 +145,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         logData["object_id"] = coproductionprocess.id
         logData["coproductionprocess_id"] = coproductionprocess.id
         return logData
-        
+
     # CRUD Permissions
     def can_create(self, user):
         return True
@@ -180,7 +164,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         ).filter(
             or_(
                 Permission.user_id == user.id,
-                Permission.team_id.in_(user.team_ids)
+                Permission.team_id.in_(user.teams_ids)
             )
         )
         second = db.query(CoproductionProcess).filter(

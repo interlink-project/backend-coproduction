@@ -54,3 +54,7 @@ class Objective(TreeItem):
     @property
     def coproductionprocess(self):
         return self.phase.coproductionprocess
+    
+    @property
+    def path_ids(self):
+        return [self.phase_id, self.id]

@@ -2,7 +2,7 @@ import copy
 import enum
 import uuid
 
-from sqlalchemy import Column, DateTime, Enum, ForeignKey, String, Table, or_
+from sqlalchemy import Column, DateTime, Enum, ForeignKey, String, Table, or_, ARRAY
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import Session, relationship
@@ -11,7 +11,7 @@ from starlette_context import context
 from app.general.db.base_class import Base as BaseModel
 from app.permissions.models import Permission, GRANT_ALL, DENY_ALL, PERMS
 from app.users.models import User
-
+from app.utils import cached_hybrid_property
 
 prerequisites = Table(
     'treeitem_prerequisites', BaseModel.metadata,
@@ -62,42 +62,59 @@ class TreeItem(BaseModel):
     from_item = Column(UUID(as_uuid=True))
     from_schema = Column(UUID(as_uuid=True))
 
+    path_ids = Column(ARRAY(UUID(as_uuid=True)), default=dict)
+
     __mapper_args__ = {
         "polymorphic_identity": "treeitem",
         "polymorphic_on": type,
     }
-
-    def get_permissions_for_user(self, db: Session, user: User):
-        # If admin, grant all
-        if user in self.coproductionprocess.administrators:
-            return GRANT_ALL
-
-        # If not admin, get permissions for user (and teams he or she belongs to)...
-        permissions = db.query(
+    
+    @cached_hybrid_property
+    def permissions(self):
+        db = Session.object_session(self)
+        # Get permissions of the treeitem for user (and teams he or she belongs to)...
+        return db.query(
             Permission
         ).filter(
-            or_(
-                Permission.user_id == user.id,
-                Permission.team_id.in_(user.team_ids)
-            )
+            Permission.treeitem_id.in_(self.path_ids)
         ).all()
 
-        # And check if any of the permission has the flag of the permission key as True
-        final_permissions_dict = copy.deepcopy(DENY_ALL)
-        for permission_key in PERMS:
-            final_permissions_dict[permission_key] = any(getattr(permission, permission_key) for permission in permissions)
-        return final_permissions_dict
-
-    @property
+    @cached_hybrid_property
     def user_permissions(self):
         from app.general.deps import get_current_user_from_context
 
         db = Session.object_session(self)
         if user := get_current_user_from_context(db=db):
-            return self.get_permissions_for_user(db=db, user=user)
+
+            # Get permissions of the treeitem for user (and teams he or she belongs to)...
+            return db.query(
+                Permission
+            ).filter(
+                Permission.treeitem_id.in_(self.path_ids),
+                or_(
+                    Permission.user_id == user.id,
+                    Permission.team_id.in_(user.teams_ids)
+                )
+            ).all()
+        return []
+
+    @cached_hybrid_property
+    def user_permissions_dict(self):
+        from app.general.deps import get_current_user_from_context
+
+        db = Session.object_session(self)
+        if user := get_current_user_from_context(db=db):
+            # If admin, grant all
+            if user in self.coproductionprocess.administrators:
+                return GRANT_ALL
+            # And check if any of the permission has the flag of the permission key as True
+            final_permissions_dict = copy.deepcopy(DENY_ALL)
+            for permission_key in PERMS:
+                final_permissions_dict[permission_key] = any(getattr(permission, permission_key) for permission in self.user_permissions)
+            return final_permissions_dict
         return DENY_ALL
 
-    def user_can(self, db: Session, user: User, permission: str):
+    def user_can(self, permission: str):
         if permission in PERMS:
-            return self.get_permissions_for_user(db=db, user=user)[permission]
+            return self.user_permissions_dict[permission]
         raise Exception(permission + " is not a valid permission")

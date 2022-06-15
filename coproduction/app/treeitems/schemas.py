@@ -34,6 +34,8 @@ class TreeItem(TreeItemCreate):
     disabler_id: Optional[str]
     disabled: Optional[datetime]
 
+    path_ids: List[uuid.UUID]
+
     @validator('prerequisites_ids', pre=True)
     def prerequisites_ids_to_list(cls, v):
         return list(v)

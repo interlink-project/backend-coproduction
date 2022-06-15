@@ -44,7 +44,6 @@ class Asset(BaseModel):
         "polymorphic_on": type,
     }
 
-
 class InternalAsset(Asset):
     id = Column(
         UUID(as_uuid=True),

@@ -28,13 +28,13 @@ class Permission(BaseModel):
     coproductionprocess_id = Column(UUID(as_uuid=True), ForeignKey('coproductionprocess.id', ondelete='CASCADE'))
     coproductionprocess = relationship('CoproductionProcess', foreign_keys=[coproductionprocess_id], backref=backref('permissions', passive_deletes=True))
     treeitem_id = Column(UUID(as_uuid=True), ForeignKey('treeitem.id', ondelete='CASCADE'))
-    treeitem = relationship('TreeItem', foreign_keys=[treeitem_id], backref=backref('permissions', passive_deletes=True))
+    treeitem = relationship('TreeItem', foreign_keys=[treeitem_id], backref=backref('_permissions', passive_deletes=True))
 
     # to
     # create_treeitem_permission = Column(Boolean, default=False)
     edit_treeitem_permission = Column(Boolean, default=False)
     delete_treeitem_permission = Column(Boolean, default=False)
-    view_assets_permission = Column(Boolean, default=False)
+    access_assets_permission = Column(Boolean, default=False)
     create_assets_permission = Column(Boolean, default=False)
     delete_assets_permission = Column(Boolean, default=False)
     # IMPORTANT TO HAVE "_permission" STRING IN FIELD NAME for the classmethod
@@ -51,6 +51,6 @@ for perm in PERMS:
     DENY_ALL[perm] = False
 
 """
-GRANT_ALL = {'create_assets_permission': True, 'delete_assets_permission': True, 'delete_treeitem_permission': True, 'edit_treeitem_permission': True, 'view_assets_permission': True} 
-DENY_ALL = {'create_assets_permission': False, 'delete_assets_permission': False, 'delete_treeitem_permission': False, 'edit_treeitem_permission': False, 'view_assets_permission': False}
+GRANT_ALL = {'create_assets_permission': True, 'delete_assets_permission': True, 'delete_treeitem_permission': True, 'edit_treeitem_permission': True, 'access_assets_permission': True} 
+DENY_ALL = {'create_assets_permission': False, 'delete_assets_permission': False, 'delete_treeitem_permission': False, 'edit_treeitem_permission': False, 'access_assets_permission': False}
 """

@@ -143,7 +143,7 @@ async def set_logotype(
     file: UploadFile = File(...),
 ) -> Any:
     if (organization := await crud.organization.get(db=db, id=id)):
-        if crud.organization.can_update(db=db, user=current_user, object=organization):
+        if crud.organization.can_update(user=current_user, object=organization):
             name = slugify(organization.name)
             filename, extension = os.path.splitext(file.filename)
             out_file_path = f"/static/organizations/{name}{extension}"

@@ -12,23 +12,22 @@ import favicon
 
 
 class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
-
-    async def get_multi_filtered(
-        self, db: Session, coproductionprocess_id: uuid.UUID = None, task_id: uuid.UUID = None
+    async def get_multi(
+        self, db: Session, task: models.Task, skip: int = 0, limit: int = 100
     ) -> List[Asset]:
         queries = []
-        if coproductionprocess_id:
-            queries.append(Asset.coproductionprocess_id == coproductionprocess_id)
+        # if coproductionprocess:
+        #     queries.append(Asset.coproductionprocess_id == coproductionprocess.id)
 
-        if task_id:
-            queries.append(Asset.task_id == task_id)
+        if task:
+            queries.append(Asset.task_id == task.id)
             # await log({
             #     "model": "ASSET",
             #     "action": "LIST",
             #     "coproductionprocess_id": coproductionprocess_id,
             #     "task_id": task_id
             # })
-        return db.query(Asset).filter(*queries).all()
+        return db.query(Asset).filter(*queries).offset(skip).limit(limit).all()
 
     async def create(self, db: Session, asset: AssetCreate, coproductionprocess_id: uuid.UUID, creator: models.User) -> Asset:
         data = jsonable_encoder(asset)
@@ -59,6 +58,11 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
             data["type"] = "internalasset"
             db_obj = InternalAsset(**data, creator=creator,
                                    coproductionprocess_id=coproductionprocess_id)
+
+        # task : models.Task = db_obj.task
+        # if task.status == models.Status.awaiting:
+        #     task.status = models.Status.in_progress
+        #     db.add(task)
 
         db.add(db_obj)
         db.commit()
@@ -91,20 +95,20 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
 
     # CRUD Permissions
 
-    def can_create(self, db, user, task: models.TreeItem):
-        return task.user_can(db=db, user=user, permission="create_assets_permission")
+    def can_create(self, task: models.TreeItem):
+        return task.user_can(permission="create_assets_permission")
 
-    def can_list(self, db, user, task: models.TreeItem):
-        return task.user_can(db=db, user=user, permission="view_assets_permission")
+    def can_list(self, task: models.TreeItem):
+        return task.user_can(permission="access_assets_permission")
 
-    def can_read(self, db, user, asset: Asset):
-        return asset.task.user_can(db=db, user=user, permission="view_assets_permission")
+    def can_read(self, asset: Asset):
+        return asset.task.user_can(permission="access_assets_permission")
 
-    def can_update(self, db, user, asset: Asset):
-        return asset.task.user_can(db=db, user=user, permission="create_assets_permission")
+    def can_update(self, asset: Asset):
+        return asset.task.user_can(permission="create_assets_permission")
 
-    def can_remove(self, db, user, asset: Asset):
-        return asset.task.user_can(db=db, user=user, permission="delete_assets_permission")
+    def can_remove(self, asset: Asset):
+        return asset.task.user_can(permission="delete_assets_permission")
 
 
 exportCrud = CRUDAsset(Asset, logByDefault=True)

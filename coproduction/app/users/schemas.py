@@ -1,5 +1,6 @@
-from typing import Optional
-from pydantic import BaseModel
+from typing import List, Optional
+import uuid
+from pydantic import BaseModel, validator
 from datetime import datetime
 from app.general.utils.AllOptional import AllOptional
 
@@ -28,4 +29,8 @@ class User(UserBase):
 
 
 class UserOut(User):
-    pass
+    teams_ids: List[uuid.UUID]
+
+    @validator('teams_ids', pre=True)
+    def teams_ids_to_list(cls, v):
+        return list(v)

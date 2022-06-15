@@ -39,7 +39,7 @@ class TeamOut(Team):
     type: Optional[OrganizationTypes]
     administrators_ids: List[str]
     users_count: Optional[int] = 0
-    your_participation: list
+    user_participation: list
     
     @validator('administrators_ids', pre=True)
     def administrators_ids_to_list(cls, v):

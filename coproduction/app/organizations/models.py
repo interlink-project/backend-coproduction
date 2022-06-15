@@ -55,7 +55,7 @@ class Organization(BaseModel):
 
     team_creation_permission = Column(Enum(TeamCreationPermissions, create_constraint=False, native_enum=False), server_default=TeamCreationPermissions.administrators.value)
 
-    team_ids = association_proxy('teams', 'id')
+    teams_ids = association_proxy('teams', 'id')
     @property
     def icon_link(self):
         return settings.COMPLETE_SERVER_NAME + self.icon if self.icon else ""
@@ -65,7 +65,7 @@ class Organization(BaseModel):
         return settings.COMPLETE_SERVER_NAME + self.logotype if self.logotype else ""
     
     @property
-    def your_participation(self):
+    def user_participation(self):
         from app.general.deps import get_current_user_from_context
         db = Session.object_session(self)
         participations = []

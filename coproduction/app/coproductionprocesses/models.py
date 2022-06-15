@@ -17,6 +17,7 @@ from app.config import settings
 from app.phases.models import Phase
 from sqlalchemy.ext.associationproxy import association_proxy
 from app.tables import coproductionprocess_administrators_association_table
+from sqlalchemy.orm import Session
 
 class CoproductionProcess(BaseModel):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -72,3 +73,15 @@ class CoproductionProcess(BaseModel):
     @property
     def logotype_link(self):
         return settings.COMPLETE_SERVER_NAME + self.logotype if self.logotype else ""
+
+    @property
+    def user_participation(self):
+        from app.general.deps import get_current_user_from_context
+        db = Session.object_session(self)
+        participations = []
+        if user := get_current_user_from_context(db=db):
+            if user in self.administrators:
+                participations.append("administrator")
+            else:
+                participations.append("collaborator")
+        return participations

@@ -49,6 +49,10 @@ class Task(TreeItem):
     @property
     def phase_id(self):
         return self.objective.phase_id
+
+    @property
+    def path_ids(self):
+        return [self.objective.phase_id, self.objective_id, self.id]
         
     def __repr__(self):
         return "<Task %r>" % self.name

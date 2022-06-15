@@ -27,20 +27,7 @@ async def list_coproductionprocesses(
     """
     if not crud.coproductionprocess.can_list(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    return await crud.coproductionprocess.get_multi(db, user=current_user, skip=skip, limit=limit)
-
-@router.get("/mine", response_model=List[schemas.CoproductionProcessOut])
-async def list_my_coproductionprocesses(
-    db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
-) -> Any:
-    """
-    Retrieve coproductionprocesses.
-    """
-    if not crud.coproductionprocess.can_list(current_user):
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-    return await crud.coproductionprocess.get_multi(db, )
-
+    return await crud.coproductionprocess.get_multi_by_user(db, user=current_user)
 
 @router.post("", response_model=schemas.CoproductionProcessOutFull)
 async def create_coproductionprocess(

@@ -23,7 +23,7 @@ async def create_permission(
     Create permission
     """
     if treeitem := await crud.treeitem.get(db=db, id=permission_in.treeitem_id):
-        permission_in["coproductionprocess_id"] = treeitem.coproductionprocess.id
+        permission_in.coproductionprocess_id = treeitem.coproductionprocess.id
         return await crud.permission.create(db=db, obj_in=permission_in, creator=current_user)
     raise HTTPException(status_code=404, detail="treeitem not found")
 
@@ -31,15 +31,12 @@ async def create_permission(
 async def get_permissions(
     *,
     db: Session = Depends(deps.get_db),
-    treeitem_id: uuid.UUID = Query(None),
     current_user: Optional[models.User] = Depends(deps.get_current_user),
 ) -> Any:
     """
-    Get permission by ID.
+    Get permissions.
     """
-    if treeitem := await crud.treeitem.get(db=db, id=treeitem_id):
-        return treeitem.permissions
-    raise HTTPException(status_code=404, detail="treeitem not found")
+    return None
 
 @router.get("/{id}", response_model=schemas.PermissionOutFull)
 async def get_permission(

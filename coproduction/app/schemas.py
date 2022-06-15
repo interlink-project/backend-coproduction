@@ -37,8 +37,8 @@ class PermissionOutFull(PermissionOut):
 
 
 class TreeItemOutFull(TreeItemOut):
-    permissions: List[PermissionOut]
-    user_permissions: dict
+    user_permissions_dict: dict
+    permissions: List[PermissionOutFull]
 
 
 class TaskOutFull(TaskOut, TreeItemOutFull):

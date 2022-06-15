@@ -1,8 +1,8 @@
 """treeitems
 
-Revision ID: b5e485fd2bfa
+Revision ID: e6de600fe697
 Revises: 
-Create Date: 2022-06-14 10:23:51.299989
+Create Date: 2022-06-15 15:29:54.047259
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = 'b5e485fd2bfa'
+revision = 'e6de600fe697'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -51,7 +51,6 @@ def upgrade():
     sa.Column('logotype', sa.String(), nullable=True),
     sa.Column('creator_id', sa.String(), nullable=True),
     sa.Column('team_creation_permission', sa.Enum('administrators', 'members', 'anyone', name='teamcreationpermissions', native_enum=False), server_default='administrators', nullable=True),
-    sa.Column('teams_count', sa.Integer(), nullable=True),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['creator_id'], ['user.id'], ondelete='SET NULL', use_alter=True),
@@ -68,6 +67,7 @@ def upgrade():
     sa.Column('disabled_on', sa.DateTime(), nullable=True),
     sa.Column('from_item', postgresql.UUID(as_uuid=True), nullable=True),
     sa.Column('from_schema', postgresql.UUID(as_uuid=True), nullable=True),
+    sa.Column('path_ids', sa.ARRAY(postgresql.UUID(as_uuid=True)), nullable=True),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['creator_id'], ['user.id'], ondelete='SET NULL', use_alter=True),
@@ -162,7 +162,7 @@ def upgrade():
     sa.Column('treeitem_id', postgresql.UUID(as_uuid=True), nullable=True),
     sa.Column('edit_treeitem_permission', sa.Boolean(), nullable=True),
     sa.Column('delete_treeitem_permission', sa.Boolean(), nullable=True),
-    sa.Column('view_assets_permission', sa.Boolean(), nullable=True),
+    sa.Column('access_assets_permission', sa.Boolean(), nullable=True),
     sa.Column('create_assets_permission', sa.Boolean(), nullable=True),
     sa.Column('delete_assets_permission', sa.Boolean(), nullable=True),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=True),
