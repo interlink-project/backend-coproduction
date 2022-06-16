@@ -27,15 +27,6 @@ class CRUDOrganization(CRUDBase[Organization, OrganizationCreate, OrganizationPa
             query = query.union(query2).union(query3) 
         return query.order_by(Organization.created_at.asc()).offset(skip).limit(limit).all()        
 
-    async def get_by_name(self, db: Session, name: str, language: str = settings.DEFAULT_LANGUAGE) -> Optional[Organization]:
-        # await log({
-        #     "model": self.modelName,
-        #     "action": "GET_BY_NAME",
-        #     "crud": True,
-        #     "name": name
-        # })
-        return db.query(Organization).filter(Organization.name_translations[language] == name).first()
-
     # Override log methods
     def enrich_log_data(self, organization, logData):
         logData["model"] = "ORGANIZATION"

@@ -48,12 +48,6 @@ class Team(BaseModel):
     @property
     def logotype_link(self):
         return settings.COMPLETE_SERVER_NAME + self.logotype if self.logotype else ""
-
-    @property
-    def type(self):
-        if self.organization:
-            return self.organization.type
-        return OrganizationTypes.citizen
     
     @property
     def user_participation(self):

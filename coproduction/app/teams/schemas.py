@@ -6,7 +6,6 @@ from app.general.utils.AllOptional import AllOptional
 from datetime import datetime
 from app.config import settings
 from app.users.schemas import UserOut
-from app.models import OrganizationTypes
 
 class TeamBase(BaseModel):
     name: str
@@ -36,7 +35,6 @@ class TeamOut(Team):
     logotype_link: Optional[str]
     users: Optional[List[UserOut]]
     
-    type: Optional[OrganizationTypes]
     administrators_ids: List[str]
     users_count: Optional[int] = 0
     user_participation: list

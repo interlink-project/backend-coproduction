@@ -39,7 +39,8 @@ class OrganizationOut(Organization):
     administrators_ids: List[str]
     teams_ids: List[uuid.UUID]
     user_participation: list
-
+    people_involved: int
+    
     @validator('administrators_ids', pre=True)
     def administrators_ids_to_list(cls, v):
         return list(v)

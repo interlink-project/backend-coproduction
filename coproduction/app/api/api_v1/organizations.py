@@ -1,15 +1,14 @@
+import os
 import uuid
 from typing import Any, List, Optional
 
 import aiofiles
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
-from slugify import slugify
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.general import deps
 from app.messages import log
-import os
 
 router = APIRouter()
 
@@ -144,13 +143,13 @@ async def set_logotype(
 ) -> Any:
     if (organization := await crud.organization.get(db=db, id=id)):
         if crud.organization.can_update(user=current_user, object=organization):
-            name = slugify(organization.name)
             filename, extension = os.path.splitext(file.filename)
-            out_file_path = f"/static/organizations/{name}{extension}"
+            out_file_path = f"/static/organizations/{organization.id}{extension}"
 
             async with aiofiles.open("/app" + out_file_path, 'wb') as out_file:
                 content = await file.read()  # async read
                 await out_file.write(content)  # async write
             return await crud.organization.update(db=db, db_obj=organization, obj_in=schemas.OrganizationPatch(logotype=out_file_path))
-        raise HTTPException(status_code=403, detail="You are not allowed to update this organization")
+        raise HTTPException(
+            status_code=403, detail="You are not allowed to update this organization")
     raise HTTPException(status_code=404, detail="Organization not found")

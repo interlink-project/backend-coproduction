@@ -5,10 +5,12 @@ from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from sqlalchemy import or_, and_
 
 from app.general.db.base_class import Base
 from app.messages import log
 from app.users.models import User
+from app.config import settings
 
 ModelType = TypeVar("ModelType", bound=Base)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
@@ -38,6 +40,28 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
             return obj
         return
 
+    async def get_by_name(self, db: Session, name: str) -> Optional[ModelType]:
+        if obj := db.query(self.model).filter(self.model.name == name).first():
+            await self.log_on_get(obj)
+            return obj
+        return
+
+    async def get_by_name_translation(self, db: Session, name: str, language: str = settings.DEFAULT_LANGUAGE) -> Optional[ModelType]:
+        if obj := db.query(self.model).filter(self.model.name_translations[language] == name).first():
+            await self.log_on_get(obj)
+            return obj
+        return
+
+    async def get_by_name_translations(self, db: Session, name_translations: str) -> Optional[ModelType]:
+        return db.query(self.model).filter(
+            or_(
+                and_(self.model.name_translations["en"] != None, self.model.name_translations["en"] == name_translations["en"]),
+                and_(self.model.name_translations["es"] != None, self.model.name_translations["es"] == name_translations["es"]),
+                and_(self.model.name_translations["it"] != None, self.model.name_translations["it"] == name_translations["it"]),
+                and_(self.model.name_translations["lv"] != None, self.model.name_translations["lv"] == name_translations["lv"]),
+            ),
+        ).first()
+
     async def get_multi(
         self, db: Session, *, skip: int = 0, limit: int = 100
     ) -> List[ModelType]:
@@ -51,7 +75,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
             db_obj.creator_id = creator.id
             if set_creator_admin:
                 db_obj.administrators.append(creator)
-                
+
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
@@ -94,21 +118,21 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
         # })
         # await log(enriched)
         pass
-        
+
     async def log_on_create(self, obj):
-        enriched : dict  = self.enrich_log_data(obj, {
+        enriched: dict = self.enrich_log_data(obj, {
             "action": "CREATE"
         })
         await log(enriched)
-    
+
     async def log_on_update(self, obj):
-        enriched : dict = self.enrich_log_data(obj, {
+        enriched: dict = self.enrich_log_data(obj, {
             "action": "UPDATE"
         })
         await log(enriched)
-        
+
     async def log_on_remove(self, obj):
-        enriched : dict  = self.enrich_log_data(obj, {
+        enriched: dict = self.enrich_log_data(obj, {
             "action": "DELETE"
         })
         await log(enriched)
@@ -118,8 +142,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
         logData["object_id"] = obj.id
         return logData
 
-
     # CRUD Permissions
+
     def can_create(self, user):
         logger.warn("You need to override can_create of the crud")
         return True

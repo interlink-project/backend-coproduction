@@ -34,9 +34,6 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
         creator = TaskCreate(**taskmetadata)
         return await self.create(db=db, task=creator, objective=objective, commit=False)
 
-    async def get_by_name(self, db: Session, name: str) -> Optional[Task]:
-        return db.query(Task).filter(Task.name == name).first()
-
     async def create(self, db: Session, *, task: TaskCreate, objective: Objective = None, commit : bool = True, creator: User = None) -> Task:
         if objective and task.objective_id:
             raise Exception("Specify only one objective")

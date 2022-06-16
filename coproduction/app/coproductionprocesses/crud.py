@@ -13,15 +13,6 @@ from fastapi.encoders import jsonable_encoder
 
 
 class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessCreate, CoproductionProcessPatch]):
-    async def get_by_name(self, db: Session, name: str) -> Optional[CoproductionProcess]:
-        # await log({
-        #     "model": self.modelName,
-        #     "action": "GET_BY_NAME",
-        #     "crud": True,
-        #     "name": name
-        # })
-        return db.query(CoproductionProcess).filter(CoproductionProcess.name == name).first()
-
     async def get_multi_by_user(self, db: Session, user: User) -> Optional[List[CoproductionProcess]]:
         # await log({
         #     "model": self.modelName,
@@ -174,11 +165,11 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         )
         return len(second.union(first).all()) > 0
 
-    def can_update(self, db: Session, user, object):
-        return self.check_perm(db=db, user=user, object=object, perm="update")
+    def can_update(self, user, object):
+        return user in object.administrators
 
-    def can_remove(self, db: Session, user, object):
-        return self.check_perm(db=db, user=user, object=object, perm="delete")
+    def can_remove(self, user, object):
+        return user in object.administrators
 
 
 exportCrud = CRUDCoproductionProcess(CoproductionProcess, logByDefault=True)

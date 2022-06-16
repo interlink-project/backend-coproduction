@@ -18,12 +18,6 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
         creator = ObjectiveCreate(**objectivemetadata)
         return await self.create(db=db, objective=creator, phase=phase, commit=False)
 
-    async def get_by_name(self, db: Session, name: str) -> Optional[Objective]:
-        if res := db.query(Objective).filter(Objective.name == name).first():
-            await self.log_on_get(res)
-            return res
-        return
-
     async def create(self, db: Session, *, objective: ObjectiveCreate, phase: Phase = None, commit : bool = True) -> Objective:
         if phase and objective.phase_id:
             raise Exception("Specify only one objective")

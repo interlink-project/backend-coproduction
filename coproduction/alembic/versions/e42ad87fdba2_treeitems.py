@@ -1,8 +1,8 @@
 """treeitems
 
-Revision ID: e6de600fe697
+Revision ID: e42ad87fdba2
 Revises: 
-Create Date: 2022-06-15 15:29:54.047259
+Create Date: 2022-06-16 10:01:36.423741
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = 'e6de600fe697'
+revision = 'e42ad87fdba2'
 down_revision = None
 branch_labels = None
 depends_on = None

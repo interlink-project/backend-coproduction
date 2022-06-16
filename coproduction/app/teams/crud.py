@@ -14,9 +14,6 @@ from fastapi.encoders import jsonable_encoder
 
 
 class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
-    async def get_by_name(self, db: Session, name: str) -> Optional[Team]:
-        return db.query(Team).filter(Team.name == name).first()
-
     async def get_multi(self, db: Session, user_id: str, and_public: bool = False, or_public: bool = False, organization_id: uuid.UUID = None) -> Optional[List[Team]]:
         queries = []
         if user_id:
@@ -67,17 +64,15 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
         return team
 
     async def remove_user(self, db: Session, team: Team, user: models.User) -> Team:
-        if team.creator_id != user.id:
-            team.users.remove(user)
-            db.commit()
-            db.refresh(team)
-            await log(self.enrich_log_data(team, {
-                "model": "TEAM",
-                "action": "REMOVE_USER",
-                "removed_user_id": user.id
-            }))
-            return team
-        raise Exception("Can not remove team creator")
+        team.users.remove(user)
+        db.commit()
+        db.refresh(team)
+        await log(self.enrich_log_data(team, {
+            "model": "TEAM",
+            "action": "REMOVE_USER",
+            "removed_user_id": user.id
+        }))
+        return team
 
     async def create(self, db: Session, obj_in: TeamCreate, creator: models.User) -> Team:
         obj_in_data = jsonable_encoder(obj_in)

@@ -1,15 +1,15 @@
 import os
-from typing import Any, List, Optional
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query
+from typing import Any, List, Optional
+
+import aiofiles
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.functions import user
 
 from app import crud, models, schemas
 from app.general import deps
-import aiofiles
-from slugify import slugify
-from pydantic import BaseModel
 
 router = APIRouter()
 
@@ -23,6 +23,7 @@ async def list_teams(
     organization_id: uuid.UUID = Query(None),
 ) -> Any:
     return await crud.team.get_multi(db=db, user_id=current_user.id, organization_id=organization_id, or_public=or_public, and_public=and_public)
+
 
 @router.post("", response_model=schemas.TeamOutFull)
 async def create_team(
@@ -39,7 +40,8 @@ async def create_team(
         if team_in.organization_id and await crud.team.can_create(db=db, organization_id=team_in.organization_id, user=current_user):
             return await crud.team.create(db=db, obj_in=team_in, creator=current_user)
         else:
-            raise HTTPException(status_code=403, detail="You can not create a team for this organization")
+            raise HTTPException(
+                status_code=403, detail="You can not create a team for this organization")
 
     raise HTTPException(status_code=400, detail="Team already exists")
 
@@ -56,9 +58,8 @@ async def set_logotype(
     Create new team.
     """
     if (team := await crud.team.get(db=db, id=id)):
-        name = slugify(team.name)
         filename, extension = os.path.splitext(file.filename)
-        out_file_path = f"/static/teams/{name}{extension}"
+        out_file_path = f"/static/teams/{team.id}{extension}"
 
         async with aiofiles.open("/app" + out_file_path, 'wb') as out_file:
             content = await file.read()  # async read
@@ -66,8 +67,10 @@ async def set_logotype(
         return await crud.team.update(db=db, db_obj=team, obj_in=schemas.TeamPatch(logotype=out_file_path))
     raise HTTPException(status_code=404, detail="Team not found")
 
+
 class UserIn(BaseModel):
     user_id: str
+
 
 @router.post("/{id}/add_user", response_model=schemas.TeamOutFull)
 async def add_user(
@@ -103,6 +106,7 @@ async def remove_user(
             return await crud.team.remove_user(db=db, team=team, user=user)
         raise HTTPException(status_code=404, detail="User not found")
     raise HTTPException(status_code=404, detail="Team not found")
+
 
 @router.put("/{id}", response_model=schemas.TeamOutFull)
 async def update_team(

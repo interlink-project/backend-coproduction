@@ -19,9 +19,6 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
         creator = PhaseCreate(**phasemetadata)
         return await self.create(db=db, phase=creator, coproductionprocess=coproductionprocess, commit=False)
 
-    async def get_by_name(self, db: Session, name: str) -> Optional[Phase]:
-        return db.query(Phase).filter(Phase.name == name).first()
-
     async def create(self, db: Session, *, phase: PhaseCreate, coproductionprocess: models.CoproductionProcess, commit : bool = True) -> Phase:
         if coproductionprocess and phase.coproductionprocess_id:
             raise Exception("Specify only one coproductionprocess")

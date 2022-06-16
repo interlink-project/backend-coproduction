@@ -77,3 +77,13 @@ class Organization(BaseModel):
                     participations.append("member")
                     break
         return participations
+
+    @property
+    def people_involved(self):
+        from app.models import User, Team
+        db = Session.object_session(self)
+        return db.query(User).distinct(User.id).join(
+            Team
+        ).filter(
+            Team.organization_id == self.id
+        ).count()
