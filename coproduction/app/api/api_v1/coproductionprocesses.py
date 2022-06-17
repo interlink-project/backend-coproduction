@@ -168,7 +168,7 @@ async def read_coproductionprocess(
     return coproductionprocess
 
 
-@router.delete("/{id}", response_model=schemas.CoproductionProcessOutFull)
+@router.delete("/{id}")
 async def delete_coproductionprocess(
     *,
     db: Session = Depends(deps.get_db),

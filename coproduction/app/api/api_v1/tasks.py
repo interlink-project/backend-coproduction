@@ -78,7 +78,7 @@ async def read_task(
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return task
 
-@router.delete("/{id}", response_model=schemas.TaskOutFull)
+@router.delete("/{id}")
 async def delete_task(
     *,
     db: Session = Depends(deps.get_db),

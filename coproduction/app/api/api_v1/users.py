@@ -1,6 +1,6 @@
 from typing import Any, List, Optional
 import uuid
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
@@ -21,3 +21,16 @@ async def me(
     cookies = {'auth_token': token}
     response = requests.get(f"http://auth/auth/api/v1/users/me", cookies=cookies, timeout=3)
     return await crud.user.get_or_create(db=db, data=response.json())
+
+@router.get("/search", response_model=List[schemas.UserOutFull])
+async def search_user(
+    *,
+    by: str,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user),
+    organization_id: uuid.UUID = Query(None)
+) -> Any:
+    """
+    Search users
+    """
+    return await crud.user.search(db=db, user=current_user, organization_id=organization_id, search=by)

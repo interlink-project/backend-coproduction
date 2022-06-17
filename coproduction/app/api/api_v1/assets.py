@@ -265,7 +265,7 @@ async def read_internal_asset(
     raise HTTPException(status_code=404, detail="Asset not found")
 
 
-@router.delete("/{id}", response_model=schemas.AssetOutFull)
+@router.delete("/{id}")
 async def delete_asset(
     *,
     db: Session = Depends(deps.get_db),

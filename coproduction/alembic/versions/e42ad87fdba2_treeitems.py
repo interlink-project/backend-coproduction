@@ -222,6 +222,15 @@ def upgrade():
     sa.ForeignKeyConstraint(['id'], ['asset.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
+
+    op.create_foreign_key(None, 'asset', 'user', ['creator_id'], ['id'], ondelete='SET NULL', use_alter=True)
+    op.create_foreign_key(None, 'coproductionprocess', 'user', ['creator_id'], ['id'], ondelete='SET NULL', use_alter=True)
+    op.create_foreign_key(None, 'coproductionprocess', 'organization', ['organization_id'], ['id'], ondelete='SET NULL', use_alter=True)
+    op.create_foreign_key(None, 'organization', 'user', ['creator_id'], ['id'], ondelete='SET NULL', use_alter=True)
+    op.create_foreign_key(None, 'permission', 'user', ['creator_id'], ['id'], ondelete='SET NULL', use_alter=True)
+    op.create_foreign_key(None, 'team', 'user', ['creator_id'], ['id'], ondelete='SET NULL', use_alter=True)
+    op.create_foreign_key(None, 'treeitem', 'user', ['creator_id'], ['id'], ondelete='SET NULL', use_alter=True)
+    op.create_foreign_key(None, 'treeitem', 'user', ['disabler_id'], ['id'], ondelete='SET NULL', use_alter=True)
     # ### end Alembic commands ###
 
 
@@ -244,4 +253,13 @@ def downgrade():
     op.drop_table('treeitem')
     op.drop_table('organization')
     op.drop_table('coproductionprocess')
+
+    op.drop_constraint(None, 'treeitem', type_='foreignkey')
+    op.drop_constraint(None, 'treeitem', type_='foreignkey')
+    op.drop_constraint(None, 'team', type_='foreignkey')
+    op.drop_constraint(None, 'permission', type_='foreignkey')
+    op.drop_constraint(None, 'organization', type_='foreignkey')
+    op.drop_constraint(None, 'coproductionprocess', type_='foreignkey')
+    op.drop_constraint(None, 'coproductionprocess', type_='foreignkey')
+    op.drop_constraint(None, 'asset', type_='foreignkey')
     # ### end Alembic commands ###

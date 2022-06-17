@@ -114,7 +114,7 @@ async def read_organization_teams(
     return await crud.team.get_multi(db=db, user_id=current_user.id, organization_id=organization.id, and_public=True)
 
 
-@router.delete("/{id}", response_model=schemas.OrganizationOutFull)
+@router.delete("/{id}")
 async def delete_organization(
     *,
     db: Session = Depends(deps.get_db),
@@ -133,7 +133,7 @@ async def delete_organization(
     return None
 
 
-@router.post("/{id}/logotype", response_model=schemas.OrganizationOutFull)
+@router.post("/{id}/logotype")
 async def set_logotype(
     *,
     id: uuid.UUID,

@@ -146,7 +146,7 @@ async def read_team(
     return team
 
 
-@router.delete("/{id}", response_model=schemas.TeamOutFull)
+@router.delete("/{id}")
 async def delete_team(
     *,
     db: Session = Depends(deps.get_db),

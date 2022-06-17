@@ -93,7 +93,7 @@ async def read_objective(
     return objective
 
 
-@router.delete("/{id}", response_model=schemas.ObjectiveOutFull)
+@router.delete("/{id}")
 async def delete_objective(
     *,
     db: Session = Depends(deps.get_db),

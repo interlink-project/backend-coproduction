@@ -40,6 +40,9 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
             return obj
         return
 
+    async def get_multi_by_ids(self, db: Session, ids: list) -> List[User]:
+        return db.query(self.model).filter(self.model.id.in_(ids)).all()
+
     async def get_by_name(self, db: Session, name: str) -> Optional[ModelType]:
         if obj := db.query(self.model).filter(self.model.name == name).first():
             await self.log_on_get(obj)

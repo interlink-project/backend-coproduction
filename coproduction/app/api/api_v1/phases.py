@@ -77,7 +77,7 @@ async def update_phase(
     return await crud.phase.update(db=db, db_obj=phase, obj_in=phase_in)
 
 
-@router.get("/{id}", response_model=schemas.PhaseOutFull)
+@router.get("/{id}")
 async def read_phase(
     *,
     db: Session = Depends(deps.get_db),
@@ -95,7 +95,7 @@ async def read_phase(
     return phase
 
 
-@router.delete("/{id}", response_model=schemas.PhaseOutFull)
+@router.delete("/{id}")
 async def delete_phase(
     *,
     db: Session = Depends(deps.get_db),

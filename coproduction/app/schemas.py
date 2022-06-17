@@ -10,12 +10,6 @@ from app.tasks.schemas import *
 from app.teams.schemas import *
 from app.users.schemas import *
 
-
-class BaseORM(BaseModel):
-    class Config:
-        orm_mode = True
-
-
 class UserOutFull(UserOut):
     pass
 
