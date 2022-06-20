@@ -25,7 +25,6 @@ services:
     command: ["bash", "./start-dev.sh"]
     build:
       context: .
-      dockerfile: Dockerfile.coproduction
       target: dev
     labels:
       - traefik.enable=true

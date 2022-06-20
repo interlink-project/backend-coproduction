@@ -10,7 +10,7 @@ clean: ## Cleans
 
 .PHONY: down
 down: ## Stops all containers and removes volumes
-	docker-compose -f docker-compose.devintegrated.yml down --remove-orphans
+	docker-compose down --remove-orphans
 	
 #######################
 ## BUILD IMAGES
@@ -18,7 +18,7 @@ down: ## Stops all containers and removes volumes
 
 .PHONY: build
 build: ## Builds development containers
-	docker-compose -f docker-compose.devintegrated.yml build
+	docker-compose build
 
 #######################
 ## RUN CONTAINERS
@@ -27,7 +27,7 @@ build: ## Builds development containers
 .PHONY: integrated
 integrated: down ## Starts integrated development containers
 	docker network create traefik-public || true
-	docker-compose -f docker-compose.devintegrated.yml up -d
+	docker-compose up -d
 
 #######################
 ## RUN TESTS
@@ -36,7 +36,7 @@ integrated: down ## Starts integrated development containers
 .PHONY: tests
 tests: ## Starts test container
 	#docker-compose exec coproduction pytest --cov=app --cov-report=term-missing app/tests
-	docker-compose -f docker-compose.devintegrated.yml exec -T coproduction pytest app/tests
+	docker-compose exec -T coproduction pytest app/tests
 
 .PHONY: testing
 testing: build solo tests down ## Builds containers, runs them, runs test container and deletes all containers
@@ -48,17 +48,17 @@ testing: build solo tests down ## Builds containers, runs them, runs test contai
 .PHONY: migrations
 migrations: ## Seed data
 	@[ "${message}" ] || ( echo ">> message not specified (make migrations message='your message'"; exit 1 )
-	docker-compose -f docker-compose.devintegrated.yml exec coproduction alembic revision --autogenerate -m $(message)
+	docker-compose exec coproduction alembic revision --autogenerate -m $(message)
 
 .PHONY: applymigrations
 applymigrations: ## Seed data
-	docker-compose -f docker-compose.devintegrated.yml exec coproduction alembic upgrade head
+	docker-compose exec coproduction alembic upgrade head
 
 .PHONY: seed
 seed: ## Seed data
-	docker-compose -f docker-compose.devintegrated.yml exec coproduction python /app/app/pre_start.py
-	docker-compose -f docker-compose.devintegrated.yml exec coproduction ./seed.sh
+	docker-compose exec coproduction python /app/app/pre_start.py
+	docker-compose exec coproduction ./seed.sh
 
 .PHONY: kpis
 kpis: ## Show kpis
-	docker-compose -f docker-compose.devintegrated.yml exec coproduction python /app/app/kpis.py
+	docker-compose exec coproduction python /app/app/kpis.py

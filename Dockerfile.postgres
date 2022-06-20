@@ -1,4 +1,0 @@
-FROM postgres:12
-
-# needed for database localization https://sqlalchemy-utils.readthedocs.io/en/latest/internationalization.html
-COPY ./postgres/hstore.sql /docker-entrypoint-initdb.d
