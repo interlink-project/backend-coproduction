@@ -31,7 +31,7 @@ class CRUDOrganization(CRUDBase[Organization, OrganizationCreate, OrganizationPa
     def enrich_log_data(self, organization, logData):
         logData["model"] = "ORGANIZATION"
         logData["object_id"] = organization.id
-        logData["type"] = organization.type
+        logData["type"] = organization.default_team_type
         return logData
 
     # CRUD Permissions

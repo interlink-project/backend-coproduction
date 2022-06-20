@@ -96,6 +96,7 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
         logData["model"] = "TEAM"
         logData["object_id"] = obj.id
         logData["team_id"] = obj.id
+        logData["type"] = obj.type
         return logData
 
     # CRUD Permissions

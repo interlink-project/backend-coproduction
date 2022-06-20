@@ -19,12 +19,8 @@ from sqlalchemy.orm import relationship
 from app.locales import translation_hybrid
 from sqlalchemy_utils import aggregated
 from sqlalchemy.orm import Session
+from app.utils import RoleTypes
 
-class OrganizationTypes(str, enum.Enum):
-    citizen = "citizen"
-    public_office = "public_office"
-    nonprofit_organization = "nonprofit_organization"
-    forprofit_organization = "forprofit_organization"
 
 class TeamCreationPermissions(str, enum.Enum):
     administrators = "administrators"
@@ -33,7 +29,7 @@ class TeamCreationPermissions(str, enum.Enum):
 
 class Organization(BaseModel):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    type = Column(Enum(OrganizationTypes, create_constraint=False, native_enum=False), nullable=False)
+    default_team_type = Column(Enum(RoleTypes, create_constraint=False, native_enum=False), nullable=False)
 
     public = Column(Boolean, default=False)
     name_translations = Column(HSTORE)

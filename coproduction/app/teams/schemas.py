@@ -4,7 +4,7 @@ from typing import Optional, List
 from pydantic import BaseModel, validator
 from app.general.utils.AllOptional import AllOptional
 from datetime import datetime
-from app.config import settings
+from app.utils import RoleTypes
 from app.users.schemas import UserOut
 
 class TeamBase(BaseModel):
@@ -12,12 +12,14 @@ class TeamBase(BaseModel):
     description: str
     organization_id: Optional[uuid.UUID]
     public: Optional[bool]
+    type: RoleTypes
 
 class TeamCreate(TeamBase):
     user_ids: List[str]
 
 class TeamPatch(TeamBase, metaclass=AllOptional):
     logotype: Optional[str]
+    type: Optional[RoleTypes]
 
 class Team(TeamBase):
     id: uuid.UUID

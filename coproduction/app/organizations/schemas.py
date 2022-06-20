@@ -3,14 +3,15 @@ from datetime import datetime
 from typing import List, Optional
 
 from pydantic import BaseModel, validator
-from .models import OrganizationTypes, TeamCreationPermissions
+from .models import TeamCreationPermissions
+from app.utils import RoleTypes
 
 class OrganizationBase(BaseModel):
     name_translations: dict
     description_translations: Optional[dict]
     icon: Optional[str]
     logotype: Optional[str]
-    type: OrganizationTypes
+    default_team_type: RoleTypes
     team_creation_permission: Optional[TeamCreationPermissions]
     public: Optional[bool]
     
@@ -19,7 +20,7 @@ class OrganizationCreate(OrganizationBase):
 
 class OrganizationPatch(OrganizationCreate):
     name_translations: Optional[dict]
-    type: Optional[OrganizationTypes]
+    default_team_type: Optional[RoleTypes]
 
 class Organization(OrganizationBase):
     id: uuid.UUID

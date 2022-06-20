@@ -1,4 +1,5 @@
 from sqlalchemy.ext.hybrid import hybrid_property
+import enum
 
 def recursive_check(id, obj):
     if hasattr(obj, "prerequisites"):
@@ -25,3 +26,9 @@ class cached_hybrid_property(hybrid_property):
                 value = self.fget(instance)
                 instance.__dict__[name] = value
             return value
+
+class RoleTypes(str, enum.Enum):
+    citizen = "citizen"
+    public_administration = "public_administration"
+    nonprofit_organization = "nonprofit_organization"
+    forprofit_organization = "forprofit_organization"

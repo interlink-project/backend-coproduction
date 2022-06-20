@@ -50,23 +50,6 @@ def wait_for_catalogue() -> None:
     before=before_log(logger, logging.INFO),
     after=after_log(logger, logging.WARN),
 )
-async def wait_for_rabbit() -> None:
-    try:
-        await log({
-            "service": "coproduction",
-            "user_id": "internal",
-            "action": "PRE_START",
-        })
-    except Exception as e:
-        logger.error(e)
-        raise e
-
-@retry(
-    stop=stop_after_attempt(max_tries),
-    wait=wait_fixed(wait_seconds),
-    before=before_log(logger, logging.INFO),
-    after=after_log(logger, logging.WARN),
-)
 def wait_for_coproduction() -> None:
     try:
         requests.get(f"http://{settings.CATALOGUE_SERVICE_NAME}/coproduction/healthcheck", timeout=3).json()

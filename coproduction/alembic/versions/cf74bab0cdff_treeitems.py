@@ -1,8 +1,8 @@
 """treeitems
 
-Revision ID: e42ad87fdba2
+Revision ID: cf74bab0cdff
 Revises: 
-Create Date: 2022-06-16 10:01:36.423741
+Create Date: 2022-06-20 13:18:48.827350
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = 'e42ad87fdba2'
+revision = 'cf74bab0cdff'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -43,7 +43,7 @@ def upgrade():
     )
     op.create_table('organization',
     sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
-    sa.Column('type', sa.Enum('citizen', 'public_office', 'nonprofit_organization', 'forprofit_organization', name='organizationtypes', native_enum=False), nullable=False),
+    sa.Column('default_team_type', sa.Enum('citizen', 'public_administration', 'nonprofit_organization', 'forprofit_organization', name='roletypes', native_enum=False), nullable=False),
     sa.Column('public', sa.Boolean(), nullable=True),
     sa.Column('name_translations', postgresql.HSTORE(text_type=sa.Text()), nullable=True),
     sa.Column('description_translations', postgresql.HSTORE(text_type=sa.Text()), nullable=True),
@@ -118,6 +118,7 @@ def upgrade():
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('description', sa.String(), nullable=False),
     sa.Column('logotype', sa.String(), nullable=True),
+    sa.Column('type', sa.Enum('citizen', 'public_administration', 'nonprofit_organization', 'forprofit_organization', name='roletypes', native_enum=False), nullable=False),
     sa.Column('creator_id', sa.String(), nullable=True),
     sa.Column('organization_id', postgresql.UUID(as_uuid=True), nullable=True),
     sa.Column('users_count', sa.Integer(), nullable=True),
@@ -222,7 +223,6 @@ def upgrade():
     sa.ForeignKeyConstraint(['id'], ['asset.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
-
     op.create_foreign_key(None, 'asset', 'user', ['creator_id'], ['id'], ondelete='SET NULL', use_alter=True)
     op.create_foreign_key(None, 'coproductionprocess', 'user', ['creator_id'], ['id'], ondelete='SET NULL', use_alter=True)
     op.create_foreign_key(None, 'coproductionprocess', 'organization', ['organization_id'], ['id'], ondelete='SET NULL', use_alter=True)

@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import Column, ForeignKey, String, Table, Integer, func, Boolean
+from sqlalchemy import Column, ForeignKey, String, Table, Integer, func, Boolean, Enum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship
 
@@ -8,10 +8,10 @@ from app.general.db.base_class import Base as BaseModel
 from app.config import settings
 from sqlalchemy.ext.associationproxy import association_proxy
 from app.tables import user_team_association_table
-from app.organizations.models import OrganizationTypes
 from app.tables import team_administrators_association_table
 from sqlalchemy_utils import aggregated
 from sqlalchemy.orm import Session
+from app.utils import RoleTypes
 
 class Team(BaseModel):
     """Team Class contains standard information for a Team."""
@@ -20,6 +20,7 @@ class Team(BaseModel):
     name = Column(String, unique=True, nullable=False)
     description = Column(String, nullable=False)
     logotype = Column(String, nullable=True)
+    type = Column(Enum(RoleTypes, create_constraint=False, native_enum=False), nullable=False)
 
     # created by
     creator_id = Column(String, ForeignKey("user.id", use_alter=True, ondelete='SET NULL'))

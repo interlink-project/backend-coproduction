@@ -4,8 +4,8 @@ from app.general.db.session import SessionLocal
 from app.messages import set_logging_disabled
 from app.organizations.crud import exportCrud as crud
 from app.organizations.schemas import OrganizationCreate, OrganizationPatch
-from app.organizations.models import OrganizationTypes, TeamCreationPermissions
-from app.config import settings
+from app.organizations.models import TeamCreationPermissions
+from app.utils import RoleTypes
 
 async def get_or_create_citizens_org(db):
     data = {
@@ -23,7 +23,7 @@ async def get_or_create_citizens_org(db):
         },
         "public": True,
         "logotype": "/static/organizations/citizens.png",
-        "type": OrganizationTypes.citizen.value,
+        "default_team_type": RoleTypes.citizen.value,
         "team_creation_permission": TeamCreationPermissions.anyone.value,
     }
     if org := await crud.get_by_name_translations(db=db, name_translations=data["name_translations"]):

@@ -48,12 +48,6 @@ class Settings(BaseSettings):
     CATALOGUE_SERVICE_NAME: str
     CATALOGUE_PORT: int
     CATALOGUE_SERVICE: str = os.getenv("CATALOGUE_SERVICE_NAME") + ":" + os.getenv("CATALOGUE_PORT")
-
-    # Logging
-    RABBITMQ_HOST: str
-    RABBITMQ_USER: str
-    RABBITMQ_PASSWORD: str
-    EXCHANGE_NAME: str
     
     DEFAULT_LANGUAGE: str
     ALLOWED_LANGUAGES_LIST: list = os.getenv("ALLOWED_LANGUAGES", "").split(",")
