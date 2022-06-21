@@ -22,7 +22,6 @@ class TreeItem(TreeItemCreate):
     type: str
     created_at: datetime
     updated_at: Optional[datetime]
-    assets_count: Optional[int] = 0
     prerequisites_ids: List[uuid.UUID]
     
     start_date: Optional[date]

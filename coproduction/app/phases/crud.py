@@ -57,7 +57,7 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
         logData["object_id"] = obj.id
         logData["coproductionprocess_id"] = obj.coproductionprocess_id
         logData["phase_id"] = obj.id
-        logData["roles"] = self.user_roles
+        logData["roles"] = obj.user_roles
         return logData
 
 

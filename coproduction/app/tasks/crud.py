@@ -107,7 +107,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
         logData["phase_id"] = obj.objective.phase_id
         logData["objective_id"] = obj.objective_id
         logData["task_id"] = obj.id
-        logData["roles"] = self.user_roles
+        logData["roles"] = obj.user_roles
         return logData
 
     async def remove(self, db: Session, *, id: uuid.UUID, user_id: str) -> Task:

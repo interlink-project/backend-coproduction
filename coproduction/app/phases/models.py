@@ -39,10 +39,6 @@ class Phase(TreeItem):
     def start_date(self):
         return func.min(Objective.start_date)
 
-    @aggregated('children', Column(Integer))
-    def assets_count(self):
-        return func.sum(Objective.assets_count)
-
     progress = Column(Numeric, default=0)
     
     __mapper_args__ = {

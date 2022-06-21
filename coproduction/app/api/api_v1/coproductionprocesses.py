@@ -14,7 +14,7 @@ from app.general import deps
 router = APIRouter()
 
 
-@router.get("", response_model=List[schemas.CoproductionProcessOut])
+@router.get("", response_model=List[schemas.CoproductionProcessOutFull])
 async def list_coproductionprocesses(
     db: Session = Depends(deps.get_db),
     skip: int = 0,

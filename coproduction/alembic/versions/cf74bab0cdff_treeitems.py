@@ -103,7 +103,6 @@ def upgrade():
     sa.Column('coproductionprocess_id', postgresql.UUID(as_uuid=True), nullable=True),
     sa.Column('end_date', sa.Date(), nullable=True),
     sa.Column('start_date', sa.Date(), nullable=True),
-    sa.Column('assets_count', sa.Integer(), nullable=True),
     sa.Column('progress', sa.Numeric(), nullable=True),
     sa.ForeignKeyConstraint(['coproductionprocess_id'], ['coproductionprocess.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['id'], ['treeitem.id'], ondelete='CASCADE'),
@@ -144,7 +143,6 @@ def upgrade():
     sa.Column('phase_id', postgresql.UUID(as_uuid=True), nullable=True),
     sa.Column('end_date', sa.Date(), nullable=True),
     sa.Column('start_date', sa.Date(), nullable=True),
-    sa.Column('assets_count', sa.Integer(), nullable=True),
     sa.Column('progress', sa.Numeric(), nullable=True),
     sa.ForeignKeyConstraint(['id'], ['treeitem.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['phase_id'], ['phase.id'], ondelete='CASCADE'),
@@ -184,7 +182,6 @@ def upgrade():
     sa.Column('objective_id', postgresql.UUID(as_uuid=True), nullable=True),
     sa.Column('start_date', sa.Date(), nullable=True),
     sa.Column('end_date', sa.Date(), nullable=True),
-    sa.Column('assets_count', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['id'], ['treeitem.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['objective_id'], ['objective.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')

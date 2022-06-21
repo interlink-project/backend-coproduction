@@ -47,6 +47,8 @@ class CoproductionProcess(BaseModel):
         "organization.id", use_alter=True, ondelete='SET NULL'))
     organization = relationship('Organization', post_update=True, backref="coproductionprocesses")
 
+    teams = association_proxy('permissions', 'team')
+
     @aggregated('children', Column(Date))
     def end_date(self):
         return func.max(Phase.end_date)

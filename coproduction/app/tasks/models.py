@@ -34,10 +34,6 @@ class Task(TreeItem):
     start_date = Column(Date, nullable=True)
     end_date = Column(Date, nullable=True)
 
-    @aggregated('assets', Column(Integer))
-    def assets_count(self):
-        return func.count('1')
-
     __mapper_args__ = {
         "polymorphic_identity": "task",
     }
