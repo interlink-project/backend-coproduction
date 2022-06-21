@@ -15,7 +15,7 @@ class TreeItemPatch(BaseModel):
     name: Optional[str]
     description: Optional[str]
     disabler_id: Optional[str]
-    disabled: Optional[datetime]
+    disabled_on: Optional[datetime]
 
 class TreeItem(TreeItemCreate):
     id: uuid.UUID
@@ -31,7 +31,7 @@ class TreeItem(TreeItemCreate):
     
     creator_id: Optional[str]
     disabler_id: Optional[str]
-    disabled: Optional[datetime]
+    disabled_on: Optional[datetime]
 
     path_ids: List[uuid.UUID]
 

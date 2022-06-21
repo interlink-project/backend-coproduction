@@ -11,8 +11,8 @@ from fastapi.encoders import jsonable_encoder
 from app.utils import recursive_check
 from datetime import datetime
 
-def calculate_status_and_progress(obj):
-    statuses = [task.status for task in getattr(obj, "children")]
+def update_status_and_progress(treeitem):
+    statuses = [child.status for child in getattr(treeitem, "children")]
     status = Status.awaiting
     if all([x == Status.finished for x in statuses]):
         status = Status.finished
@@ -24,7 +24,9 @@ def calculate_status_and_progress(obj):
     countFinished = statuses.count(Status.finished)
     length = len(statuses)
     progress = int((countInProgress + countFinished) * 100 / length) if length > 0 else 0
-    return status, progress
+    setattr(treeitem, "status", status)
+    setattr(treeitem, "progress", progress)
+    return treeitem
 
 class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
     async def create_from_metadata(self, db: Session, taskmetadata: dict, objective: Objective = None, schema_id = uuid.UUID) -> Optional[Task]:
@@ -82,16 +84,12 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
         if db_obj.objective:
             # update objective
             objective : Objective = db_obj.objective
-            status, progress = calculate_status_and_progress(objective)
-            setattr(db_obj.objective, "status", status)
-            setattr(db_obj.objective, "progress", progress)
+            update_status_and_progress(objective)
             db.add(objective)
 
             # update phase
             phase : Phase = db_obj.objective.phase
-            status, progress = calculate_status_and_progress(phase)
-            setattr(phase, "status", status)
-            setattr(phase, "progress", progress)
+            update_status_and_progress(phase)
             db.add(phase)
 
         db.commit()
@@ -118,9 +116,8 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
         # db.delete(obj)
 
         objective : Objective = obj.objective
-        status, progress = calculate_status_and_progress(objective)
-        setattr(obj.objective, "status", status)
-        setattr(obj.objective, "progress", progress)
+        update_status_and_progress(objective)
+       
         db.add(objective)
         db.commit()
         return obj

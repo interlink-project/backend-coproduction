@@ -9,7 +9,7 @@ import uuid
 from app.messages import log
 from fastapi.encoders import jsonable_encoder
 import favicon
-
+from app.tasks.crud import update_status_and_progress
 
 class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
     async def get_multi(
@@ -56,6 +56,10 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
         if task.status == models.Status.awaiting:
             task.status = models.Status.in_progress
             db.add(task)
+            update_status_and_progress(task.objective)
+            db.add(task.objective)
+            update_status_and_progress(task.objective.phase)
+            db.add(task.objective.phase)
             db.commit()
             
         db.refresh(db_obj)

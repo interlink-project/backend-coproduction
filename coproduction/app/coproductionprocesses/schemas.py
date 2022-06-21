@@ -46,7 +46,6 @@ class CoproductionProcess(CoproductionProcessBase):
 class CoproductionProcessOut(CoproductionProcess):
     logotype_link: Optional[str] 
     language: Any
-    permissions: List[PermissionOut]
     administrators_ids: List[str]
     user_participation: list
 
