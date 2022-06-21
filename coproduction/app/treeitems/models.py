@@ -64,6 +64,8 @@ class TreeItem(BaseModel):
 
     path_ids = Column(ARRAY(UUID(as_uuid=True)), default=dict)
 
+    teams = association_proxy('_permissions', 'team')
+
     __mapper_args__ = {
         "polymorphic_identity": "treeitem",
         "polymorphic_on": type,
