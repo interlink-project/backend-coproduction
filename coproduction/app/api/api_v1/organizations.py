@@ -19,13 +19,14 @@ async def list_organizations(
     skip: int = 0,
     limit: int = 100,
     current_user: Optional[models.User] = Depends(deps.get_current_user),
+    search: str = Query(None)
 ) -> Any:
     """
     Retrieve organizations.
     """
     if not crud.organization.can_list(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    return await crud.organization.get_multi(db, skip=skip, limit=limit, user=current_user)
+    return await crud.organization.get_multi(db, skip=skip, limit=limit, user=current_user, search=search)
 
 
 @router.post("", response_model=schemas.OrganizationOutFull)

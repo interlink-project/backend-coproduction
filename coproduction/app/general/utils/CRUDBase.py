@@ -40,7 +40,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
             return obj
         return
 
-    async def get_multi_by_ids(self, db: Session, ids: list) -> List[User]:
+    async def get_multi_by_ids(self, db: Session, ids: list) -> List[ModelType]:
         return db.query(self.model).filter(self.model.id.in_(ids)).all()
 
     async def get_by_name(self, db: Session, name: str) -> Optional[ModelType]:

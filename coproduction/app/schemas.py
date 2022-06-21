@@ -19,7 +19,7 @@ class AssetOutFull(AssetOut):
 
 
 class OrganizationOutFull(OrganizationOut):
-    pass
+    administrators: List[UserOut]
 
 
 class TeamOutFull(TeamOut):
@@ -32,6 +32,7 @@ class PermissionOutFull(PermissionOut):
 
 class TreeItemOutFull(TreeItemOut):
     user_permissions_dict: dict
+    user_roles: list
     permissions: List[PermissionOutFull]
 
 

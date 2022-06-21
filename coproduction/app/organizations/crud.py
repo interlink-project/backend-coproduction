@@ -6,13 +6,14 @@ from fastapi.encoders import jsonable_encoder
 from app import models
 from app.config import settings
 from app.general.utils.CRUDBase import CRUDBase
-from app.models import Organization
+from app.models import Organization, Team
 from app.schemas import OrganizationCreate, OrganizationPatch
-from sqlalchemy import or_
+from sqlalchemy import or_, func
+from app.locales import get_language
 
 class CRUDOrganization(CRUDBase[Organization, OrganizationCreate, OrganizationPatch]):
     async def get_multi(
-        self, db: Session, *, skip: int = 0, limit: int = 100, user: models.User
+        self, db: Session, *, skip: int = 0, limit: int = 100, user: models.User, search: str = None, language:str = get_language()
     ) -> List[Organization]:
         query = db.query(Organization).filter(
             Organization.public == True,
@@ -24,7 +25,13 @@ class CRUDOrganization(CRUDBase[Organization, OrganizationCreate, OrganizationPa
             query3 = db.query(Organization).join(models.Team).filter(
                     models.Team.id.in_(user.teams_ids)
                 )
-            query = query.union(query2).union(query3) 
+            query = query.union(query2).union(query3)
+        
+        if search:
+            query = query.filter(
+                func.lower(Organization.name_translations[language]).contains(search),
+            )
+
         return query.order_by(Organization.created_at.asc()).offset(skip).limit(limit).all()        
 
     # Override log methods

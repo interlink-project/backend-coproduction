@@ -12,12 +12,13 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
         return db.query(Permission).filter(
             Permission.treeitem_id.in_(treeitem.path_ids)
         ).order_by(Permission.created_at.asc()).offset(skip).limit(limit).all()
-        
+    
     def enrich_log_data(self, obj, logData):
         logData["model"] = "PERMISSION"
         logData["object_id"] = obj.id
         logData["coproductionprocess_id"] = obj.coproductionprocess_id
         logData["treeitem_id"] = obj.treeitem_id
+        logData["roles"] = obj.treeitem.user_roles
         return logData
 
     # CRUD Permissions

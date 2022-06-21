@@ -60,10 +60,6 @@ class CRUDUser(CRUDBase[models.User, UserCreate, UserPatch]):
             data["id"] = data.get("sub")
             if user := await self.get(db=db, id=data.get("id")):
                 return await self.update(db=db, db_obj=user, obj_in=UserPatch(**data))
-            
-            # try with email
-            if user := await self.get(db=db, id=data.get("email")):
-                return await self.update(db=db, db_obj=user, obj_in=UserPatch(**data))
             else:
                 return await self.create(db=db, obj_in=UserCreate(**data))
         raise Exception("Sub not in data")

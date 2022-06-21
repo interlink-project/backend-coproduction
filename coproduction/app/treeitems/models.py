@@ -80,6 +80,18 @@ class TreeItem(BaseModel):
         ).all()
 
     @cached_hybrid_property
+    def user_roles(self):
+        from app.general.deps import get_current_user_from_context
+        db = Session.object_session(self)
+
+        roles = []
+        if user := get_current_user_from_context(db=db):
+            roles = [perm.team.type.value for perm in self.user_permissions]
+            if user in self.coproductionprocess.administrators:
+                roles.append("administrator")
+        return roles
+
+    @cached_hybrid_property
     def user_permissions(self):
         from app.general.deps import get_current_user_from_context
 

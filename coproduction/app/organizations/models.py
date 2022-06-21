@@ -78,7 +78,7 @@ class Organization(BaseModel):
     def people_involved(self):
         from app.models import User, Team
         db = Session.object_session(self)
-        return db.query(User).distinct(User.id).join(
+        return db.query(User).distinct(User.email).join(
             Team
         ).filter(
             Team.organization_id == self.id

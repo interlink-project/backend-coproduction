@@ -18,7 +18,7 @@ class Permission(BaseModel):
     creator_id = Column(String, ForeignKey("user.id", use_alter=True, ondelete='SET NULL'))
     creator = relationship('User', foreign_keys=[creator_id], post_update=True, backref="created_permissions")
 
-    # for
+    # for (user not used yet)
     user_id = Column(String, ForeignKey('user.id', ondelete='CASCADE'))
     user = relationship('User', foreign_keys=[user_id], backref=backref('permissions', passive_deletes=True))
     team_id = Column(UUID(as_uuid=True), ForeignKey('team.id', ondelete='CASCADE'))

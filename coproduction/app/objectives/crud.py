@@ -58,6 +58,7 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
         logData["coproductionprocess_id"] = obj.phase.coproductionprocess_id
         logData["phase_id"] = obj.phase_id
         logData["objective_id"] = obj.id
+        logData["roles"] = self.user_roles
         return logData
 
     # CRUD Permissions

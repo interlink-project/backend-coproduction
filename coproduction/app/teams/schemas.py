@@ -15,7 +15,7 @@ class TeamBase(BaseModel):
     type: RoleTypes
 
 class TeamCreate(TeamBase):
-    user_ids: List[str]
+    user_ids: Optional[List[str]]
 
 class TeamPatch(TeamBase, metaclass=AllOptional):
     logotype: Optional[str]

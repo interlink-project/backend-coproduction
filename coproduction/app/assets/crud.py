@@ -59,13 +59,16 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
             db_obj = InternalAsset(**data, creator=creator,
                                    coproductionprocess_id=coproductionprocess_id)
 
-        # task : models.Task = db_obj.task
-        # if task.status == models.Status.awaiting:
-        #     task.status = models.Status.in_progress
-        #     db.add(task)
+        
 
         db.add(db_obj)
         db.commit()
+        task : models.Task = db_obj.task
+        if task.status == models.Status.awaiting:
+            task.status = models.Status.in_progress
+            db.add(task)
+            db.commit()
+            
         db.refresh(db_obj)
         await self.log_on_create(db_obj)
         return db_obj
@@ -79,6 +82,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
         logData["objective_id"] = asset.task.objective_id
         logData["task_id"] = asset.task_id
         logData["coproductionprocess_id"] = asset.task.objective.phase.coproductionprocess_id
+        logData["roles"] = asset.task.user_roles
 
         if type(asset) == models.InternalAsset:
             if ki := asset.knowledgeinterlinker:

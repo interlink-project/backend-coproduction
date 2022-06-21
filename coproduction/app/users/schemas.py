@@ -6,7 +6,6 @@ from app.general.utils.AllOptional import AllOptional
 
 
 class UserBase(BaseModel):
-    id: str
     picture: Optional[str]
     full_name: Optional[str]
     last_login: datetime = datetime.now()
@@ -15,7 +14,7 @@ class UserBase(BaseModel):
     locale: Optional[str]
 
 class UserCreate(UserBase):
-    pass
+    id: str
     
 class UserPatch(UserCreate, metaclass=AllOptional):
     pass
