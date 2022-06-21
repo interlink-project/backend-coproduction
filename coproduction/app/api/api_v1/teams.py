@@ -18,11 +18,14 @@ router = APIRouter()
 async def list_teams(
     db: Session = Depends(deps.get_db),
     current_user: Optional[models.User] = Depends(deps.get_current_active_user),
-    or_public: bool = Query(True),
-    and_public: bool = Query(True),
     organization_id: uuid.UUID = Query(None),
 ) -> Any:
-    return await crud.team.get_multi(db=db, user_id=current_user.id, organization_id=organization_id, or_public=or_public, and_public=and_public)
+    if organization_id:
+        if organization := await crud.organization.get(db=db, id=id):
+            return await crud.team.get_multi(db=db, user=current_user, organization=organization)
+        raise HTTPException(
+                status_code=404, detail="Organization not found") 
+    return await crud.team.get_multi(db=db, user=current_user)
 
 
 @router.post("", response_model=schemas.TeamOutFull)

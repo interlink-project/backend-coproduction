@@ -44,7 +44,6 @@ class CoproductionProcess(CoproductionProcessBase):
 
 
 class CoproductionProcessOut(CoproductionProcess):
-    phases_count: Optional[int] = 0
     logotype_link: Optional[str] 
     language: Any
     permissions: List[PermissionOut]

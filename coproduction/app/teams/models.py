@@ -16,7 +16,6 @@ from app.utils import RoleTypes
 class Team(BaseModel):
     """Team Class contains standard information for a Team."""
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    public = Column(Boolean, default=False)
     name = Column(String, unique=True, nullable=False)
     description = Column(String, nullable=False)
     logotype = Column(String, nullable=True)
@@ -42,7 +41,7 @@ class Team(BaseModel):
     administrators = relationship(
         "User",
         secondary=team_administrators_association_table,
-        backref="administrated_teams")
+        backref="administered_teams")
     administrators_ids = association_proxy('administrators', 'id')
 
 

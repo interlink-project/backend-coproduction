@@ -14,12 +14,7 @@ class CRUDUser(CRUDBase[models.User, UserCreate, UserPatch]):
             se = search.lower()
 
             teams = db.query(models.Team).filter(
-                        or_(
-                            models.Team.administrators.any(models.User.id.in_([user.id])),
-                            models.Team.users.any(models.User.id.in_([user.id])),
-                            models.Team.public == True,
-                        ),
-                        models.Team.organization_id == organization_id
+                models.Team.organization_id == organization_id
             ).all()
             return db.query(
                     models.User

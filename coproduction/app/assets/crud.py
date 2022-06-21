@@ -16,20 +16,11 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
         self, db: Session, task: models.Task, skip: int = 0, limit: int = 100
     ) -> List[Asset]:
         queries = []
-        # if coproductionprocess:
-        #     queries.append(Asset.coproductionprocess_id == coproductionprocess.id)
-
         if task:
             queries.append(Asset.task_id == task.id)
-            # await log({
-            #     "model": "ASSET",
-            #     "action": "LIST",
-            #     "coproductionprocess_id": coproductionprocess_id,
-            #     "task_id": task_id
-            # })
         return db.query(Asset).filter(*queries).offset(skip).limit(limit).all()
 
-    async def create(self, db: Session, asset: AssetCreate, coproductionprocess_id: uuid.UUID, creator: models.User) -> Asset:
+    async def create(self, db: Session, asset: AssetCreate, creator: models.User) -> Asset:
         data = jsonable_encoder(asset)
         if type(asset) == ExternalAssetCreate:
             print("IS EXTERNAL")
@@ -50,14 +41,12 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                     data["icon_path"] = icon_path
             except:
                 pass
-            db_obj = ExternalAsset(**data, creator=creator,
-                                   coproductionprocess_id=coproductionprocess_id)
+            db_obj = ExternalAsset(**data, creator=creator)
 
         if type(asset) == InternalAssetCreate:
             print("IS INTERNAL")
             data["type"] = "internalasset"
-            db_obj = InternalAsset(**data, creator=creator,
-                                   coproductionprocess_id=coproductionprocess_id)
+            db_obj = InternalAsset(**data, creator=creator)
 
         
 

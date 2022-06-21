@@ -112,7 +112,7 @@ async def read_organization_teams(
         raise HTTPException(status_code=404, detail="Organization not found")
     if not await crud.organization.can_read(db=db, user=current_user, object=organization):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    return await crud.team.get_multi(db=db, user_id=current_user.id, organization_id=organization.id, and_public=True)
+    return await crud.team.get_multi(db=db, user=current_user, organization=organization)
 
 
 @router.delete("/{id}")

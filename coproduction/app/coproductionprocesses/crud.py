@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from slugify import slugify
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy import or_, func
 from app import crud, models
 from app.general.utils.CRUDBase import CRUDBase
 from app.models import CoproductionProcess, Permission, User, Permission
@@ -13,7 +13,7 @@ from fastapi.encoders import jsonable_encoder
 
 
 class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessCreate, CoproductionProcessPatch]):
-    async def get_multi_by_user(self, db: Session, user: User) -> Optional[List[CoproductionProcess]]:
+    async def get_multi_by_user(self, db: Session, user: User, search: str = None) -> Optional[List[CoproductionProcess]]:
         # await log({
         #     "model": self.modelName,
         #     "action": "LIST",
@@ -36,7 +36,14 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                 Permission.team_id.in_(user.teams_ids)
             )
         )
-        return admins.union(user_permissions).all()
+
+        query = admins.union(user_permissions)
+        if search:
+            query = query.filter(
+                CoproductionProcess.name.contains(search),
+            )
+
+        return query.all()
 
     async def set_schema(self, db: Session, coproductionprocess: models.CoproductionProcess, coproductionschema: dict):
         total = {}

@@ -11,7 +11,6 @@ class TeamBase(BaseModel):
     name: str
     description: str
     organization_id: Optional[uuid.UUID]
-    public: Optional[bool]
     type: RoleTypes
 
 class TeamCreate(TeamBase):

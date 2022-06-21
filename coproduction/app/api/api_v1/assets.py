@@ -73,7 +73,7 @@ async def create_asset(
             interlinker = check_interlinker(asset_in.externalinterlinker_id, token)
 
     return await crud.asset.create(
-        db=db, asset=asset_in, coproductionprocess_id=task.objective.phase.coproductionprocess_id, creator=current_user)
+        db=db, asset=asset_in, creator=current_user)
 
 
 class InstantiateSchema(BaseModel):
@@ -122,7 +122,7 @@ async def instantiate_asset_from_knowledgeinterlinker(
 
     external_asset_id = data_from_interlinker["id"] if "id" in data_from_interlinker else data_from_interlinker["_id"]
     # Creates an InternalAsset object with reference to the software interlinker that manages the asset, the knowledge interlinker that contained the genesis asset id and the id of the external resource
-    return await crud.asset.create(db=db, coproductionprocess_id=task.objective.phase.coproductionprocess_id, creator=current_user, asset=schemas.InternalAssetCreate(
+    return await crud.asset.create(db=db, creator=current_user, asset=schemas.InternalAssetCreate(
         **{
             "knowledgeinterlinker_id": asset_in.knowledgeinterlinker_id,
             "type": "internalasset",
@@ -175,7 +175,7 @@ async def clone_asset(
             softwareinterlinker_id=asset.softwareinterlinker_id,
             knowledgeinterlinker_id=asset.knowledgeinterlinker_id,
             external_asset_id=external_asset_id
-        ), coproductionprocess_id=task.objective.phase.coproductionprocess_id, creator=current_user)
+        ), creator=current_user)
 
     elif asset.type == "externalasset":
         asset: models.ExternalAsset
@@ -184,7 +184,7 @@ async def clone_asset(
             externalinterlinker_id=asset.externalinterlinker_id,
             name=asset.name,
             uri=asset.uri
-        ), coproductionprocess_id=task.objective.phase.coproductionprocess_id, creator=current_user)
+        ), creator=current_user)
 
     else:
         raise HTTPException(status_code=500, detail="Asset type not recognized")

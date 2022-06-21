@@ -46,7 +46,7 @@ class Organization(BaseModel):
     administrators = relationship(
         "User",
         secondary=organization_administrators_association_table,
-        backref="administrated_organizations")
+        backref="administered_organizations")
     administrators_ids = association_proxy('administrators', 'id')
 
     team_creation_permission = Column(Enum(TeamCreationPermissions, create_constraint=False, native_enum=False), server_default=TeamCreationPermissions.administrators.value)

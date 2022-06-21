@@ -4,7 +4,7 @@ from typing import Any, List, Optional
 
 import aiofiles
 import requests
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -20,13 +20,14 @@ async def list_coproductionprocesses(
     skip: int = 0,
     limit: int = 100,
     current_user: Optional[models.User] = Depends(deps.get_current_user),
+    search: str = Query(None)
 ) -> Any:
     """
     Retrieve coproductionprocesses.
     """
     if not crud.coproductionprocess.can_list(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    return await crud.coproductionprocess.get_multi_by_user(db, user=current_user)
+    return await crud.coproductionprocess.get_multi_by_user(db, user=current_user, search=search)
 
 
 @router.post("", response_model=schemas.CoproductionProcessOutFull)

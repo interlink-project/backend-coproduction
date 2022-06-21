@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional, List
 
 from sqlalchemy.orm import Session
 from app.general.utils.CRUDBase import CRUDBase
-from app.models import Team
+from app.models import Team, User, Organization
 from app.schemas import TeamCreate, TeamPatch
 import uuid
 from app import models
@@ -14,43 +14,15 @@ from fastapi.encoders import jsonable_encoder
 
 
 class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
-    async def get_multi(self, db: Session, user_id: str, and_public: bool = False, or_public: bool = False, organization_id: uuid.UUID = None) -> Optional[List[Team]]:
-        queries = []
-        if user_id:
-            queries.append(
+    async def get_multi(self, db: Session, user: User, organization: Organization = None) -> Optional[List[Team]]:
+        if organization:
+            return db.query(Team).filter(Team.organization_id == organization.id).all()
+        return db.query(Team).filter(
                 or_(
-                    Team.users.any(models.User.id.in_([user_id])),
-                    Team.administrators.any(models.User.id.in_([user_id]))
+                    Team.id.in_(user.teams_ids),
+                    Team.id.in_(user.administered_teams_ids)
                 )
-            )
-        if organization_id:
-            queries.append(Team.organization_id == organization_id)
-
-        result = db.query(
-                Team
-            ).filter(*queries)
-
-        if and_public and organization_id:
-            public_query = db.query(
-                Team
-            ).filter(
-                Team.public == True,
-                Team.organization_id == organization_id
-            )
-            result = result.union(public_query)
-
-        if or_public:
-            public_query2 = db.query(
-                Team
-            ).filter(
-                Team.public == True
-            ).filter(
-                models.Organization.id == Team.organization_id
-            ).filter(
-                models.Organization.public == True
-            )
-            result = result.union(public_query2)
-        return result.all()
+            ).all()
 
     async def add_user(self, db: Session, team: Team, user: models.User) -> Team:
         team.users.append(user)
@@ -110,7 +82,7 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
             elif org.team_creation_permission == models.TeamCreationPermissions.members:
                 return org in db.query(models.Organization).join(Team).filter(
                     Team.id.in_(user.teams_ids)
-                ).all()
+                ).all() or user in org.administrators
         return True
 
     def can_list(self, user):

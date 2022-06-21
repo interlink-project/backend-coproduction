@@ -12,6 +12,7 @@ class User(BaseModel):
     locale = Column(String)
     
     teams_ids = association_proxy('teams', 'id')
+    administered_teams_ids = association_proxy('administered_teams', 'id')
 
     def __repr__(self) -> str:
         return f"<User {self.id}>"
