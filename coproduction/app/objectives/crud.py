@@ -1,15 +1,17 @@
+import uuid
 from typing import Optional
 
 from sqlalchemy.orm import Session
 
 from app.general.utils.CRUDBase import CRUDBase
-from app.models import Objective, Phase
-from app.schemas import (
-    ObjectiveCreate,
-    ObjectivePatch
-)
-import uuid
+from app.messages import log
+from app.models import Objective, Phase, User
+from app.schemas import ObjectiveCreate, ObjectivePatch
+from app.treeitems.crud import exportCrud as treeitems_crud
 from app.utils import recursive_check
+from fastapi.encoders import jsonable_encoder
+
+
 
 class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
     async def create_from_metadata(self, db: Session, objectivemetadata: dict, phase: Phase, schema_id: uuid.UUID) -> Optional[Objective]:
@@ -18,20 +20,16 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
         creator = ObjectiveCreate(**objectivemetadata)
         return await self.create(db=db, objective=creator, phase=phase, commit=False)
 
-    async def create(self, db: Session, *, objective: ObjectiveCreate, phase: Phase = None, commit : bool = True) -> Objective:
+    async def create(self, db: Session, *, objective: ObjectiveCreate, phase: Phase = None, commit: bool = True, creator: User = None) -> Objective:
         if phase and objective.phase_id:
             raise Exception("Specify only one objective")
         if not phase and not objective.phase_id:
             raise Exception("Objective not specified")
 
-        db_obj = Objective(
-            from_item=objective.from_item,
-            from_schema=objective.from_schema,
-            name=objective.name,
-            description=objective.description,
-            phase=phase,
-            phase_id=objective.phase_id,
-        )
+        obj_in_data = jsonable_encoder(objective)
+        db_obj = self.model(**obj_in_data, phase=phase)
+        if creator:
+            db_obj.creator_id = creator.id
         db.add(db_obj)
         if commit:
             db.commit()
@@ -39,7 +37,7 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
             await self.log_on_create(db_obj)
         return db_obj
 
-    async def add_prerequisite(self, db: Session, objective: Objective, prerequisite: Objective, commit : bool = True) -> Objective:
+    async def add_prerequisite(self, db: Session, objective: Objective, prerequisite: Objective, commit: bool = True) -> Objective:
         if objective == prerequisite:
             raise Exception("Same object")
         # TODO: if objective in prerequisite.prerequisites => block
@@ -50,6 +48,22 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
             db.commit()
             db.refresh(objective)
         return objective
+
+    async def remove(self, db: Session, *, id: uuid.UUID, user_id: str = None, remove_definitely: bool = False) -> Phase:
+        obj = db.query(self.model).get(id)
+        if not obj:
+            raise Exception("Object does not exist")
+        if remove_definitely:
+            await self.log_on_remove(obj)
+        else:
+            await self.log_on_disable(obj)
+        await treeitems_crud.remove(db=db, obj=obj, model=self.model, user_id=user_id, remove_definitely=remove_definitely)
+
+    async def log_on_disable(self, obj):
+        enriched: dict = self.enrich_log_data(obj, {
+            "action": "DISABLE"
+        })
+        await log(enriched)
 
     # Override log methods
     def enrich_log_data(self, obj, logData):

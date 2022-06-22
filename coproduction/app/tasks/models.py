@@ -49,6 +49,10 @@ class Task(TreeItem):
     @property
     def path_ids(self):
         return [self.objective.phase_id, self.objective_id, self.id]
-        
+    
+    @property
+    def is_disabled(self):
+        return (self.disabled_on is not None) or (self.objective.disabled_on is not None) or (self.objective.phase.disabled_on) is not None
+
     def __repr__(self):
         return "<Task %r>" % self.name

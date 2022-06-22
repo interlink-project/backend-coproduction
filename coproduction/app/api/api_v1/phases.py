@@ -111,5 +111,5 @@ async def delete_phase(
         raise HTTPException(status_code=404, detail="Phase not found")
     if not crud.phase.can_remove(current_user, phase):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    await crud.phase.remove(db=db, id=id)
+    await crud.phase.remove(db=db, id=id, user_id=current_user.id)
     return None

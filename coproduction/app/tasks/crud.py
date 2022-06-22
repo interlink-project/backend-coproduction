@@ -5,28 +5,12 @@ from sqlalchemy.orm import Session
 
 from app import schemas
 from app.general.utils.CRUDBase import CRUDBase
-from app.models import Task, Status, Phase, Objective, User
+from app.models import Task, Phase, Objective, User
 from app.schemas import TaskCreate, TaskPatch
 from fastapi.encoders import jsonable_encoder
-from app.utils import recursive_check
-from datetime import datetime
-
-def update_status_and_progress(treeitem):
-    statuses = [child.status for child in getattr(treeitem, "children")]
-    status = Status.awaiting
-    if all([x == Status.finished for x in statuses]):
-        status = Status.finished
-    elif all([x == Status.awaiting for x in statuses]):
-        status = Status.awaiting
-    else:
-        status = Status.in_progress
-    countInProgress = statuses.count(Status.in_progress) / 2
-    countFinished = statuses.count(Status.finished)
-    length = len(statuses)
-    progress = int((countInProgress + countFinished) * 100 / length) if length > 0 else 0
-    setattr(treeitem, "status", status)
-    setattr(treeitem, "progress", progress)
-    return treeitem
+from app.utils import recursive_check, update_status_and_progress
+from app.messages import log
+from app.treeitems.crud import exportCrud as treeitems_crud
 
 class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
     async def create_from_metadata(self, db: Session, taskmetadata: dict, objective: Objective = None, schema_id = uuid.UUID) -> Optional[Task]:
@@ -97,6 +81,22 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
         await self.log_on_update(db_obj)
         return db_obj
 
+    async def remove(self, db: Session, *, id: uuid.UUID, user_id: str = None, remove_definitely: bool = False) -> Phase:
+        obj = db.query(self.model).get(id)
+        if not obj:
+            raise Exception("Object does not exist")
+        if remove_definitely:
+            await self.log_on_remove(obj)
+        else:
+            await self.log_on_disable(obj)
+        await treeitems_crud.remove(db=db, obj=obj, model=self.model, user_id=user_id, remove_definitely=remove_definitely)
+
+    async def log_on_disable(self, obj):
+        enriched: dict = self.enrich_log_data(obj, {
+            "action": "DISABLE"
+        })
+        await log(enriched)
+        
     # Override log methods
     def enrich_log_data(self, obj, logData):
         logData["model"] = "TASK"
@@ -108,19 +108,6 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
         logData["roles"] = obj.user_roles
         return logData
 
-    async def remove(self, db: Session, *, id: uuid.UUID, user_id: str) -> Task:
-        obj = db.query(self.model).get(id)
-        await self.log_on_remove(obj)
-        setattr(obj, "disabled_on", datetime.now())
-        setattr(obj, "disabler_id", user_id)
-        # db.delete(obj)
-
-        objective : Objective = obj.objective
-        update_status_and_progress(objective)
-       
-        db.add(objective)
-        db.commit()
-        return obj
 
     # CRUD Permissions
     def can_create(self, user):

@@ -27,8 +27,30 @@ class cached_hybrid_property(hybrid_property):
                 instance.__dict__[name] = value
             return value
 
+class Status(str, enum.Enum):
+    awaiting = "awaiting"
+    in_progress = "in_progress"
+    finished = "finished"
+
 class RoleTypes(str, enum.Enum):
     citizen = "citizen"
     public_administration = "public_administration"
     nonprofit_organization = "nonprofit_organization"
     forprofit_organization = "forprofit_organization"
+
+def update_status_and_progress(treeitem):
+    statuses = [child.status for child in getattr(treeitem, "children") if not getattr(child, "disabled_on")]
+    status = Status.awaiting
+    if all([x == Status.finished for x in statuses]):
+        status = Status.finished
+    elif all([x == Status.awaiting for x in statuses]):
+        status = Status.awaiting
+    else:
+        status = Status.in_progress
+    countInProgress = statuses.count(Status.in_progress) / 2
+    countFinished = statuses.count(Status.finished)
+    length = len(statuses)
+    progress = int((countInProgress + countFinished) * 100 / length) if length > 0 else 0
+    setattr(treeitem, "status", status)
+    setattr(treeitem, "progress", progress)
+    return treeitem

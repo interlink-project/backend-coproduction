@@ -1,17 +1,14 @@
 import copy
-import enum
 import uuid
 
 from sqlalchemy import Column, DateTime, Enum, ForeignKey, String, Table, or_, ARRAY
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import Session, relationship
-from starlette_context import context
 
 from app.general.db.base_class import Base as BaseModel
 from app.permissions.models import Permission, GRANT_ALL, DENY_ALL, PERMS
-from app.users.models import User
-from app.utils import cached_hybrid_property
+from app.utils import cached_hybrid_property, Status
 
 prerequisites = Table(
     'treeitem_prerequisites', BaseModel.metadata,
@@ -21,11 +18,6 @@ prerequisites = Table(
         'treeitem.id', ondelete="CASCADE"), primary_key=True)
 )
 
-
-class Status(str, enum.Enum):
-    awaiting = "awaiting"
-    in_progress = "in_progress"
-    finished = "finished"
 
 
 class TreeItem(BaseModel):

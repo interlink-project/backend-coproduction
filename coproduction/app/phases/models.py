@@ -46,6 +46,10 @@ class Phase(TreeItem):
     }
 
     @property
+    def is_disabled(self):
+        return (self.disabled_on is not None)
+
+    @property
     def path_ids(self):
         return [self.id]
 

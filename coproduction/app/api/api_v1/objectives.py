@@ -108,6 +108,6 @@ async def delete_objective(
         raise HTTPException(status_code=404, detail="Objective not found")
     if not crud.objective.can_remove(current_user, objective):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    await crud.objective.remove(db=db, id=id)
+    await crud.objective.remove(db=db, id=id, user_id=current_user.id)
     return None
 

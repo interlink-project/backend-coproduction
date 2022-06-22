@@ -114,7 +114,7 @@ class InternalAsset(Asset):
 class ExternalAsset(Asset):
     id = Column(
         UUID(as_uuid=True),
-        ForeignKey("asset.id"),
+        ForeignKey("asset.id", ondelete='CASCADE'),
         primary_key=True,
         default=uuid.uuid4,
     )

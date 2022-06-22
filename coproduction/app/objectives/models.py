@@ -54,3 +54,7 @@ class Objective(TreeItem):
     @property
     def path_ids(self):
         return [self.phase_id, self.id]
+    
+    @property
+    def is_disabled(self):
+        return (self.disabled_on is not None) or (self.phase.disabled_on) is not None

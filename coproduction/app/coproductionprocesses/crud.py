@@ -45,6 +45,11 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
         return query.all()
 
+    async def reset_schema(self, db: Session, coproductionprocess: models.CoproductionProcess, user: User):
+        for phase in coproductionprocess.children:
+            crud.phase.remove(db=db, id=phase.id, remove_definitely=True)
+        ## TODO: Create historyitem user
+
     async def set_schema(self, db: Session, coproductionprocess: models.CoproductionProcess, coproductionschema: dict):
         total = {}
         schema_id = coproductionschema.get("id")

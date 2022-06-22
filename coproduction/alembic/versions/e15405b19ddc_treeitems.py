@@ -1,8 +1,8 @@
 """treeitems
 
-Revision ID: cf74bab0cdff
+Revision ID: e15405b19ddc
 Revises: 
-Create Date: 2022-06-20 13:18:48.827350
+Create Date: 2022-06-22 09:30:46.338137
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = 'cf74bab0cdff'
+revision = 'e15405b19ddc'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -203,7 +203,7 @@ def upgrade():
     sa.Column('icon_path', sa.String(), nullable=True),
     sa.Column('externalinterlinker_id', postgresql.UUID(as_uuid=True), nullable=True),
     sa.Column('uri', sa.String(), nullable=True),
-    sa.ForeignKeyConstraint(['id'], ['asset.id'], ),
+    sa.ForeignKeyConstraint(['id'], ['asset.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('internalasset',
@@ -214,6 +214,7 @@ def upgrade():
     sa.ForeignKeyConstraint(['id'], ['asset.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
+
     op.create_foreign_key(None, 'asset', 'user', ['creator_id'], ['id'], ondelete='SET NULL', use_alter=True)
     op.create_foreign_key(None, 'coproductionprocess', 'user', ['creator_id'], ['id'], ondelete='SET NULL', use_alter=True)
     op.create_foreign_key(None, 'coproductionprocess', 'organization', ['organization_id'], ['id'], ondelete='SET NULL', use_alter=True)
