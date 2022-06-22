@@ -102,7 +102,7 @@ async def read_organization_teams(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
-    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
+    current_user: Optional[models.User] = Depends(deps.get_current_user),
 ) -> Any:
     """
     Get organization by ID.

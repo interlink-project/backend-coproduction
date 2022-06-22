@@ -14,6 +14,7 @@ from sqlalchemy_utils import aggregated
 
 from app.tasks.models import Task
 from app.treeitems.models import TreeItem
+from sqlalchemy.ext.hybrid import hybrid_property
 
 class Objective(TreeItem):
     id = Column(
@@ -51,10 +52,10 @@ class Objective(TreeItem):
     def coproductionprocess(self):
         return self.phase.coproductionprocess
     
-    @property
+    @hybrid_property
     def path_ids(self):
         return [self.phase_id, self.id]
     
-    @property
+    @hybrid_property
     def is_disabled(self):
         return (self.disabled_on is not None) or (self.phase.disabled_on) is not None

@@ -49,7 +49,7 @@ class CRUDOrganization(CRUDBase[Organization, OrganizationCreate, OrganizationPa
         return True
 
     async def can_read(self, db: Session, user, object):
-        return True
+        return user in object.administrators or object.public
 
     def can_update(self, user, object):
         return user in object.administrators

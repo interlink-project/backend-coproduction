@@ -12,7 +12,7 @@ from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from sqlalchemy.orm import backref, relationship
 
 from app.treeitems.models import TreeItem
-from sqlalchemy_utils import aggregated
+from sqlalchemy.ext.hybrid import hybrid_property
 
 
 class Task(TreeItem):
@@ -42,15 +42,15 @@ class Task(TreeItem):
     def coproductionprocess(self):
         return self.objective.phase.coproductionprocess
 
-    @property
+    @hybrid_property
     def phase_id(self):
         return self.objective.phase_id
 
-    @property
+    @hybrid_property
     def path_ids(self):
         return [self.objective.phase_id, self.objective_id, self.id]
     
-    @property
+    @hybrid_property
     def is_disabled(self):
         return (self.disabled_on is not None) or (self.objective.disabled_on is not None) or (self.objective.phase.disabled_on) is not None
 

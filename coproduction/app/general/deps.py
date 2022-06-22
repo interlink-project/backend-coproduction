@@ -72,12 +72,12 @@ def get_current_user_from_context(
 ):
     try:
         if user := context.data.get("user", None):
-            db_user = db.query(
+            return db.query(
                 models.User
             ).filter(
                 models.User.id == user["sub"]
             ).first()
-        return db_user
+        return
 
     except Exception as e:
         print(str(e))

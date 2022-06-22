@@ -14,6 +14,7 @@ from sqlalchemy_utils import aggregated
 
 from app.objectives.models import Objective
 from app.treeitems.models import TreeItem
+from sqlalchemy.ext.hybrid import hybrid_property
 
 class Phase(TreeItem):
     id = Column(
@@ -45,11 +46,11 @@ class Phase(TreeItem):
         "polymorphic_identity": "phase",
     }
 
-    @property
+    @hybrid_property
     def is_disabled(self):
         return (self.disabled_on is not None)
 
-    @property
+    @hybrid_property
     def path_ids(self):
         return [self.id]
 

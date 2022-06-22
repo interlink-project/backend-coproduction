@@ -20,6 +20,7 @@ from app.locales import translation_hybrid
 from sqlalchemy_utils import aggregated
 from sqlalchemy.orm import Session
 from app.utils import RoleTypes
+from sqlalchemy.ext.hybrid import hybrid_property
 
 
 class TeamCreationPermissions(str, enum.Enum):
@@ -52,6 +53,7 @@ class Organization(BaseModel):
     team_creation_permission = Column(Enum(TeamCreationPermissions, create_constraint=False, native_enum=False), server_default=TeamCreationPermissions.administrators.value)
 
     teams_ids = association_proxy('teams', 'id')
+
     @property
     def icon_link(self):
         return settings.COMPLETE_SERVER_NAME + self.icon if self.icon else ""
@@ -60,7 +62,7 @@ class Organization(BaseModel):
     def logotype_link(self):
         return settings.COMPLETE_SERVER_NAME + self.logotype if self.logotype else ""
     
-    @property
+    @hybrid_property
     def user_participation(self):
         from app.general.deps import get_current_user_from_context
         db = Session.object_session(self)
@@ -74,7 +76,7 @@ class Organization(BaseModel):
                     break
         return participations
 
-    @property
+    @hybrid_property
     def people_involved(self):
         from app.models import User, Team
         db = Session.object_session(self)
