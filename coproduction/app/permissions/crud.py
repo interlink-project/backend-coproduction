@@ -18,7 +18,7 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
         logData["object_id"] = obj.id
         logData["coproductionprocess_id"] = obj.coproductionprocess_id
         logData["treeitem_id"] = obj.treeitem_id
-        logData["roles"] = obj.treeitem.user_roles
+        logData["team_id"] = obj.team_id
         return logData
 
     # CRUD Permissions
