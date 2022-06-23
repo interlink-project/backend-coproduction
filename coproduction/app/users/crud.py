@@ -33,11 +33,11 @@ class CRUDUser(CRUDBase[models.User, UserCreate, UserPatch]):
         else:
             print("Searching by email")
             # only retrieve if the email is exact
-            return [
-                db.query(models.User).filter(
+            if res := db.query(models.User).filter(
                     models.User.email == search
-                ).first()
-            ]
+                ).first():
+                return [res]
+            return []
 
     async def get(self, db: Session, id: uuid.UUID) -> Optional[models.User]:
         if obj := db.query(models.User).filter(

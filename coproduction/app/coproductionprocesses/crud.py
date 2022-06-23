@@ -10,6 +10,7 @@ from app.models import CoproductionProcess, Permission, User, Permission
 from app.permissions.crud import exportCrud as exportPermissionCrud
 from app.schemas import CoproductionProcessCreate, CoproductionProcessPatch
 from fastapi.encoders import jsonable_encoder
+from app.messages import log
 
 
 class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessCreate, CoproductionProcessPatch]):
@@ -45,10 +46,18 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
         return query.all()
 
-    async def reset_schema(self, db: Session, coproductionprocess: models.CoproductionProcess, user: User):
+    async def clear_schema(self, db: Session, coproductionprocess: models.CoproductionProcess):
+        schema = coproductionprocess.schema_used
         for phase in coproductionprocess.children:
-            crud.phase.remove(db=db, id=phase.id, remove_definitely=True)
-        ## TODO: Create historyitem user
+            await crud.phase.remove(db=db, id=phase.id, remove_definitely=True)
+        enriched: dict = self.enrich_log_data(coproductionprocess, {
+            "action": "CLEAR_SCHEMA",
+            "coproductionprocess_id": coproductionprocess.id,
+            "coproductionschema_id": schema
+        })
+        await log(enriched)
+        db.refresh(coproductionprocess)
+        return coproductionprocess
 
     async def set_schema(self, db: Session, coproductionprocess: models.CoproductionProcess, coproductionschema: dict):
         total = {}
@@ -107,40 +116,17 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                 if element["type"] == "task":
                     await crud.task.add_prerequisite(db=db, task=element["newObj"], prerequisite=total[pre_id]["newObj"], commit=False)
 
-        coproductionprocess.schema_used = coproductionschema.get("id")
+        schema_id = coproductionschema.get("id")
+        coproductionprocess.schema_used = schema_id
         db.commit()
-        # await log({
-        #     "model": self.modelName,
-        #     "action": "SET_SCHEMA",
-        #     "crud": True,
-        #     "coproductionprocess_id": db_obj.id,
-        #     "coproductionschema_id": coproductionschema.get("id", None)
-        # })
+        enriched: dict = self.enrich_log_data(coproductionprocess, {
+            "action": "SET_SCHEMA",
+            "coproductionprocess_id": coproductionprocess.id,
+            "coproductionschema_id": schema_id
+        })
+        await log(enriched)
         db.refresh(coproductionprocess)
         return coproductionprocess
-
-    async def add_team(self, db: Session, coproductionprocess: models.CoproductionProcess, team: models.Team):
-        if obj := await exportPermissionCrud.add_team(db=db, permission=coproductionprocess.default_permission, team=team):
-            # await log({
-            #     "model": self.modelName,
-            #     "action": "ADD_TEAM",
-            #     "coproductionprocess_id": obj.id,
-            #     "team_id": team.id
-            # })
-            return obj
-        return
-
-    async def add_user(self, db: Session, coproductionprocess: models.CoproductionProcess, user: models.User):
-        if obj := await exportPermissionCrud.add_user(db=db, permission=coproductionprocess.default_permission, user=user):
-            # await log({
-            #     "model": self.modelName,
-            #     "action": "ADD_USER",
-            #     "crud": True,
-            #     "coproductionprocess_id": obj.id,
-            #     "user_id": user.id
-            # })
-            return obj
-        return
 
     # Override log methods
     def enrich_log_data(self, coproductionprocess, logData):

@@ -169,3 +169,39 @@ async def delete_team(
     if not crud.team.can_remove(current_user, team):
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return await crud.team.remove(db=db, id=id)
+
+
+@router.post("/{id}/administrators")
+async def add_administrator(
+    *,
+    id: uuid.UUID,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_user),
+    user_in: schemas.UserIn,
+) -> Any:
+    if (user := await crud.user.get(db=db, id=user_in.user_id)):
+        if (team := await crud.team.get(db=db, id=id)):
+            if crud.team.can_update(user=current_user, object=team):
+                return await crud.team.add_administrator(db=db, db_obj=team, user=user)
+            raise HTTPException(
+                status_code=403, detail="You are not allowed to update this team")
+        raise HTTPException(status_code=404, detail="Team not found")
+    raise HTTPException(status_code=404, detail="User not found")
+
+
+@router.delete("/{id}/administrators/{user_id}")
+async def add_administrator(
+    *,
+    id: uuid.UUID,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_user),
+    user_id: str
+) -> Any:
+    if (user := await crud.user.get(db=db, id=user_id)):
+        if (team := await crud.team.get(db=db, id=id)):
+            if crud.team.can_update(user=current_user, object=team):
+                return await crud.team.remove_administrator(db=db, db_obj=team, user=user)
+            raise HTTPException(
+                status_code=403, detail="You are not allowed to update this team")
+        raise HTTPException(status_code=404, detail="Team not found")
+    raise HTTPException(status_code=404, detail="User not found")

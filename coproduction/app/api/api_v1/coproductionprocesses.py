@@ -76,11 +76,27 @@ async def set_schema(
     schema: dict,
 ) -> Any:
     if (coproductionprocess := await crud.coproductionprocess.get(db=db, id=id)):
-        if current_user in coproductionprocess.administrators:
+        if crud.coproductionprocess.can_update(current_user, coproductionprocess):
             return await crud.coproductionprocess.set_schema(db=db, coproductionschema=schema, coproductionprocess=coproductionprocess)
         raise HTTPException(
-            status_code=404, detail="Only administrators can set an schema")
+            status_code=404, detail="You do not have permissions to update the coproductionprocess")
     raise HTTPException(status_code=404, detail="Coproduction process not found")
+
+
+@router.post("/{id}/clear_schema", response_model=schemas.CoproductionProcessOutFull)
+async def clear_schema(
+    *,
+    id: uuid.UUID,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_user),
+) -> Any:
+    if (coproductionprocess := await crud.coproductionprocess.get(db=db, id=id)):
+        if crud.coproductionprocess.can_update(current_user, coproductionprocess):
+            return await crud.coproductionprocess.clear_schema(db=db, coproductionprocess=coproductionprocess)
+        raise HTTPException(
+            status_code=404, detail="You do not have permissions to update the coproductionprocess")
+    raise HTTPException(status_code=404, detail="Coproduction process not found")
+
 
 
 class TeamIn(BaseModel):
@@ -219,3 +235,40 @@ async def get_activity(
     if not coproductionprocess:
         raise HTTPException(status_code=404, detail="CoproductionProcess not found")
     return requests.get(f"http://logging/api/v1/log?coproductionprocess_ids={id}&size=20").json()
+
+
+
+@router.post("/{id}/administrators")
+async def add_administrator(
+    *,
+    id: uuid.UUID,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_user),
+    user_in: schemas.UserIn,
+) -> Any:
+    if (user := await crud.user.get(db=db, id=user_in.user_id)):
+        if (coproductionprocess := await crud.coproductionprocess.get(db=db, id=id)):
+            if crud.coproductionprocess.can_update(user=current_user, object=coproductionprocess):
+                return await crud.coproductionprocess.add_administrator(db=db, db_obj=coproductionprocess, user=user)
+            raise HTTPException(
+                status_code=403, detail="You are not allowed to update this coproductionprocess")
+        raise HTTPException(status_code=404, detail="Coproductionprocess not found")
+    raise HTTPException(status_code=404, detail="User not found")
+
+
+@router.delete("/{id}/administrators/{user_id}")
+async def add_administrator(
+    *,
+    id: uuid.UUID,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_user),
+    user_id: str
+) -> Any:
+    if (user := await crud.user.get(db=db, id=user_id)):
+        if (coproductionprocess := await crud.coproductionprocess.get(db=db, id=id)):
+            if crud.coproductionprocess.can_update(user=current_user, object=coproductionprocess):
+                return await crud.coproductionprocess.remove_administrator(db=db, db_obj=coproductionprocess, user=user)
+            raise HTTPException(
+                status_code=403, detail="You are not allowed to update this coproductionprocess")
+        raise HTTPException(status_code=404, detail="Coproductionprocess not found")
+    raise HTTPException(status_code=404, detail="User not found")

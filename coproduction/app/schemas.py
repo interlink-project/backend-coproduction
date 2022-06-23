@@ -59,6 +59,7 @@ class PhaseOutFull(PhaseOut, TreeItemOutFull):
 class CoproductionProcessOutFull(CoproductionProcessOut):
     teams: List[TeamOut]
     permissions: List[PermissionOutFull]
+    administrators: List[UserOut]
 
     @validator('teams', pre=True)
     def teams_to_list(cls, v):
