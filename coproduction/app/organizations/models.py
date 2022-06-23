@@ -63,7 +63,7 @@ class Organization(BaseModel):
         return settings.COMPLETE_SERVER_NAME + self.logotype if self.logotype else ""
     
     @hybrid_property
-    def user_participation(self):
+    def current_user_participation(self):
         from app.general.deps import get_current_user_from_context
         db = Session.object_session(self)
         participations = []

@@ -44,21 +44,6 @@ async def create_organization(
     return await crud.organization.create(db=db, obj_in=organization_in, creator=current_user, set_creator_admin=True)
 
 
-@router.get("/{id}/objectives", response_model=List[schemas.ObjectiveOut])
-async def list_related_objectives(
-    id: uuid.UUID,
-    db: Session = Depends(deps.get_db),
-    current_user: Optional[models.User] = Depends(deps.get_current_user),
-) -> Any:
-    """
-    Retrieve related objectives.
-    """
-    organization = await crud.organization.get(db, id=id)
-    if not organization:
-        raise HTTPException(status_code=400, detail="Organization not found")
-    return organization.objectives
-
-
 @router.put("/{id}", response_model=schemas.OrganizationOutFull)
 async def update_organization(
     *,
@@ -92,7 +77,7 @@ async def read_organization(
     organization = await crud.organization.get(db=db, id=id)
     if not organization:
         raise HTTPException(status_code=404, detail="Organization not found")
-    if not await crud.organization.can_read(db=db, user=current_user, object=organization):
+    if not await crud.organization.can_read(object=organization):
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return organization
 
@@ -110,7 +95,7 @@ async def read_organization_teams(
     organization = await crud.organization.get(db=db, id=id)
     if not organization:
         raise HTTPException(status_code=404, detail="Organization not found")
-    if not await crud.organization.can_read(db=db, user=current_user, object=organization):
+    if not await crud.organization.can_read(object=organization):
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return await crud.team.get_multi(db=db, user=current_user, organization=organization)
 
@@ -154,3 +139,39 @@ async def set_logotype(
         raise HTTPException(
             status_code=403, detail="You are not allowed to update this organization")
     raise HTTPException(status_code=404, detail="Organization not found")
+
+
+@router.post("/{id}/administrators")
+async def add_administrator(
+    *,
+    id: uuid.UUID,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_user),
+    user_in: schemas.UserIn,
+) -> Any:
+    if (user := await crud.user.get(db=db, id=user_in.user_id)):
+        if (organization := await crud.organization.get(db=db, id=id)):
+            if crud.organization.can_update(user=current_user, object=organization):
+                return await crud.organization.add_administrator(db=db, db_obj=organization, user=user)
+            raise HTTPException(
+                status_code=403, detail="You are not allowed to update this organization")
+        raise HTTPException(status_code=404, detail="Organization not found")
+    raise HTTPException(status_code=404, detail="User not found")
+
+
+@router.delete("/{id}/administrators/{user_id}")
+async def add_administrator(
+    *,
+    id: uuid.UUID,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_user),
+    user_id: str
+) -> Any:
+    if (user := await crud.user.get(db=db, id=user_id)):
+        if (organization := await crud.organization.get(db=db, id=id)):
+            if crud.organization.can_update(user=current_user, object=organization):
+                return await crud.organization.remove_administrator(db=db, db_obj=organization, user=user)
+            raise HTTPException(
+                status_code=403, detail="You are not allowed to update this organization")
+        raise HTTPException(status_code=404, detail="Organization not found")
+    raise HTTPException(status_code=404, detail="User not found")

@@ -39,7 +39,7 @@ class OrganizationOut(Organization):
     logotype_link: Optional[str] 
     administrators_ids: List[str]
     teams_ids: List[uuid.UUID]
-    user_participation: list
+    current_user_participation: list
     people_involved: int
     
     @validator('administrators_ids', pre=True)

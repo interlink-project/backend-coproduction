@@ -47,7 +47,7 @@ class CoproductionProcessOut(CoproductionProcess):
     logotype_link: Optional[str] 
     language: Any
     administrators_ids: List[str]
-    user_participation: list
+    current_user_participation: list
 
     @validator('administrators_ids', pre=True)
     def administrators_ids_to_list(cls, v):

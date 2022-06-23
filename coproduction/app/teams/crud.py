@@ -29,7 +29,6 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
         db.commit()
         db.refresh(team)
         await log(self.enrich_log_data(team, {
-            "model": "TEAM",
             "action": "ADD_USER",
             "added_user_id": user.id
         }))
@@ -40,7 +39,6 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
         db.commit()
         db.refresh(team)
         await log(self.enrich_log_data(team, {
-            "model": "TEAM",
             "action": "REMOVE_USER",
             "removed_user_id": user.id
         }))

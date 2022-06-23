@@ -10,6 +10,8 @@ from app.tasks.schemas import *
 from app.teams.schemas import *
 from app.users.schemas import *
 
+## out
+
 class UserOutFull(UserOut):
     pass
 
@@ -23,7 +25,8 @@ class OrganizationOutFull(OrganizationOut):
 
 
 class TeamOutFull(TeamOut):
-    organization: OrganizationOut
+    # organization: OrganizationOut
+    administrators: List[UserOut]
 
 
 class PermissionOutFull(PermissionOut):
@@ -61,3 +64,8 @@ class CoproductionProcessOutFull(CoproductionProcessOut):
     def teams_to_list(cls, v):
         # set instead of list to avoid repeated teams
         return set(v)
+
+## in
+
+class UserIn(BaseModel):
+    user_id: str

@@ -6,6 +6,7 @@ from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_
+from fastapi import HTTPException
 
 from app.general.db.base_class import Base
 from app.messages import log
@@ -83,6 +84,33 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
         db.commit()
         db.refresh(db_obj)
         await self.log_on_create(db_obj)
+        return db_obj
+
+    async def add_administrator(self, db: Session, *, db_obj: ModelType, user: User = None) -> ModelType:
+        db_obj.administrators.append(user)
+        db.add(db_obj)
+        db.commit()
+        db.refresh(db_obj)
+        enriched: dict = self.enrich_log_data(db_obj, {
+            "action": "ADD_ADMINISTRATOR",
+            "added_user_id": user.id
+        })
+        await log(enriched)
+        return db_obj
+
+    async def remove_administrator(self, db: Session, *, db_obj: ModelType, user: User = None) -> ModelType:
+        if len(db_obj.administrators) <= 1:
+            raise HTTPException(status_code=400, detail="Can not delete the last administrator")
+
+        db_obj.administrators.remove(user)
+        db.add(db_obj)
+        db.commit()
+        db.refresh(db_obj)
+        enriched: dict = self.enrich_log_data(db_obj, {
+            "action": "REMOVE_ADMINISTRATOR",
+            "removed_user_id": user.id
+        })
+        await log(enriched)
         return db_obj
 
     async def update(

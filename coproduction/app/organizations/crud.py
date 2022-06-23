@@ -48,8 +48,8 @@ class CRUDOrganization(CRUDBase[Organization, OrganizationCreate, OrganizationPa
     def can_list(self, user):
         return True
 
-    async def can_read(self, db: Session, user, object):
-        return user in object.administrators or object.public
+    async def can_read(self, object):
+        return object.public or len(object.current_user_participation) > 0
 
     def can_update(self, user, object):
         return user in object.administrators

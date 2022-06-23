@@ -106,17 +106,12 @@ async def add_team(
         raise HTTPException(status_code=400, detail="Team not found")
     raise HTTPException(status_code=404, detail="Coproductionprocess not found")
 
-
-class UserIn(BaseModel):
-    user_id: str
-
-
 @router.post("/{id}/add_user")
 async def add_user(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
-    user_in: UserIn,
+    user_in: schemas.UserIn,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """

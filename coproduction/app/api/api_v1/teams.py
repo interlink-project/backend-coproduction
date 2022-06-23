@@ -75,7 +75,7 @@ class UserIn(BaseModel):
     user_id: str
 
 
-@router.post("/{id}/add_user", response_model=schemas.TeamOutFull)
+@router.post("/{id}/users", response_model=schemas.TeamOutFull)
 async def add_user(
     *,
     id: uuid.UUID,
@@ -87,27 +87,31 @@ async def add_user(
     Create new team.
     """
     if (team := await crud.team.get(db=db, id=id)):
-        if (user := await crud.user.get(db=db, id=user.user_id)):
-            return await crud.team.add_user(db=db, team=team, user=user)
-        raise HTTPException(status_code=404, detail="User not found")
+        if crud.team.can_update(object=team, user=current_user):
+            if (user := await crud.user.get(db=db, id=user.user_id)):
+                return await crud.team.add_user(db=db, team=team, user=user)
+            raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=403, detail="You do not have permission")
     raise HTTPException(status_code=404, detail="Team not found")
 
 
-@router.post("/{id}/remove_user", response_model=schemas.TeamOutFull)
+@router.delete("/{id}/users/{user_id}", response_model=schemas.TeamOutFull)
 async def remove_user(
     *,
     id: uuid.UUID,
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_user),
-    user: UserIn
+    user_id: str
 ) -> Any:
     """
     Create new team.
     """
     if (team := await crud.team.get(db=db, id=id)):
-        if (user := await crud.user.get(db=db, id=user.user_id)):
-            return await crud.team.remove_user(db=db, team=team, user=user)
-        raise HTTPException(status_code=404, detail="User not found")
+        if crud.team.can_update(object=team, user=current_user):
+            if (user := await crud.user.get(db=db, id=user_id)):
+                return await crud.team.remove_user(db=db, team=team, user=user)
+            raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=403, detail="You do not have permission")
     raise HTTPException(status_code=404, detail="Team not found")
 
 
