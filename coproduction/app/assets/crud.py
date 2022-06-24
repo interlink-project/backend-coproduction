@@ -1,7 +1,9 @@
+from fastapi import HTTPException
 import requests
 from sqlalchemy.orm import Session
 from typing import List
 from app.models import Asset, InternalAsset, ExternalAsset
+from app.tasks.crud import exportCrud as tasksCrud
 from app.schemas import AssetCreate, AssetPatch, ExternalAssetCreate, InternalAssetCreate
 from app.general.utils.CRUDBase import CRUDBase
 from app import models
@@ -20,7 +22,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
             queries.append(Asset.task_id == task.id)
         return db.query(Asset).filter(*queries).offset(skip).limit(limit).all()
 
-    async def create(self, db: Session, asset: AssetCreate, creator: models.User) -> Asset:
+    async def create(self, db: Session, asset: AssetCreate, creator: models.User, task: models.Task) -> Asset:
         data = jsonable_encoder(asset)
         if type(asset) == ExternalAssetCreate:
             print("IS EXTERNAL")
@@ -41,12 +43,12 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                     data["icon_path"] = icon_path
             except:
                 pass
-            db_obj = ExternalAsset(**data, creator=creator)
+            db_obj = ExternalAsset(**data, creator=creator, objective_id=task.objective_id, phase_id=task.objective.phase_id, coproductionprocess_id=task.objective.phase.coproductionprocess_id)
 
         if type(asset) == InternalAssetCreate:
             print("IS INTERNAL")
             data["type"] = "internalasset"
-            db_obj = InternalAsset(**data, creator=creator)
+            db_obj = InternalAsset(**data, creator=creator, objective_id=task.objective_id, phase_id=task.objective.phase_id, coproductionprocess_id=task.objective.phase.coproductionprocess_id)
 
         
 

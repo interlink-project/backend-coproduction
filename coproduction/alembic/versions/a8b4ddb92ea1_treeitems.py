@@ -1,8 +1,8 @@
 """treeitems
 
-Revision ID: e15405b19ddc
+Revision ID: a8b4ddb92ea1
 Revises: 
-Create Date: 2022-06-22 09:30:46.338137
+Create Date: 2022-06-24 08:35:18.923701
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = 'e15405b19ddc'
+revision = 'a8b4ddb92ea1'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -64,7 +64,6 @@ def upgrade():
     sa.Column('disabled_on', sa.DateTime(), nullable=True),
     sa.Column('from_item', postgresql.UUID(as_uuid=True), nullable=True),
     sa.Column('from_schema', postgresql.UUID(as_uuid=True), nullable=True),
-    sa.Column('path_ids', sa.ARRAY(postgresql.UUID(as_uuid=True)), nullable=True),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['creator_id'], ['user.id'], ondelete='SET NULL', use_alter=True),
@@ -190,6 +189,9 @@ def upgrade():
     sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
     sa.Column('type', sa.String(), nullable=True),
     sa.Column('task_id', postgresql.UUID(as_uuid=True), nullable=True),
+    sa.Column('objective_id', postgresql.UUID(as_uuid=True), nullable=True),
+    sa.Column('phase_id', postgresql.UUID(as_uuid=True), nullable=True),
+    sa.Column('coproductionprocess_id', postgresql.UUID(as_uuid=True), nullable=True),
     sa.Column('creator_id', sa.String(), nullable=True),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
@@ -213,8 +215,8 @@ def upgrade():
     sa.Column('knowledgeinterlinker_id', postgresql.UUID(as_uuid=True), nullable=True),
     sa.ForeignKeyConstraint(['id'], ['asset.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
-    )
-
+    ) 
+    
     op.create_foreign_key(None, 'asset', 'user', ['creator_id'], ['id'], ondelete='SET NULL', use_alter=True)
     op.create_foreign_key(None, 'coproductionprocess', 'user', ['creator_id'], ['id'], ondelete='SET NULL', use_alter=True)
     op.create_foreign_key(None, 'coproductionprocess', 'organization', ['organization_id'], ['id'], ondelete='SET NULL', use_alter=True)

@@ -28,6 +28,11 @@ class Asset(BaseModel):
     task_id = Column(UUID(as_uuid=True), ForeignKey("task.id", ondelete='CASCADE'))
     task = orm.relationship("Task", backref=orm.backref('assets', passive_deletes=True))
 
+    # to simplify queries
+    objective_id = Column(UUID(as_uuid=True))
+    phase_id = Column(UUID(as_uuid=True))
+    coproductionprocess_id = Column(UUID(as_uuid=True))
+
     # created by
     creator_id = Column(String, ForeignKey("user.id", use_alter=True, ondelete='SET NULL'))
     creator = orm.relationship('User', foreign_keys=[creator_id], post_update=True, backref="created_assets")
@@ -86,10 +91,6 @@ class InternalAsset(Asset):
         backend = self.software_response.get("service_name")
         api_path = self.software_response.get("api_path")
         return f"http://{backend}{api_path}/{self.external_asset_id}"
-
-    @property
-    def external_info(self):
-        return requests.get(self.internal_link).json()
 
     @property
     def softwareinterlinker(self):

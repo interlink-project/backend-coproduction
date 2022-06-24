@@ -19,7 +19,7 @@ async def list_coproductionprocesses(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
     limit: int = 100,
-    current_user: Optional[models.User] = Depends(deps.get_current_user),
+    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
     search: str = Query(None)
 ) -> Any:
     """
@@ -50,7 +50,7 @@ async def set_logotype(
     *,
     id: uuid.UUID,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_user),
+    current_user: models.User = Depends(deps.get_current_active_user),
     file: UploadFile = File(...),
 ) -> Any:
     if (coproductionprocess := await crud.coproductionprocess.get(db=db, id=id)):
@@ -72,7 +72,7 @@ async def set_schema(
     *,
     id: uuid.UUID,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_user),
+    current_user: models.User = Depends(deps.get_current_active_user),
     schema: dict,
 ) -> Any:
     if (coproductionprocess := await crud.coproductionprocess.get(db=db, id=id)):
@@ -88,7 +88,7 @@ async def clear_schema(
     *,
     id: uuid.UUID,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_user),
+    current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     if (coproductionprocess := await crud.coproductionprocess.get(db=db, id=id)):
         if crud.coproductionprocess.can_update(current_user, coproductionprocess):
@@ -167,7 +167,7 @@ async def read_coproductionprocess(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
-    current_user: Optional[models.User] = Depends(deps.get_current_user),
+    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Get coproductionprocess by ID.
@@ -237,13 +237,30 @@ async def get_activity(
     return requests.get(f"http://logging/api/v1/log?coproductionprocess_ids={id}&size=20").json()
 
 
+@router.get("/{id}/assets", response_model=List[schemas.AssetOut])
+async def read_coproductionprocess_assets(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: uuid.UUID,
+    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Get coproductionprocess by ID.
+    """
+    coproductionprocess = await crud.coproductionprocess.get(db=db, id=id)
+    if not coproductionprocess:
+        raise HTTPException(status_code=404, detail="CoproductionProcess not found")
+    if not crud.coproductionprocess.can_read(db=db, user=current_user, object=coproductionprocess):
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    return await crud.coproductionprocess.get_assets(db=db, user=current_user, coproductionprocess=coproductionprocess)
+
 
 @router.post("/{id}/administrators")
 async def add_administrator(
     *,
     id: uuid.UUID,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_user),
+    current_user: models.User = Depends(deps.get_current_active_user),
     user_in: schemas.UserIn,
 ) -> Any:
     if (user := await crud.user.get(db=db, id=user_in.user_id)):
@@ -257,11 +274,11 @@ async def add_administrator(
 
 
 @router.delete("/{id}/administrators/{user_id}")
-async def add_administrator(
+async def delete_administrator(
     *,
     id: uuid.UUID,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_user),
+    current_user: models.User = Depends(deps.get_current_active_user),
     user_id: str
 ) -> Any:
     if (user := await crud.user.get(db=db, id=user_id)):

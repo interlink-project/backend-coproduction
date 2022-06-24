@@ -15,6 +15,7 @@ from sqlalchemy_utils import aggregated
 from app.objectives.models import Objective
 from app.treeitems.models import TreeItem
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.ext.associationproxy import association_proxy
 
 class Phase(TreeItem):
     id = Column(
@@ -32,6 +33,8 @@ class Phase(TreeItem):
     coproductionprocess = relationship("CoproductionProcess", foreign_keys=[coproductionprocess_id], backref=backref('children', passive_deletes=True))
 
     # Infered state from objectives
+    objectives_ids = association_proxy('children', 'id')
+
     @aggregated('children', Column(Date))
     def end_date(self):
         return func.max(Objective.end_date)

@@ -15,6 +15,7 @@ from sqlalchemy_utils import aggregated
 from app.tasks.models import Task
 from app.treeitems.models import TreeItem
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.ext.associationproxy import association_proxy
 
 class Objective(TreeItem):
     id = Column(
@@ -30,6 +31,7 @@ class Objective(TreeItem):
     phase = relationship("Phase", foreign_keys=[phase_id], backref=backref('children', passive_deletes=True))
 
     # Infered state from tasks
+    task_ids = association_proxy('children', 'id')
 
     @aggregated('children', Column(Date))
     def end_date(self):

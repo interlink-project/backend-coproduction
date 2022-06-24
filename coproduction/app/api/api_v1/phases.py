@@ -16,7 +16,7 @@ async def list_phases(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
     limit: int = 100,
-    current_user: Optional[models.User] = Depends(deps.get_current_user),
+    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Retrieve phases.
@@ -46,7 +46,7 @@ async def create_phase(
 async def list_related_objectives(
     id: uuid.UUID,
     db: Session = Depends(deps.get_db),
-    current_user: Optional[models.User] = Depends(deps.get_current_user),
+    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Retrieve related objectives.
@@ -82,7 +82,7 @@ async def read_phase(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
-    current_user: Optional[models.User] = Depends(deps.get_current_user),
+    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Get phase by ID.

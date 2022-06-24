@@ -14,7 +14,7 @@ async def list_objectives(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
     limit: int = 100,
-    current_user: Optional[models.User] = Depends(deps.get_current_user),
+    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Retrieve objectives.
@@ -45,7 +45,7 @@ async def create_objective(
 async def list_related_tasks(
     id: uuid.UUID,
     db: Session = Depends(deps.get_db),
-    current_user: Optional[models.User] = Depends(deps.get_current_user),
+    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Retrieve related tasks.
@@ -80,7 +80,7 @@ async def read_objective(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
-    current_user: Optional[models.User] = Depends(deps.get_current_user),
+    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Get objective by ID.

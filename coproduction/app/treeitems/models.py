@@ -54,15 +54,13 @@ class TreeItem(BaseModel):
     from_item = Column(UUID(as_uuid=True))
     from_schema = Column(UUID(as_uuid=True))
 
-    path_ids = Column(ARRAY(UUID(as_uuid=True)), default=dict)
-
     teams = association_proxy('_permissions', 'team')
 
     __mapper_args__ = {
         "polymorphic_identity": "treeitem",
         "polymorphic_on": type,
     }
-    
+
     @cached_hybrid_property
     def permissions(self):
         db = Session.object_session(self)
@@ -88,7 +86,6 @@ class TreeItem(BaseModel):
     @cached_hybrid_property
     def user_permissions(self):
         from app.general.deps import get_current_user_from_context
-
         db = Session.object_session(self)
         if user := get_current_user_from_context(db=db):
 

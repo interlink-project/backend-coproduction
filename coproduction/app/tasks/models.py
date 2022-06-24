@@ -23,7 +23,6 @@ class Task(TreeItem):
         default=uuid.uuid4,
     )
     problemprofiles = Column(ARRAY(String), default=dict)
-
     # they belong to an objetive
     objective_id = Column(
         UUID(as_uuid=True), ForeignKey("objective.id", ondelete='CASCADE')
@@ -31,6 +30,12 @@ class Task(TreeItem):
     objective = relationship("Objective", foreign_keys=[
                              objective_id], backref=backref('children', passive_deletes=True))
 
+    # phase_id = Column(
+    #     UUID(as_uuid=True)
+    # )
+    # coproductionprocess_id = Column(
+    #     UUID(as_uuid=True)
+    # )
     start_date = Column(Date, nullable=True)
     end_date = Column(Date, nullable=True)
 

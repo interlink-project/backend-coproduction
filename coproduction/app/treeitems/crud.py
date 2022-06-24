@@ -5,6 +5,8 @@ from sqlalchemy.orm import Session
 from app.models import TreeItem, Task, Objective, Phase
 from app.utils import update_status_and_progress
 from datetime import datetime
+from app import models
+from sqlalchemy import or_
 
 class CRUDTreeItem:
     async def get(self, db: Session, id: uuid.UUID) -> Optional[TreeItem]:
@@ -15,6 +17,22 @@ class CRUDTreeItem:
     ) -> List[TreeItem]:
         return db.query(TreeItem).order_by(TreeItem.created_at.asc()).offset(skip).limit(limit).all()
     
+    async def get_for_user_and_coproductionprocess(
+        self, db: Session, user: models.User, coproductionprocess_id: uuid.UUID
+    ):
+        return db.query(
+                models.TreeItem
+            ).join(
+                models.Permission
+            ).filter(
+                models.Permission.treeitem_id == models.TreeItem.id,
+                models.Permission.coproductionprocess_id == coproductionprocess_id
+            ).filter(
+                or_(
+                    models.Permission.user_id == user.id,
+                    models.Permission.team_id.in_(user.teams_ids)
+                )
+            ).all()
 
     async def remove(self, db: Session, obj, model, user_id: str = None, remove_definitely: bool = False) -> TreeItem:
         parent = None

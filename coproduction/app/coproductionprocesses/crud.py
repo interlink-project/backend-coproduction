@@ -7,11 +7,10 @@ from sqlalchemy import or_, func
 from app import crud, models
 from app.general.utils.CRUDBase import CRUDBase
 from app.models import CoproductionProcess, Permission, User, Permission
-from app.permissions.crud import exportCrud as exportPermissionCrud
 from app.schemas import CoproductionProcessCreate, CoproductionProcessPatch
 from fastapi.encoders import jsonable_encoder
 from app.messages import log
-
+from app.treeitems.crud import exportCrud as treeitemsCrud
 
 class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessCreate, CoproductionProcessPatch]):
     async def get_multi_by_user(self, db: Session, user: User, search: str = None) -> Optional[List[CoproductionProcess]]:
@@ -44,7 +43,27 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                 CoproductionProcess.name.contains(search),
             )
 
-        return query.all()
+        return query.order_by(CoproductionProcess.created_at.asc()).all()
+
+
+    async def get_assets(self, db: Session, coproductionprocess: CoproductionProcess, user: models.User):
+        if user in coproductionprocess.administrators:
+            return db.query(
+                models.Asset
+                ).filter(
+                    models.Asset.coproductionprocess_id == coproductionprocess.id,
+                ).order_by(models.Asset.created_at.desc()).all()
+        
+        ids = [treeitem.id for treeitem in await treeitemsCrud.get_for_user_and_coproductionprocess(db=db, user=user, coproductionprocess_id=coproductionprocess.id)]
+        return db.query(
+                models.Asset
+            ).filter(
+                or_(
+                    models.Asset.phase_id.in_(ids),
+                    models.Asset.objective_id.in_(ids),
+                    models.Asset.task_id.in_(ids),
+                )
+            ).order_by(models.Asset.created_at.desc()).all()
 
     async def clear_schema(self, db: Session, coproductionprocess: models.CoproductionProcess):
         schema = coproductionprocess.schema_used

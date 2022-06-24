@@ -12,16 +12,16 @@ from app.messages import log
 
 router = APIRouter()
     
-@router.get("/{id}/permissions", response_model=schemas.PermissionOutFull)
-async def get_permissions_of_treeitem(
-    *,
-    db: Session = Depends(deps.get_db),
-    id: uuid.UUID,
-    current_user: Optional[models.User] = Depends(deps.get_current_user),
-) -> Any:
-    """
-    Get permission by ID.
-    """
-    if treeitem := await crud.treeitem.get(db=db, id=id):
-        return await crud.permission.get_multi(db=db)
-    raise HTTPException(status_code=404, detail="Permission not found")
+# @router.get("/{id}/permissions", response_model=schemas.PermissionOutFull)
+# async def get_permissions_of_treeitem(
+#     *,
+#     db: Session = Depends(deps.get_db),
+#     id: uuid.UUID,
+#     current_user: Optional[models.User] = Depends(deps.get_current_active_user),
+# ) -> Any:
+#     """
+#     Get permission by ID.
+#     """
+#     if treeitem := await crud.treeitem.get(db=db, id=id):
+#         return await crud.permission.get_multi(db=db)
+#     raise HTTPException(status_code=404, detail="Permission not found")

@@ -160,7 +160,7 @@ async def add_administrator(
 
 
 @router.delete("/{id}/administrators/{user_id}")
-async def add_administrator(
+async def delete_administrator(
     *,
     id: uuid.UUID,
     db: Session = Depends(deps.get_db),

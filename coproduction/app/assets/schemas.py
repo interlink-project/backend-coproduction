@@ -52,9 +52,8 @@ class InternalAsset(InternalAssetBase):
     created_at: datetime
     updated_at: Optional[datetime]
     capabilities: Optional[dict]
-    softwareinterlinker: dict
-    knowledgeinterlinker: Optional[dict]
-    # external_info: Optional[dict]
+    # softwareinterlinker: dict
+    # knowledgeinterlinker: Optional[dict]
 
     class Config:
         orm_mode = True

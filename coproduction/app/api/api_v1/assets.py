@@ -20,7 +20,7 @@ async def list_assets(
     task_id: uuid.UUID,
     db: Session = Depends(deps.get_db),
     # coproductionprocess_id: Optional[uuid.UUID] = Query(None),
-    current_user: Optional[models.User] = Depends(deps.get_current_user),
+    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Retrieve assets.
@@ -73,7 +73,7 @@ async def create_asset(
             interlinker = check_interlinker(asset_in.externalinterlinker_id, token)
 
     return await crud.asset.create(
-        db=db, asset=asset_in, creator=current_user)
+        db=db, task=task, asset=asset_in, creator=current_user)
 
 
 class InstantiateSchema(BaseModel):
@@ -122,7 +122,7 @@ async def instantiate_asset_from_knowledgeinterlinker(
 
     external_asset_id = data_from_interlinker["id"] if "id" in data_from_interlinker else data_from_interlinker["_id"]
     # Creates an InternalAsset object with reference to the software interlinker that manages the asset, the knowledge interlinker that contained the genesis asset id and the id of the external resource
-    return await crud.asset.create(db=db, creator=current_user, asset=schemas.InternalAssetCreate(
+    return await crud.asset.create(db=db, task=task, creator=current_user, asset=schemas.InternalAssetCreate(
         **{
             "knowledgeinterlinker_id": asset_in.knowledgeinterlinker_id,
             "type": "internalasset",
@@ -144,6 +144,10 @@ async def clone_asset(
     """
     Clone asset.
     """
+    asset: models.Asset
+    if not (asset := await crud.asset.get(db=db, id=id)):
+        raise HTTPException(status_code=404, detail="Asset not found")
+
     # first check if task exists
     task: models.Task
     if not (task := await crud.task.get(db=db, id=asset.task_id)):
@@ -151,10 +155,6 @@ async def clone_asset(
 
     if not crud.asset.can_create(task):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-
-    asset: models.Asset
-    if not (asset := await crud.asset.get(db=db, id=id)):
-        raise HTTPException(status_code=404, detail="Asset not found")
 
     # TODO: check that the software interlinker of the original asset has the clone capability
     if asset.type == "internalasset":
@@ -170,7 +170,7 @@ async def clone_asset(
         external_asset_id = data_from_interlinker["id"] if "id" in data_from_interlinker else data_from_interlinker["_id"]
 
         asset: models.InternalAsset
-        db_asset = await crud.asset.create(db=db, asset=schemas.InternalAssetCreate(
+        db_asset = await crud.asset.create(db=db, task=task, asset=schemas.InternalAssetCreate(
             task_id=asset.task_id,
             softwareinterlinker_id=asset.softwareinterlinker_id,
             knowledgeinterlinker_id=asset.knowledgeinterlinker_id,
@@ -179,7 +179,7 @@ async def clone_asset(
 
     elif asset.type == "externalasset":
         asset: models.ExternalAsset
-        db_asset = await crud.asset.create(db=db, asset=schemas.ExternalAssetCreate(
+        db_asset = await crud.asset.create(db=db, task=task, asset=schemas.ExternalAssetCreate(
             task_id=asset.task_id,
             externalinterlinker_id=asset.externalinterlinker_id,
             name=asset.name,
@@ -218,7 +218,7 @@ async def read_asset(
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
     asset_in: schemas.AssetPatch,
-    current_user: Optional[models.User] = Depends(deps.get_current_user),
+    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
     token: str = Depends(deps.get_current_active_token),
 ) -> Any:
     """

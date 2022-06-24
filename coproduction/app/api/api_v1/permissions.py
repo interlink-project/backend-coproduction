@@ -17,7 +17,7 @@ async def create_permission(
     *,
     db: Session = Depends(deps.get_db),
     permission_in: schemas.PermissionCreate,
-    current_user: Optional[models.User] = Depends(deps.get_current_user),
+    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Create permission
@@ -31,7 +31,7 @@ async def create_permission(
 async def get_permissions(
     *,
     db: Session = Depends(deps.get_db),
-    current_user: Optional[models.User] = Depends(deps.get_current_user),
+    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Get permissions.
@@ -43,7 +43,7 @@ async def get_permission(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
-    current_user: Optional[models.User] = Depends(deps.get_current_user),
+    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Get permission by ID.
@@ -58,7 +58,7 @@ async def update_permission(
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
     permission_in: schemas.PermissionPatch,
-    current_user: Optional[models.User] = Depends(deps.get_current_user),
+    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Patch permission by ID.
@@ -73,7 +73,7 @@ async def delete_permission(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
-    current_user: Optional[models.User] = Depends(deps.get_current_user),
+    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Delete permission by ID.

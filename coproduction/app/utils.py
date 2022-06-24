@@ -38,6 +38,22 @@ class RoleTypes(str, enum.Enum):
     nonprofit_organization = "nonprofit_organization"
     forprofit_organization = "forprofit_organization"
 
+class ActionTypes(str, enum.Enum):
+    create_administrator = "create_administrator"
+    remove_administrator = "remove_administrator"
+    add_user_to_team = "add_user_to_team"
+    remove_user_from_team = "remove_user_from_team"
+    create_instance = "create_instance"
+    delete_instance = "delete_instance"
+    disable_instance = "disable_instance"
+
+class ModelTypes(str, enum.Enum):
+    COPRODUCTIONPROCESS = "CoproductionProcess"
+    ORGANIZATION = "Organization"
+    TEAM = "Team"
+    ASSET = "Asset"
+    TREEITEM = "TreeItem"
+
 def update_status_and_progress(treeitem):
     statuses = [child.status for child in getattr(treeitem, "children") if not getattr(child, "disabled_on")]
     status = Status.awaiting
