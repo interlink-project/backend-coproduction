@@ -108,10 +108,12 @@ class TreeItem(BaseModel):
         db = Session.object_session(self)
         if user := get_current_user_from_context(db=db):
             # If admin, grant all
+            print("llega", GRANT_ALL)
             if user in self.coproductionprocess.administrators:
                 return GRANT_ALL
             # And check if any of the permission has the flag of the permission key as True
             final_permissions_dict = copy.deepcopy(DENY_ALL)
+            # final_permissions_dict["access_assets_permission"] = True
             for permission_key in PERMS:
                 final_permissions_dict[permission_key] = any(getattr(permission, permission_key) for permission in self.user_permissions)
             return final_permissions_dict

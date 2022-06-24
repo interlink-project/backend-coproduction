@@ -71,9 +71,9 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
     ) -> List[ModelType]:
         return db.query(self.model).order_by(self.model.created_at.asc()).offset(skip).limit(limit).all()
 
-    async def create(self, db: Session, *, obj_in: CreateSchemaType, creator: User = None, set_creator_admin: bool = False) -> ModelType:
+    async def create(self, db: Session, *, obj_in: CreateSchemaType, creator: User = None, set_creator_admin: bool = False, extra: dict = {}, commit: bool = True) -> ModelType:
         obj_in_data = jsonable_encoder(obj_in)
-        db_obj = self.model(**obj_in_data)  # type: ignore
+        db_obj = self.model(**obj_in_data, **extra)  # type: ignore
 
         if creator:
             db_obj.creator_id = creator.id
@@ -81,10 +81,11 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
                 db_obj.administrators.append(creator)
 
         db.add(db_obj)
-        db.commit()
-        db.refresh(db_obj)
-        await self.log_on_create(db_obj)
-        return db_obj
+        if commit:
+            db.commit()
+            db.refresh(db_obj)
+            await self.log_on_create(db_obj)
+            return db_obj
 
     async def add_administrator(self, db: Session, *, db_obj: ModelType, user: User = None) -> ModelType:
         db_obj.administrators.append(user)

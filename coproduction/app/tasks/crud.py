@@ -18,24 +18,9 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
         taskmetadata["from_schema"] = schema_id
         taskmetadata["from_item"] = taskmetadata.get("id")
         creator = TaskCreate(**taskmetadata)
-        return await self.create(db=db, task=creator, objective=objective, commit=False)
-
-    async def create(self, db: Session, *, task: TaskCreate, objective: Objective = None, commit : bool = True, creator: User = None) -> Task:
-        if objective and task.objective_id:
-            raise Exception("Specify only one objective")
-        if not objective and not task.objective_id:
-            raise Exception("Objective not specified")
-        obj_in_data = jsonable_encoder(task)
-        db_obj = self.model(**obj_in_data, objective=objective)
-        if creator:
-            db_obj.creator_id = creator.id
-                
-        db.add(db_obj)
-        if commit:
-            db.commit()
-            db.refresh(db_obj)
-            await self.log_on_create(db_obj)
-        return db_obj
+        return await self.create(db=db, task=creator, commit=False, extra={
+            "objective": objective,
+        })
 
     async def add_prerequisite(self, db: Session, task: Task, prerequisite: Task, commit : bool = True) -> Task:
         if task == prerequisite:

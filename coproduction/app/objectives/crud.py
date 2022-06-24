@@ -18,24 +18,9 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
         objectivemetadata["from_schema"] = schema_id
         objectivemetadata["from_item"] = objectivemetadata.get("id")
         creator = ObjectiveCreate(**objectivemetadata)
-        return await self.create(db=db, objective=creator, phase=phase, commit=False)
-
-    async def create(self, db: Session, *, objective: ObjectiveCreate, phase: Phase = None, commit: bool = True, creator: User = None) -> Objective:
-        if phase and objective.phase_id:
-            raise Exception("Specify only one objective")
-        if not phase and not objective.phase_id:
-            raise Exception("Objective not specified")
-
-        obj_in_data = jsonable_encoder(objective)
-        db_obj = self.model(**obj_in_data, phase=phase)
-        if creator:
-            db_obj.creator_id = creator.id
-        db.add(db_obj)
-        if commit:
-            db.commit()
-            db.refresh(db_obj)
-            await self.log_on_create(db_obj)
-        return db_obj
+        return await self.create(db=db, objective=creator, commit=False, extra={
+            "phase": phase
+        })
 
     async def add_prerequisite(self, db: Session, objective: Objective, prerequisite: Objective, commit: bool = True) -> Objective:
         if objective == prerequisite:

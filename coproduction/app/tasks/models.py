@@ -43,9 +43,9 @@ class Task(TreeItem):
         "polymorphic_identity": "task",
     }
     
-    @property
-    def coproductionprocess(self):
-        return self.objective.phase.coproductionprocess
+    @hybrid_property
+    def coproductionprocess_id(self):
+        return self.objective.phase.coproductionprocess_id
 
     @hybrid_property
     def phase_id(self):

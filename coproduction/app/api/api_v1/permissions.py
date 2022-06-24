@@ -22,9 +22,11 @@ async def create_permission(
     """
     Create permission
     """
+    treeitem : models.TreeItem
     if treeitem := await crud.treeitem.get(db=db, id=permission_in.treeitem_id):
-        permission_in.coproductionprocess_id = treeitem.coproductionprocess.id
-        return await crud.permission.create(db=db, obj_in=permission_in, creator=current_user)
+        return await crud.permission.create(db=db, obj_in=permission_in, creator=current_user, extra={
+            "coproductionprocess_id": treeitem.coproductionprocess_id
+        })
     raise HTTPException(status_code=404, detail="treeitem not found")
 
 @router.get("", response_model=List[schemas.PermissionOutFull])

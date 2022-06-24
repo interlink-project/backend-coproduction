@@ -31,10 +31,6 @@ class Permission(BaseModel):
     treeitem = relationship('TreeItem', foreign_keys=[treeitem_id], backref=backref('_permissions', passive_deletes=True))
 
     # to
-    # create_treeitem_permission = Column(Boolean, default=False)
-    edit_treeitem_permission = Column(Boolean, default=False)
-    delete_treeitem_permission = Column(Boolean, default=False)
-    access_assets_permission = Column(Boolean, default=False)
     create_assets_permission = Column(Boolean, default=False)
     delete_assets_permission = Column(Boolean, default=False)
     # IMPORTANT TO HAVE "_permission" STRING IN FIELD NAME for the classmethod
@@ -43,14 +39,15 @@ class Permission(BaseModel):
         return "<Permission>"
 
 # DO NOT REMOVE
-GRANT_ALL = {}
-DENY_ALL = {}
-PERMS = [field for field in dir(Permission) if "_permission" in field]
+GRANT_ALL = {'access_assets_permission': True}
+DENY_ALL = {'access_assets_permission': False}
+
+PERMS = [field for field in dir(Permission) if "_permission" in field] + ['access_assets_permission']
 for perm in PERMS:
     GRANT_ALL[perm] = True
     DENY_ALL[perm] = False
 
 """
-GRANT_ALL = {'create_assets_permission': True, 'delete_assets_permission': True, 'delete_treeitem_permission': True, 'edit_treeitem_permission': True, 'access_assets_permission': True} 
-DENY_ALL = {'create_assets_permission': False, 'delete_assets_permission': False, 'delete_treeitem_permission': False, 'edit_treeitem_permission': False, 'access_assets_permission': False}
+GRANT_ALL = {'create_assets_permission': True, 'delete_assets_permission': True, 'access_assets_permission': True} 
+DENY_ALL = {'create_assets_permission': False, 'delete_assets_permission': False, 'access_assets_permission': False}
 """

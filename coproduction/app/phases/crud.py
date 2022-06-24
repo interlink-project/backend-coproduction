@@ -17,24 +17,9 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
         phasemetadata["from_schema"] = schema_id
         phasemetadata["from_item"] = phasemetadata.get("id")
         creator = PhaseCreate(**phasemetadata)
-        return await self.create(db=db, phase=creator, coproductionprocess=coproductionprocess, commit=False)
-
-    async def create(self, db: Session, *, phase: PhaseCreate, coproductionprocess: CoproductionProcess, commit: bool = True, creator: User = None) -> Phase:
-        if coproductionprocess and phase.coproductionprocess_id:
-            raise Exception("Specify only one coproductionprocess")
-        if not coproductionprocess and not phase.coproductionprocess_id:
-            raise Exception("Coproductionprocess not specified")
-
-        obj_in_data = jsonable_encoder(phase)
-        db_obj = self.model(**obj_in_data, coproductionprocess=coproductionprocess)
-        if creator:
-            db_obj.creator_id = creator.id
-        db.add(db_obj)
-        if commit:
-            db.commit()
-            db.refresh(db_obj)
-            await self.log_on_create(db_obj)
-        return db_obj
+        return await self.create(db=db, phase=creator, commit=False, extra={
+            "coproductionprocess": coproductionprocess
+        })
 
     async def add_prerequisite(self, db: Session, phase: Phase, prerequisite: Phase, commit: bool = True) -> Phase:
         if phase == prerequisite:
