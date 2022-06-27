@@ -60,12 +60,13 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
 
     def get_dict_for_treeitem(self, db: Session, treeitem: models.TreeItem, user: models.User):
         permissions = self.get_for_user_and_treeitem(db=db, user=user, treeitem=treeitem)
-        path = [treeitem.coproductionprocess.id, *treeitem.path_ids]
 
         index_delete = 0
         index_create = 0
         delete_assets_permission = False
         create_assets_permission = False
+        
+        path = treeitem.path_ids
         
         for permission in permissions:
             path_con = permission.treeitem_id or permission.coproductionprocess_id

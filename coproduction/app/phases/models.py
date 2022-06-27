@@ -55,7 +55,7 @@ class Phase(TreeItem):
 
     @hybrid_property
     def path_ids(self):
-        return [self.id]
+        return [self.coproductionprocess_id, self.id]
 
     def __repr__(self):
         return "<Phase %r>" % self.name

@@ -50,7 +50,7 @@ class Task(TreeItem):
 
     @hybrid_property
     def path_ids(self):
-        return [self.objective.phase_id, self.objective_id, self.id]
+        return [self.coproductionprocess.id, self.objective.phase_id, self.objective_id, self.id]
     
     @hybrid_property
     def is_disabled(self):

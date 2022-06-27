@@ -53,7 +53,7 @@ class Objective(TreeItem):
     
     @hybrid_property
     def path_ids(self):
-        return [self.phase_id, self.id]
+        return [self.coproductionprocess.id, self.phase_id, self.id]
     
     @hybrid_property
     def is_disabled(self):
