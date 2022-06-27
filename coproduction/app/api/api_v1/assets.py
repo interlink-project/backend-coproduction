@@ -29,7 +29,7 @@ async def list_assets(
     if not (task := await crud.task.get(db=db, id=task_id)):
         raise HTTPException(status_code=404, detail="Task not found")
 
-    if not crud.asset.can_list(task):
+    if not crud.asset.can_list(db=db, user=current_user, task=task):
         raise HTTPException(status_code=403, detail="Not enough permissions")
     
     return await crud.asset.get_multi(db, task=task)
@@ -57,7 +57,7 @@ async def create_asset(
     if not (task := await crud.task.get(db=db, id=asset_in.task_id)):
         raise HTTPException(status_code=404, detail="Task not found")
 
-    if not crud.asset.can_create(task):
+    if not crud.asset.can_create(db=db, user=current_user, task=task):
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     # check that interlinker exists
@@ -97,7 +97,7 @@ async def instantiate_asset_from_knowledgeinterlinker(
     if not (task := await crud.task.get(db=db, id=asset_in.task_id)):
         raise HTTPException(status_code=404, detail="Task not found")
 
-    if not crud.asset.can_create(task):
+    if not crud.asset.can_create(db=db, user=current_user, task=task):
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     # Gets the knowledge interlinker
@@ -153,7 +153,7 @@ async def clone_asset(
     if not (task := await crud.task.get(db=db, id=asset.task_id)):
         raise HTTPException(status_code=404, detail="Task not found")
 
-    if not crud.asset.can_create(task):
+    if not crud.asset.can_create(db=db, user=current_user, task=task):
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     # TODO: check that the software interlinker of the original asset has the clone capability
@@ -207,7 +207,7 @@ async def update_asset(
     asset = await crud.asset.get(db=db, id=id)
     if not asset:
         raise HTTPException(status_code=404, detail="Asset not found")
-    if not crud.asset.can_update(asset):
+    if not crud.asset.can_update(db=db, user=current_user, task=asset.task):
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return await crud.asset.update(db=db, db_obj=asset, obj_in=asset_in)
 
@@ -246,7 +246,7 @@ async def read_internal_asset(
 
     if asset := await crud.asset.get(db=db, id=id):
         if asset.type == "internalasset":
-            if not crud.asset.can_read(asset):
+            if not crud.asset.can_read(db=db, user=current_user, task=asset.task):
                 raise HTTPException(status_code=403, detail="Not enough permissions")
 
             print("Retrieving internal ", asset.link)
@@ -278,7 +278,7 @@ async def delete_asset(
     """
 
     if asset := await crud.asset.get(db=db, id=id):
-        if not crud.asset.can_remove(asset):
+        if not crud.asset.can_remove(db=db, user=current_user, task=asset.task):
             raise HTTPException(status_code=403, detail="Not enough permissions")
         await crud.asset.remove(db=db, id=id)
         return None

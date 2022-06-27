@@ -13,6 +13,7 @@ from sqlalchemy.orm import backref, relationship
 
 from app.treeitems.models import TreeItem
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.ext.associationproxy import association_proxy
 
 
 class Task(TreeItem):
@@ -38,15 +39,11 @@ class Task(TreeItem):
     # )
     start_date = Column(Date, nullable=True)
     end_date = Column(Date, nullable=True)
+    coproductionprocess = association_proxy('objective', 'coproductionprocess')
 
     __mapper_args__ = {
         "polymorphic_identity": "task",
     }
-    
-    @hybrid_property
-    def coproductionprocess_id(self):
-        return self.objective.phase.coproductionprocess_id
-
     @hybrid_property
     def phase_id(self):
         return self.objective.phase_id

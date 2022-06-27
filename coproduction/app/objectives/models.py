@@ -32,6 +32,7 @@ class Objective(TreeItem):
 
     # Infered state from tasks
     task_ids = association_proxy('children', 'id')
+    coproductionprocess = association_proxy('phase', 'coproductionprocess')
 
     @aggregated('children', Column(Date))
     def end_date(self):
@@ -49,10 +50,6 @@ class Objective(TreeItem):
 
     def __repr__(self):
         return "<Objective %r>" % self.name
-
-    @property
-    def coproductionprocess_id(self):
-        return self.phase.coproductionprocess_id
     
     @hybrid_property
     def path_ids(self):

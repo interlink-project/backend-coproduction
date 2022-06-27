@@ -36,9 +36,11 @@ async def create_objective(
     """
     Create new objective.
     """
-    if not crud.objective.can_create(current_user):
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-    return await crud.objective.create(db=db, objective=objective_in)
+    if phase := await crud.phase.get(db=db, id=objective_in.phase_id):
+        if not crud.phase.can_update(current_user, phase):
+            raise HTTPException(status_code=403, detail="Not enough permissions")
+        return await crud.objective.create(db=db, objective=objective_in)
+    raise HTTPException(status_code=400, detail="Phase not found")
 
 
 @router.get("/{id}/tasks", response_model=List[schemas.TaskOut])

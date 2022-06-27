@@ -34,8 +34,6 @@ class PermissionOutFull(PermissionOut):
 
 
 class TreeItemOutFull(TreeItemOut):
-    user_permissions_dict: dict
-    user_roles: list
     permissions: List[PermissionOutFull]
     teams: List[TeamOut]
 

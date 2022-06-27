@@ -105,9 +105,9 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
         return True
 
     def can_update(self, user, object):
-        return True
+        return user in object.coproductionprocess.administrators
 
     def can_remove(self, user, object):
-        return True
+        return user in object.coproductionprocess.administrators
 
 exportCrud = CRUDTask(Task)

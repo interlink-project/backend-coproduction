@@ -74,52 +74,8 @@ class TreeItem(BaseModel):
     @cached_hybrid_property
     def user_roles(self):
         from app.general.deps import get_current_user_from_context
-        db = Session.object_session(self)
-
-        roles = []
-        if user := get_current_user_from_context(db=db):
-            roles = [perm.team.type.value for perm in self.user_permissions]
-            if user in self.coproductionprocess.administrators:
-                roles.append("administrator")
-        return roles
-
-    @cached_hybrid_property
-    def user_permissions(self):
-        from app.general.deps import get_current_user_from_context
-        db = Session.object_session(self)
-        if user := get_current_user_from_context(db=db):
-
-            # Get permissions of the treeitem for user (and teams he or she belongs to)...
-            return db.query(
-                Permission
-            ).filter(
-                Permission.treeitem_id.in_(self.path_ids),
-                or_(
-                    Permission.user_id == user.id,
-                    Permission.team_id.in_(user.teams_ids)
-                )
-            ).all()
-        return []
-
-    @cached_hybrid_property
-    def user_permissions_dict(self):
-        from app.general.deps import get_current_user_from_context
+        from app.permissions.crud import exportCrud
 
         db = Session.object_session(self)
         if user := get_current_user_from_context(db=db):
-            # If admin, grant all
-            print("llega", GRANT_ALL)
-            if user in self.coproductionprocess.administrators:
-                return GRANT_ALL
-            # And check if any of the permission has the flag of the permission key as True
-            final_permissions_dict = copy.deepcopy(DENY_ALL)
-            # final_permissions_dict["access_assets_permission"] = True
-            for permission_key in PERMS:
-                final_permissions_dict[permission_key] = any(getattr(permission, permission_key) for permission in self.user_permissions)
-            return final_permissions_dict
-        return DENY_ALL
-
-    def user_can(self, permission: str):
-        if permission in PERMS:
-            return self.user_permissions_dict[permission]
-        raise Exception(permission + " is not a valid permission")
+            return exportCrud.get_user_roles(db=db, user=user, treeitem=self)

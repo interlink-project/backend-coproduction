@@ -33,7 +33,7 @@ class TreeItem(TreeItemCreate):
     disabler_id: Optional[str]
     disabled_on: Optional[datetime]
 
-    path_ids: List[uuid.UUID]
+    # path_ids: List[uuid.UUID]
     is_disabled: bool
 
     @validator('prerequisites_ids', pre=True)

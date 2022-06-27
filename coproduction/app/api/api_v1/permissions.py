@@ -84,3 +84,21 @@ async def delete_permission(
         return await crud.permission.remove(db=db, id=permission.id)
 
     raise HTTPException(status_code=404, detail="Permission not found")
+
+
+
+@router.get("/for/{treeitem_id}", response_model=dict)
+async def yours(
+    *,
+    db: Session = Depends(deps.get_db),
+    treeitem_id: uuid.UUID,
+    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Get permission by ID.
+    """
+    if treeitem := await crud.treeitem.get(db=db, id=treeitem_id):
+        return {
+            "your_permissions": crud.permission.get_dict_over_treeitem(db=db, treeitem=treeitem, user=current_user),
+            "your_roles": crud.permission.get_user_roles(db=db, treeitem=treeitem, user=current_user)
+        }

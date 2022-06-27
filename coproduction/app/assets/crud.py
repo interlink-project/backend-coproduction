@@ -12,6 +12,8 @@ from app.messages import log
 from fastapi.encoders import jsonable_encoder
 import favicon
 from app.tasks.crud import update_status_and_progress
+from app.permissions.crud import exportCrud as permissionsCrud
+from app.general.deps import get_current_user_from_context
 
 class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
     async def get_multi(
@@ -50,8 +52,6 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
             data["type"] = "internalasset"
             db_obj = InternalAsset(**data, creator=creator, objective_id=task.objective_id, phase_id=task.objective.phase_id, coproductionprocess_id=task.objective.phase.coproductionprocess_id)
 
-        
-
         db.add(db_obj)
         db.commit()
         task : models.Task = db_obj.task
@@ -70,6 +70,9 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
 
     # Override log methods
     def enrich_log_data(self, asset, logData):
+        db = Session.object_session(asset)
+        user = get_current_user_from_context(db=db)
+
         logData["model"] = "ASSET"
         logData["object_id"] = asset.id
         logData["type"] = asset.type
@@ -77,7 +80,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
         logData["objective_id"] = asset.task.objective_id
         logData["task_id"] = asset.task_id
         logData["coproductionprocess_id"] = asset.task.objective.phase.coproductionprocess_id
-        logData["roles"] = asset.task.user_roles
+        logData["roles"] = permissionsCrud.get_user_roles(db=db, user=user, treeitem=asset.task)
 
         if type(asset) == models.InternalAsset:
             if ki := asset.knowledgeinterlinker:
@@ -94,20 +97,20 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
 
     # CRUD Permissions
 
-    def can_create(self, task: models.TreeItem):
-        return task.user_can(permission="create_assets_permission")
+    def can_create(self, db : Session, user: models.User, task: models.TreeItem):
+        return permissionsCrud.user_can(db=db, user=user, task=task, permission="create_assets_permission")
 
-    def can_list(self, task: models.TreeItem):
-        return task.user_can(permission="access_assets_permission")
+    def can_list(self, db : Session, user: models.User, task: models.TreeItem):
+        return permissionsCrud.user_can(db=db, user=user, task=task, permission="access_assets_permission")
 
-    def can_read(self, asset: Asset):
-        return asset.task.user_can(permission="access_assets_permission")
+    def can_read(self, db : Session, user: models.User, task: models.TreeItem):
+        return permissionsCrud.user_can(db=db, user=user, task=task, permission="access_assets_permission")
 
-    def can_update(self, asset: Asset):
-        return asset.task.user_can(permission="create_assets_permission")
+    def can_update(self, db : Session, user: models.User, task: models.TreeItem):
+        return permissionsCrud.user_can(db=db, user=user, task=task, permission="create_assets_permission")
 
-    def can_remove(self, asset: Asset):
-        return asset.task.user_can(permission="delete_assets_permission")
+    def can_remove(self, db : Session, user: models.User, task: models.TreeItem):
+        return permissionsCrud.user_can(db=db, user=user, task=task, permission="delete_assets_permission")
 
 
 exportCrud = CRUDAsset(Asset, logByDefault=True)

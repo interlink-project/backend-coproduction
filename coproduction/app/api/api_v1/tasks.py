@@ -37,9 +37,11 @@ async def create_task(
     """
     Create new task.
     """
-    if not crud.task.can_create(current_user):
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-    return await crud.task.create(db=db, task=task_in)
+    if objective := await crud.objective.get(db=db, id=task_in.objective_id):
+        if not crud.objective.can_update(current_user, objective):
+            raise HTTPException(status_code=403, detail="Not enough permissions")
+        return await crud.task.create(db=db, task=task_in)
+    raise HTTPException(status_code=400, detail="Objective not found")
 
 
 @router.put("/{id}", response_model=schemas.TaskOutFull)
