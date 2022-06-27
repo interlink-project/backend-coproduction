@@ -48,18 +48,45 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
         ).all()
 
     def get_user_roles(self, db: Session, treeitem: models.TreeItem, user: models.User):
-        roles = [perm.team.type.value for perm in self.get_for_user_and_treeitem(db=db, user=user, treeitem=treeitem)]
+        roles = []
+        for perm in self.get_for_user_and_treeitem(db=db, user=user, treeitem=treeitem):
+            role = perm.team.type.value
+            if role not in roles:
+                roles.append(role)
+
         if user in treeitem.coproductionprocess.administrators:
             roles.append('administrator')
         return roles
 
-    def get_dict_over_treeitem(self, db: Session, treeitem: models.TreeItem, user: models.User):
+    def get_dict_for_treeitem(self, db: Session, treeitem: models.TreeItem, user: models.User):
         permissions = self.get_for_user_and_treeitem(db=db, user=user, treeitem=treeitem)
+        path = [treeitem.coproductionprocess.id, *treeitem.path_ids]
+
+        index_delete = 0
+        index_create = 0
+        delete_assets_permission = False
+        create_assets_permission = False
         
+        for permission in permissions:
+            path_con = permission.treeitem_id or permission.coproductionprocess_id
+            index = path.index(path_con)
+
+            if index > index_delete:
+                delete_assets_permission = permission.delete_assets_permission
+                index_delete = index
+            elif index == index_delete and not delete_assets_permission and permission.delete_assets_permission:
+                delete_assets_permission = True
+
+            if index > index_create:
+                create_assets_permission = permission.create_assets_permission
+                index_create = index
+            elif index == index_create and not create_assets_permission and permission.create_assets_permission:
+                create_assets_permission = True
+
         final_permissions_dict = copy.deepcopy(DENY_ALL)
         final_permissions_dict["access_assets_permission"] = len(permissions) > 0
-        final_permissions_dict["delete_assets_permission"] = any(getattr(permission, "delete_assets_permission") for permission in permissions)
-        final_permissions_dict["create_assets_permission"] = any(getattr(permission, "create_assets_permission") for permission in permissions)
+        final_permissions_dict["delete_assets_permission"] = delete_assets_permission
+        final_permissions_dict["create_assets_permission"] = create_assets_permission
         return final_permissions_dict
 
     def enrich_log_data(self, obj, logData):
@@ -74,7 +101,7 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
         if user in task.coproductionprocess.administrators:
             return True
         if permission in PERMS:
-            perms : dict = self.get_dict_over_treeitem(db=db, treeitem=task, user=user)
+            perms : dict = self.get_dict_for_treeitem(db=db, treeitem=task, user=user)
             return perms[permission]
         raise Exception(permission + " is not a valid permission")
 
