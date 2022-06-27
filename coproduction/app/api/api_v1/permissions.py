@@ -21,13 +21,24 @@ async def create_permission(
 ) -> Any:
     """
     Create permission
+    Permissions are for treeitems or for overall coproduction processes
     """
-    treeitem : models.TreeItem
-    if treeitem := await crud.treeitem.get(db=db, id=permission_in.treeitem_id):
-        return await crud.permission.create(db=db, obj_in=permission_in, creator=current_user, extra={
-            "coproductionprocess_id": treeitem.coproductionprocess_id
-        })
-    raise HTTPException(status_code=404, detail="treeitem not found")
+    if permission_in.treeitem_id:
+        treeitem : models.TreeItem
+        if treeitem := await crud.treeitem.get(db=db, id=permission_in.treeitem_id):
+            if crud.coproductionprocess.can_update(user=current_user, object=treeitem.coproductionprocess):
+                permission_in.coproductionprocess_id = treeitem.coproductionprocess.id
+                return await crud.permission.create(db=db, obj_in=permission_in, creator=current_user)
+            raise HTTPException(
+                    status_code=403, detail="You are not allowed to update this coproductionprocess")
+        raise HTTPException(status_code=404, detail="Tree Item not found")
+    else:
+        if coproductionprocess := await crud.coproductionprocess.get(db=db, id=permission_in.coproductionprocess_id):
+            if crud.coproductionprocess.can_update(user=current_user, object=coproductionprocess):
+                return await crud.permission.create(db=db, obj_in=permission_in, creator=current_user)
+            raise HTTPException(
+                    status_code=403, detail="You are not allowed to update this coproductionprocess")
+        raise HTTPException(status_code=404, detail="Coproduction process not found")
 
 @router.get("", response_model=List[schemas.PermissionOutFull])
 async def get_permissions(

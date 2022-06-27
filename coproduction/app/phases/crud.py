@@ -17,12 +17,13 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
         phasemetadata["from_schema"] = schema_id
         phasemetadata["from_item"] = phasemetadata.get("id")
         creator = PhaseCreate(**phasemetadata)
-        return await self.create(db=db, phase=creator, commit=False, extra={
+        return await self.create(db=db, obj_in=creator, commit=False, extra={
             "coproductionprocess": coproductionprocess
         })
 
     async def add_prerequisite(self, db: Session, phase: Phase, prerequisite: Phase, commit: bool = True) -> Phase:
         if phase == prerequisite:
+            print(phase, prerequisite)
             raise Exception("Same object")
 
         recursive_check(phase.id, prerequisite)

@@ -72,3 +72,13 @@ class CoproductionProcess(BaseModel):
             else:
                 participations.append("collaborator")
         return participations
+
+    def get_treeitems(self):
+        res = []
+        for phase in self.children:
+            res.append(phase)
+            for objective in phase.children:
+                res.append(objective)
+                for task in objective.children:
+                    res.append(task)
+        return res

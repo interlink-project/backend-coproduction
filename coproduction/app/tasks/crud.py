@@ -18,12 +18,13 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
         taskmetadata["from_schema"] = schema_id
         taskmetadata["from_item"] = taskmetadata.get("id")
         creator = TaskCreate(**taskmetadata)
-        return await self.create(db=db, task=creator, commit=False, extra={
+        return await self.create(db=db, obj_in=creator, commit=False, extra={
             "objective": objective,
         })
 
     async def add_prerequisite(self, db: Session, task: Task, prerequisite: Task, commit : bool = True) -> Task:
         if task == prerequisite:
+            print(task, prerequisite)
             raise Exception("Same object")
 
         recursive_check(task.id, prerequisite)

@@ -85,7 +85,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
             db.commit()
             db.refresh(db_obj)
             await self.log_on_create(db_obj)
-            return db_obj
+        return db_obj
 
     async def add_administrator(self, db: Session, *, db_obj: ModelType, user: User = None) -> ModelType:
         db_obj.administrators.append(user)

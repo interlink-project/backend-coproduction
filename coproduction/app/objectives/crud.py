@@ -18,12 +18,13 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
         objectivemetadata["from_schema"] = schema_id
         objectivemetadata["from_item"] = objectivemetadata.get("id")
         creator = ObjectiveCreate(**objectivemetadata)
-        return await self.create(db=db, objective=creator, commit=False, extra={
+        return await self.create(db=db, obj_in=creator, commit=False, extra={
             "phase": phase
         })
 
     async def add_prerequisite(self, db: Session, objective: Objective, prerequisite: Objective, commit: bool = True) -> Objective:
         if objective == prerequisite:
+            print(objective, prerequisite)
             raise Exception("Same object")
         # TODO: if objective in prerequisite.prerequisites => block
 

@@ -39,8 +39,7 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
         return db.query(
             models.Permission
         ).filter(
-            models.Permission.treeitem_id == models.TreeItem.id,
-            models.Permission.coproductionprocess_id == coproductionprocess_id  # TODO: delete
+            models.Permission.coproductionprocess_id == coproductionprocess_id
         ).filter(
             or_(
                 models.Permission.user_id == user.id,
@@ -49,18 +48,21 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
         ).all()
 
     def get_user_roles(self, db: Session, treeitem: models.TreeItem, user: models.User):
-        return [perm.team.type.value for perm in self.get_for_user_and_treeitem(db=db, user=user, treeitem=treeitem)]
+        roles = [perm.team.type.value for perm in self.get_for_user_and_treeitem(db=db, user=user, treeitem=treeitem)]
+        if user in treeitem.coproductionprocess.administrators:
+            roles.append('administrator')
+        return roles
 
     def get_dict_over_treeitem(self, db: Session, treeitem: models.TreeItem, user: models.User):
         permissions = self.get_for_user_and_treeitem(db=db, user=user, treeitem=treeitem)
         
         final_permissions_dict = copy.deepcopy(DENY_ALL)
-        final_permissions_dict["access_assets_permission"] = True
+        final_permissions_dict["access_assets_permission"] = len(permissions) > 0
         final_permissions_dict["delete_assets_permission"] = any(getattr(permission, "delete_assets_permission") for permission in permissions)
         final_permissions_dict["create_assets_permission"] = any(getattr(permission, "create_assets_permission") for permission in permissions)
         return final_permissions_dict
 
-    def enrich_log_data(self, obj, logData, db, user):
+    def enrich_log_data(self, obj, logData):
         logData["model"] = "PERMISSION"
         logData["object_id"] = obj.id
         logData["coproductionprocess_id"] = obj.coproductionprocess_id

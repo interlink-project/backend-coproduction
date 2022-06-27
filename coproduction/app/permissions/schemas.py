@@ -11,7 +11,8 @@ class PermissionBase(BaseModel):
 class PermissionCreate(PermissionBase):
     user_id: Optional[uuid.UUID]
     team_id: Optional[uuid.UUID]
-    treeitem_id: uuid.UUID
+    treeitem_id: Optional[uuid.UUID]
+    coproductionprocess_id: Optional[uuid.UUID]
 
 class PermissionPatch(BaseModel):
     pass

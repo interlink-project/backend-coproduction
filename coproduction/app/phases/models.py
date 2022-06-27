@@ -48,7 +48,7 @@ class Phase(TreeItem):
     __mapper_args__ = {
         "polymorphic_identity": "phase",
     }
-
+    
     @hybrid_property
     def is_disabled(self):
         return (self.disabled_on is not None)
