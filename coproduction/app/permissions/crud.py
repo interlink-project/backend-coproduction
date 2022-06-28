@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from app import models, schemas
 from app.general.utils.CRUDBase import CRUDBase
 from app.models import Permission, TreeItem
-from app.permissions.models import DENY_ALL, PERMS
+from app.permissions.models import DENY_ALL, PERMS, GRANT_ALL
 
 
 class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.PermissionPatch]):
@@ -59,6 +59,8 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
         return roles
 
     def get_dict_for_treeitem(self, db: Session, treeitem: models.TreeItem, user: models.User):
+        if user in treeitem.coproductionprocess.administrators:
+            return GRANT_ALL
         permissions = self.get_for_user_and_treeitem(db=db, user=user, treeitem=treeitem)
 
         index_delete = 0
