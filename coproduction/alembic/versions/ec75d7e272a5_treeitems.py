@@ -1,8 +1,8 @@
 """treeitems
 
-Revision ID: a8b4ddb92ea1
+Revision ID: ec75d7e272a5
 Revises: 
-Create Date: 2022-06-24 08:35:18.923701
+Create Date: 2022-06-28 16:46:47.274652
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = 'a8b4ddb92ea1'
+revision = 'ec75d7e272a5'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -212,16 +212,17 @@ def upgrade():
     sa.Column('knowledgeinterlinker_id', postgresql.UUID(as_uuid=True), nullable=True),
     sa.ForeignKeyConstraint(['id'], ['asset.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
-    ) 
-    
+    )
+
     op.create_foreign_key(None, 'asset', 'user', ['creator_id'], ['id'], ondelete='SET NULL', use_alter=True)
-    op.create_foreign_key(None, 'coproductionprocess', 'user', ['creator_id'], ['id'], ondelete='SET NULL', use_alter=True)
     op.create_foreign_key(None, 'coproductionprocess', 'organization', ['organization_id'], ['id'], ondelete='SET NULL', use_alter=True)
+    op.create_foreign_key(None, 'coproductionprocess', 'user', ['creator_id'], ['id'], ondelete='SET NULL', use_alter=True)
     op.create_foreign_key(None, 'organization', 'user', ['creator_id'], ['id'], ondelete='SET NULL', use_alter=True)
     op.create_foreign_key(None, 'permission', 'user', ['creator_id'], ['id'], ondelete='SET NULL', use_alter=True)
     op.create_foreign_key(None, 'team', 'user', ['creator_id'], ['id'], ondelete='SET NULL', use_alter=True)
     op.create_foreign_key(None, 'treeitem', 'user', ['creator_id'], ['id'], ondelete='SET NULL', use_alter=True)
     op.create_foreign_key(None, 'treeitem', 'user', ['disabler_id'], ['id'], ondelete='SET NULL', use_alter=True)
+
     # ### end Alembic commands ###
 
 
