@@ -1,9 +1,12 @@
-VERSION: v1.1.8
+VERSION: v1.2.0
 
 NEW
-* Overridable log functions
+* Rabbitmq connection removed
+* New first migration file
+* Permission entity
+* Organization entity
 
 IMPROVED
-* Logging functions called on crud.
 
 FIXED
+* Access control
