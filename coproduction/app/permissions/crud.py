@@ -65,8 +65,10 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
 
         index_delete = 0
         index_create = 0
+        index_access = 0
         delete_assets_permission = False
         create_assets_permission = False
+        access_assets_permission = False
         
         path = treeitem.path_ids
         
@@ -85,9 +87,15 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
                 index_create = index
             elif index == index_create and not create_assets_permission and permission.create_assets_permission:
                 create_assets_permission = True
+            
+            if index > index_access:
+                access_assets_permission = permission.access_assets_permission
+                index_access = index
+            elif index == index_access and not access_assets_permission and permission.access_assets_permission:
+                access_assets_permission = True
 
         final_permissions_dict = copy.deepcopy(DENY_ALL)
-        final_permissions_dict["access_assets_permission"] = len(permissions) > 0
+        final_permissions_dict["access_assets_permission"] = access_assets_permission
         final_permissions_dict["delete_assets_permission"] = delete_assets_permission
         final_permissions_dict["create_assets_permission"] = create_assets_permission
         return final_permissions_dict

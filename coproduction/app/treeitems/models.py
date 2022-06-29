@@ -7,7 +7,8 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import Session, relationship
 
 from app.general.db.base_class import Base as BaseModel
-from app.permissions.models import Permission, GRANT_ALL, DENY_ALL, PERMS
+from app.permissions.models import Permission
+from app.teams.models import Team
 from app.utils import cached_hybrid_property, Status
 
 prerequisites = Table(
@@ -68,8 +69,20 @@ class TreeItem(BaseModel):
         return db.query(
             Permission
         ).filter(
+            Permission.coproductionprocess_id == self.coproductionprocess.id,
             Permission.treeitem_id.in_(self.path_ids)
         ).all()
+    
+    # @cached_hybrid_property
+    # def permissions(self):
+    #     db = Session.object_session(self)
+    #     # Get permissions of the treeitem for user (and teams he or she belongs to)...
+    #     return db.query(
+    #         Team
+    #     ).filter(
+    #         Team.p == self.coproductionprocess.id,
+    #         Permission.treeitem_id.in_(self.path_ids)
+    #     ).all()
 
     @cached_hybrid_property
     def user_roles(self):

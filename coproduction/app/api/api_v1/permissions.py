@@ -26,6 +26,7 @@ async def create_permission(
     if permission_in.treeitem_id:
         treeitem : models.TreeItem
         if treeitem := await crud.treeitem.get(db=db, id=permission_in.treeitem_id):
+            # check if the user can update the coproduction process
             if crud.coproductionprocess.can_update(user=current_user, object=treeitem.coproductionprocess):
                 permission_in.coproductionprocess_id = treeitem.coproductionprocess.id
                 return await crud.permission.create(db=db, obj_in=permission_in, creator=current_user)
@@ -34,6 +35,7 @@ async def create_permission(
         raise HTTPException(status_code=404, detail="Tree Item not found")
     else:
         if coproductionprocess := await crud.coproductionprocess.get(db=db, id=permission_in.coproductionprocess_id):
+            # check if the user can update the coproduction process
             if crud.coproductionprocess.can_update(user=current_user, object=coproductionprocess):
                 return await crud.permission.create(db=db, obj_in=permission_in, creator=current_user)
             raise HTTPException(

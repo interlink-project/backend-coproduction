@@ -5,6 +5,7 @@ from typing import Optional
 from pydantic import BaseModel, Extra
 
 class PermissionBase(BaseModel):
+    access_assets_permission: Optional[bool]
     create_assets_permission: Optional[bool]
     delete_assets_permission: Optional[bool]
 
