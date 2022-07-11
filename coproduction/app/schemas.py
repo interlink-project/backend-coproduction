@@ -58,12 +58,12 @@ class PhaseOutFull(PhaseOut, TreeItemOutFull):
 
 
 class CoproductionProcessOutFull(CoproductionProcessOut):
-    teams: List[TeamOut]
-    permissions: List[PermissionOutFull]
+    enabled_teams: List[TeamOut]
+    enabled_permissions: List[PermissionOutFull]
     administrators: List[UserOut]
 
-    @validator('teams', pre=True)
-    def teams_to_list(cls, v):
+    @validator('enabled_teams', pre=True)
+    def enabled_teams_to_list(cls, v):
         # set instead of list to avoid repeated teams
         return set(v)
 

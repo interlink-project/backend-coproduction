@@ -57,6 +57,15 @@ class CoproductionProcess(BaseModel):
     def start_date(self):
         return func.min(Phase.start_date)
 
+    # the tree items can be disabled, so we need to retrieve only those teams or permissions that are not disabled
+    @property
+    def enabled_teams(self):
+        return [perm.team for perm in self.permissions if not perm.treeitem.disabled_on]
+    
+    @property
+    def enabled_permissions(self):
+        return [perm for perm in self.permissions if not perm.treeitem.disabled_on]
+
     @property
     def logotype_link(self):
         return settings.COMPLETE_SERVER_NAME + self.logotype if self.logotype else ""

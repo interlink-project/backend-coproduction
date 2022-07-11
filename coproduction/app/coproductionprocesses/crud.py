@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
 from app import crud, models
 from app.general.utils.CRUDBase import CRUDBase
-from app.models import CoproductionProcess, Permission, User, Permission
+from app.models import CoproductionProcess, Permission, User, Permission, TreeItem
 from app.schemas import CoproductionProcessCreate, CoproductionProcessPatch
 from fastapi.encoders import jsonable_encoder
 from app.messages import log
@@ -34,7 +34,11 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
             or_(
                 Permission.user_id == user.id,
                 Permission.team_id.in_(user.teams_ids)
-            )
+            ),
+        ).filter(
+            Permission.treeitem_id == TreeItem.id
+        ).filter(
+            TreeItem.disabled_on == None
         )
 
         query = admins.union(user_permissions)
