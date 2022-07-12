@@ -9,7 +9,8 @@ from app.api.api_v1 import (
     teams,
     users,
     permissions,
-    organizations
+    organizations,
+    utils
 )
 
 api_router = APIRouter()
@@ -32,6 +33,7 @@ api_router.include_router(users.router,
                           prefix="/users", tags=["teammanagement"])
 api_router.include_router(organizations.router,
                           prefix="/organizations", tags=["teammanagement"])
+api_router.include_router(utils.router, prefix="/utils", tags=["utils"])
 
 
 @api_router.get("/")

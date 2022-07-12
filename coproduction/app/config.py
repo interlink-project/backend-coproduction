@@ -40,18 +40,37 @@ class Settings(BaseSettings):
             path=f"/{values.get('POSTGRES_DB') or ''}",
         )
 
-    # OTHER MICROS
-    AUTH_SERVICE_NAME: str = "auth"
-    AUTH_PORT: int = 80
-    AUTH_SERVICE: str = "auth:80"
-
-    CATALOGUE_SERVICE_NAME: str
-    CATALOGUE_PORT: int
-    CATALOGUE_SERVICE: str = os.getenv("CATALOGUE_SERVICE_NAME") + ":" + os.getenv("CATALOGUE_PORT")
     
     DEFAULT_LANGUAGE: str
     ALLOWED_LANGUAGES_LIST: list = os.getenv("ALLOWED_LANGUAGES", "").split(",")
     
+    # OTHER MICROS
+    CATALOGUE_SERVICE_NAME: str
+    CATALOGUE_PORT: int
+    CATALOGUE_SERVICE: str = os.getenv("CATALOGUE_SERVICE_NAME") + ":" + os.getenv("CATALOGUE_PORT")
+
+    # 
+    SMTP_TLS: bool = True
+    SMTP_PORT: Optional[int] = None
+    SMTP_HOST: Optional[str] = None
+    SMTP_USER: Optional[str] = None
+    SMTP_PASSWORD: Optional[str] = None
+    EMAILS_FROM_EMAIL: Optional[str] = None
+    EMAILS_FROM_NAME: Optional[str] = None
+    EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48
+    EMAIL_TEMPLATES_DIR: str = "/app/app/email-templates/build"
+    EMAILS_ENABLED: bool = False
+
+    @validator("EMAILS_ENABLED", pre=True)
+    def get_emails_enabled(cls, v: bool, values: Dict[str, Any]) -> bool:
+        return bool(
+            values.get("SMTP_HOST")
+            and values.get("SMTP_PORT")
+            and values.get("EMAILS_FROM_EMAIL")
+        )
+
+    EMAIL_TEST_USER: str = "test@example.com"  # type: ignore
+
     class Config:
         case_sensitive = True
 

@@ -33,13 +33,20 @@ integrated: down ## Starts integrated development containers
 ## RUN TESTS
 #######################
 
-.PHONY: tests
-tests: ## Starts test container
-	#docker-compose exec coproduction pytest --cov=app --cov-report=term-missing app/tests
+.PHONY: unit-tests
+unit-tests: ## Starts test container
+	# docker-compose exec coproduction pytest --cov=app --cov-report=term-missing --cov-report=html app/tests
 	docker-compose exec -T coproduction pytest app/tests
 
-.PHONY: testing
-testing: build solo tests down ## Builds containers, runs them, runs test container and deletes all containers
+# integration tests run on interlink-project repo
+
+.PHONY: lint
+lint: ## lint project
+	docker-compose exec -T coproduction ./lint.sh
+
+.PHONY: format
+format: ## format project
+	docker-compose exec -T coproduction ./format.sh
 
 #######################
 ## DATABASE SEEDING
@@ -58,7 +65,3 @@ applymigrations: ## Seed data
 seed: ## Seed data
 	docker-compose exec coproduction python /app/app/pre_start.py
 	docker-compose exec coproduction ./seed.sh
-
-.PHONY: kpis
-kpis: ## Show kpis
-	docker-compose exec coproduction python /app/app/kpis.py

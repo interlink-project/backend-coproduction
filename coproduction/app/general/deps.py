@@ -66,6 +66,14 @@ def get_current_active_user(
         raise HTTPException(status_code=403, detail="Not authenticated")
     return current_user
 
+def get_current_active_superuser(
+    current_user: models.User = Depends(get_current_active_user),
+) -> models.User:
+    # calls get_current_user, and if nothing is returned, raises Not authenticated exception
+    if not current_user.is_superuser:
+        raise HTTPException(status_code=403, detail="Not superuser")
+    return current_user
+
 
 def get_current_user_from_context(
     db: Session

@@ -55,7 +55,7 @@ services:
       - BASE_PATH=/coproduction
     build:
       context: .
-      dockerfile: Dockerfile.coproduction
+      dockerfile: Dockerfile
       target: dev
     command: ["bash", "./worker-start.sh"]
     networks:

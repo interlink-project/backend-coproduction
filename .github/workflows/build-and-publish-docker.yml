@@ -18,15 +18,55 @@ jobs:
       - name: Get current date
         id: date
         run: echo "::set-output name=date::$(date +'%Y%m%d')"
+
       - name: Checkout
         uses: actions/checkout@v2
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
+      
+      # - name: Run tests
+      #   run: make run-tests
+
+      # - name: Check style
+      #   uses: weibullguy/python-lint-plus@master
+      #   with:
+      #     python-root-list: "coproduction"
+      #     use-black: false
+      #     use-yapf: false
+      #     use-isort: false
+      #     use-docformatter: false
+      #     use-pycodestyle: false
+      #     use-pydocstyle: false
+      #     use-mypy: false
+      #     use-pylint: false
+      #     use-flake8: false
+      #     use-mccabe: false
+      #     use-radon: false
+      #     use-rstcheck: false
+      #     use-check-manifest: false
+      #     use-pyroma: false
+      #     extra-black-options: ""
+      #     extra-yapf-options: ""
+      #     extra-isort-options: ""
+      #     extra-docformatter-options: ""
+      #     extra-pycodestyle-options: ""
+      #     extra-pydocstyle-options: ""
+      #     extra-mypy-options: ""
+      #     extra-pylint-options: ""
+      #     extra-flake8-options: ""
+      #     extra-mccabe-options: ""
+      #     extra-radon-options: ""
+      #     extra-rstcheck-options: ""
+      #     extra-manifest-options: ""
+      #     extra-pyroma-options: ""
+
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Build and push Docker Image
         id: docker_build
         uses: docker/build-push-action@v2
@@ -39,6 +79,7 @@ jobs:
             interlinkproject/backend-coproduction:${{ github.ref_name }}.${{ steps.date.outputs.date }}
           cache-from: type=registry,ref=interlinkproject/backend-coproduction:buildcache
           cache-to: type=registry,ref=interlinkproject/backend-coproduction:buildcache,mode=max
+
       - name: Trigger Dev Deployment
         uses: octokit/request-action@v2.x
         id: trigger_dev_deployment
