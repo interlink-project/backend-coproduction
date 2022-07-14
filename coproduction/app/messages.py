@@ -34,4 +34,4 @@ async def log(data: dict):
             
     data["service"] = "coproduction"
     res = requests.post("http://logging/api/v1/log", data=json.dumps(data,cls=UUIDEncoder), timeout=2)
-    print("message sent", res.json())
+    # print("message sent", res.json())
