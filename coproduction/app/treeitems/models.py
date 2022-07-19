@@ -73,17 +73,6 @@ class TreeItem(BaseModel):
             Permission.treeitem_id.in_(self.path_ids)
         ).all()
     
-    # @cached_hybrid_property
-    # def permissions(self):
-    #     db = Session.object_session(self)
-    #     # Get permissions of the treeitem for user (and teams he or she belongs to)...
-    #     return db.query(
-    #         Team
-    #     ).filter(
-    #         Team.p == self.coproductionprocess.id,
-    #         Permission.treeitem_id.in_(self.path_ids)
-    #     ).all()
-
     @cached_hybrid_property
     def user_roles(self):
         from app.general.deps import get_current_user_from_context

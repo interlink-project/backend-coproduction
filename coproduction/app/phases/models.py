@@ -48,6 +48,13 @@ class Phase(TreeItem):
     __mapper_args__ = {
         "polymorphic_identity": "phase",
     }
+
+    @hybrid_property
+    def tasks(self):
+        lst = []
+        for objective in self.children:
+            lst.append(objective.children)
+        return lst
     
     @hybrid_property
     def is_disabled(self):
@@ -56,6 +63,13 @@ class Phase(TreeItem):
     @hybrid_property
     def path_ids(self):
         return [self.coproductionprocess_id, self.id]
+    
+    @hybrid_property
+    def assets(self):
+        lst = []
+        for objective in self.children:
+            lst += objective.assets
+        return lst
 
     def __repr__(self):
         return "<Phase %r>" % self.name

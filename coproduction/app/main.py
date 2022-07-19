@@ -9,6 +9,7 @@ from starlette.middleware import Middleware
 from starlette_context import plugins, context
 from starlette_context.middleware import ContextMiddleware
 from app.middleware import UserPlugin, LanguagePlugin
+from app.signals import *
 
 middleware = [
     Middleware(
