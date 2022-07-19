@@ -42,11 +42,13 @@ class Permission(BaseModel):
 # DO NOT REMOVE
 GRANT_ALL = {}
 DENY_ALL = {}
+INDEXES = {}
 
 PERMS = [field for field in dir(Permission) if "_permission" in field]
 for perm in PERMS:
     GRANT_ALL[perm] = True
     DENY_ALL[perm] = False
+    INDEXES[perm] = 0
 
 """
 GRANT_ALL = {'create_assets_permission': True, 'delete_assets_permission': True, 'access_assets_permission': True} 

@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from app import models, schemas
 from app.general.utils.CRUDBase import CRUDBase
 from app.models import Permission, TreeItem
-from app.permissions.models import DENY_ALL, PERMS, GRANT_ALL
+from app.permissions.models import DENY_ALL, PERMS, GRANT_ALL, INDEXES
 
 
 class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.PermissionPatch]):
@@ -18,6 +18,16 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
         return db.query(Permission).filter(
             Permission.treeitem_id.in_(treeitem.path_ids)
         ).order_by(Permission.created_at.asc()).offset(skip).limit(limit).all()
+
+    def get_for_treeitem(
+        self, db: Session, treeitem: models.TreeItem
+    ):
+        return db.query(
+            Permission
+        ).filter(
+            Permission.treeitem_id.in_(treeitem.path_ids),
+            Permission.coproductionprocess_id == treeitem.coproductionprocess.id,
+        ).all()
 
     def get_for_user_and_treeitem(
         self, db: Session, user: models.User, treeitem: models.TreeItem
@@ -63,41 +73,22 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
             return GRANT_ALL
         permissions = self.get_for_user_and_treeitem(db=db, user=user, treeitem=treeitem)
 
-        index_delete = 0
-        index_create = 0
-        index_access = 0
-        delete_assets_permission = False
-        create_assets_permission = False
-        access_assets_permission = False
+        final_permissions_dict = copy.deepcopy(DENY_ALL)
+        indexes_dict = copy.deepcopy(INDEXES)
         
         path = treeitem.path_ids
         
         for permission in permissions:
             path_con = permission.treeitem_id or permission.coproductionprocess_id
             index = path.index(path_con)
-
-            if index > index_delete:
-                delete_assets_permission = permission.delete_assets_permission
-                index_delete = index
-            elif index == index_delete and not delete_assets_permission and permission.delete_assets_permission:
-                delete_assets_permission = True
-
-            if index > index_create:
-                create_assets_permission = permission.create_assets_permission
-                index_create = index
-            elif index == index_create and not create_assets_permission and permission.create_assets_permission:
-                create_assets_permission = True
             
-            if index > index_access:
-                access_assets_permission = permission.access_assets_permission
-                index_access = index
-            elif index == index_access and not access_assets_permission and permission.access_assets_permission:
-                access_assets_permission = True
+            for permission_key in PERMS:
+                if index > indexes_dict[permission_key]:
+                    final_permissions_dict[permission_key] = getattr(permission, permission_key)
+                    indexes_dict[permission_key] = index
+                elif index == indexes_dict[permission_key] and not final_permissions_dict[permission_key] and getattr(permission, permission_key):
+                    final_permissions_dict[permission_key]  = True
 
-        final_permissions_dict = copy.deepcopy(DENY_ALL)
-        final_permissions_dict["access_assets_permission"] = access_assets_permission
-        final_permissions_dict["delete_assets_permission"] = delete_assets_permission
-        final_permissions_dict["create_assets_permission"] = create_assets_permission
         return final_permissions_dict
 
     def enrich_log_data(self, obj, logData):
