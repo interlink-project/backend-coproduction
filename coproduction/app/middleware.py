@@ -1,4 +1,3 @@
-# TODO: add directly user ORM object
 from typing import Any, Optional, Union
 
 from starlette.requests import HTTPConnection, Request
@@ -20,6 +19,15 @@ class UserPlugin(Plugin):
             return decode_token(token)
         return None
 
+
+class TokenPlugin(Plugin):
+    # The returned value will be inserted in the context with this key
+    key = "token"
+
+    async def process_request(
+        self, request: Union[Request, HTTPConnection]
+    ) -> Optional[Any]:
+        return deps.get_current_token(request=request)
 
 class LanguagePlugin(Plugin):
     # The returned value will be inserted in the context with this key

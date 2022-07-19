@@ -8,7 +8,7 @@ from starlette.middleware import Middleware
 
 from starlette_context import plugins, context
 from starlette_context.middleware import ContextMiddleware
-from app.middleware import UserPlugin, LanguagePlugin
+from app.middleware import UserPlugin, LanguagePlugin, TokenPlugin
 from app.signals import *
 
 middleware = [
@@ -18,7 +18,8 @@ middleware = [
             plugins.RequestIdPlugin(),
             plugins.CorrelationIdPlugin(),
             UserPlugin(),
-            LanguagePlugin()
+            LanguagePlugin(),
+            TokenPlugin()
         )
     )
 ]
@@ -33,7 +34,7 @@ def main():
 
 @app.get("/healthcheck")
 def healthcheck():
-    return context.data
+    return None
 
 # Set all CORS enabled origins
 if settings.BACKEND_CORS_ORIGINS:

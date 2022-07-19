@@ -49,7 +49,7 @@ services:
     env_file:
       - .env
     environment:
-      - RUN=celery -A app.worker worker -l info -Q main-queue -c 1
+      - RUN=celery -A app.worker worker -l info -c 1
       - PROTOCOL=http://
       - SERVER_NAME=${DOMAIN?Variable not set}
       - BASE_PATH=/coproduction

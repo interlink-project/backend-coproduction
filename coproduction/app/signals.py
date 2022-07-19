@@ -2,6 +2,7 @@
 from sqlalchemy import event
 from app.models import Permission, InternalAsset
 from app.worker import sync_asset_users
+import requests
 
 @event.listens_for(Permission, "after_insert")
 @event.listens_for(Permission, "after_update")
@@ -14,9 +15,11 @@ def after_insert(mapper, connection, target: Permission):
 @event.listens_for(InternalAsset, "after_update")
 def after_insert(mapper, connection, target: InternalAsset):
     print("Asset created", target)
+    sync_asset_users.delay(target.task_id)
 
 
 @event.listens_for(InternalAsset, "after_delete")
 def after_insert(mapper, connection, target: InternalAsset):
     print("Asset deleted", target)
-    # TODO: send post to interlinker to delete asset
+    URL = target.internal_link
+    requests.delete(URL)

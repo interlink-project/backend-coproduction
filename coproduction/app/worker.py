@@ -9,6 +9,7 @@ from app.models import (
     User,
     Team,
     CoproductionProcess,
+    InternalAsset,
     user_team_association_table
 )
 from app.crud import permission as permissionsCrud
@@ -27,9 +28,6 @@ def sync_asset_users(treeitem_id: UUID) -> str:
         treeitem : TreeItem = db.query(TreeItem).filter(
             TreeItem.id == treeitem_id
         ).first()
-
-        print("treeitem", treeitem)
-        
         if treeitem.type == "objective":
             tasks = treeitem.children
         elif treeitem.type == "phase":
@@ -37,8 +35,6 @@ def sync_asset_users(treeitem_id: UUID) -> str:
         else:
             tasks = [treeitem]
         
-        print("tasks", tasks)
-
         task: Task
         for task in tasks:
             data = []
