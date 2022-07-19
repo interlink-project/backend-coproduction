@@ -3,6 +3,7 @@ from sqlalchemy import event
 from app.models import Permission, InternalAsset
 from app.worker import sync_asset_users
 import requests
+from app.config import settings
 
 @event.listens_for(Permission, "after_insert")
 @event.listens_for(Permission, "after_update")
@@ -22,4 +23,6 @@ def after_insert(mapper, connection, target: InternalAsset):
 def after_insert(mapper, connection, target: InternalAsset):
     print("Asset deleted", target)
     URL = target.internal_link
-    requests.delete(URL)
+    requests.delete(URL, headers={
+        "Authorization": settings.BACKEND_SECRET
+    })

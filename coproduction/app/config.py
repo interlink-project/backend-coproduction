@@ -6,6 +6,8 @@ import os
 
 class Settings(BaseSettings):
     SECRET_KEY: str = secrets.token_urlsafe(32)
+    BACKEND_SECRET: str
+
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
     @validator("BACKEND_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
