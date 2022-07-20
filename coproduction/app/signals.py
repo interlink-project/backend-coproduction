@@ -9,14 +9,14 @@ from app.config import settings
 @event.listens_for(Permission, "after_update")
 @event.listens_for(Permission, "after_delete")
 def after_insert(mapper, connection, target: Permission):
-    sync_asset_users.delay(target.treeitem_id)
+    sync_asset_users.delay([target.treeitem_id])
 
 
 @event.listens_for(InternalAsset, "after_insert")
 @event.listens_for(InternalAsset, "after_update")
 def after_insert(mapper, connection, target: InternalAsset):
     print("Asset created", target)
-    sync_asset_users.delay(target.task_id)
+    sync_asset_users.delay([target.task_id])
 
 
 @event.listens_for(InternalAsset, "after_delete")
