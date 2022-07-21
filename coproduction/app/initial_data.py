@@ -6,8 +6,6 @@ from app.messages import set_logging_disabled
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# in start-dev.sh and start-prod.sh it is made a git clone of https://github.com/interlink-project/interlinkers-data/
-
 class bcolors:
     HEADER = "\033[95m"
     OKBLUE = "\033[94m"

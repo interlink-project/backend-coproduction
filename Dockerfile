@@ -2,8 +2,7 @@ FROM python:3.9-slim-buster as os-base
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 RUN apt-get update
-# allow git clone of interlinkers-data repository on seed
-RUN apt-get install -y curl git
+RUN apt-get install -y curl
 
 FROM os-base as poetry-base
 RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
