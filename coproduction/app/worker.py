@@ -42,16 +42,25 @@ def sync_asset_users(treeitem_ids: List[UUID]) -> str:
             for task in tasks:
                 data = []
 
+                permissions = db.query(
+                    Permission
+                ).filter(
+                    and_(
+                        Permission.coproductionprocess_id == task.coproductionprocess.id,
+                        Permission.treeitem_id.in_(task.path_ids),
+                    )
+                ).all()
+
+                team_ids = {}
+                for permission in permissions:
+                    team_ids.add(permission.team_id)
+
                 res = db.query(
                     User
                 ).join(
                     user_team_association_table
                 ).filter(
-                    and_(
-                        Permission.coproductionprocess_id == task.coproductionprocess.id,
-                        Permission.treeitem_id.in_(task.path_ids),
-                        Permission.team_id == Team.id
-                    )
+                    Team.id.in_(list(team_ids))
                 )
 
                 res2 = db.query(
