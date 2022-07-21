@@ -1,6 +1,7 @@
 from typing import List
 from uuid import UUID
 import requests
+from sqlalchemy import and_
 from app.celery_app import celery_app
 from app.general.db.session import SessionLocal
 from app.models import (
@@ -46,15 +47,19 @@ def sync_asset_users(treeitem_ids: List[UUID]) -> str:
                 ).join(
                     user_team_association_table
                 ).filter(
-                    Permission.coproductionprocess_id == task.coproductionprocess.id,
-                    Permission.treeitem_id.in_(task.path_ids),
-                    Permission.team_id == Team.id
+                    and_(
+                        Permission.coproductionprocess_id == task.coproductionprocess.id,
+                        Permission.treeitem_id.in_(task.path_ids),
+                        Permission.team_id == Team.id
+                    )
                 )
 
                 res2 = db.query(
                     User
                 ).join(
                     CoproductionProcess.administrators
+                ).filter(
+                    CoproductionProcess.id == task.coproductionprocess.id
                 )
 
                 users = res.union(res2).all()
