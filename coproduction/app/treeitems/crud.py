@@ -33,6 +33,19 @@ class CRUDTreeItem:
                     models.Permission.team_id.in_(user.teams_ids)
                 )
             ).all()
+    
+    async def get_for_teams(
+        self, db: Session, teams_ids: List[uuid.UUID]
+    ):
+        return db.query(
+                models.TreeItem
+            ).join(
+                models.Permission
+            ).filter(
+                or_(
+                    models.Permission.team_id.in_(teams_ids)
+                )
+            ).all()
 
     async def remove(self, db: Session, obj, model, user_id: str = None, remove_definitely: bool = False) -> TreeItem:
         parent = None

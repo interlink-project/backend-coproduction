@@ -6,6 +6,8 @@ from app import models
 from app.schemas import UserCreate, UserPatch
 import uuid
 from sqlalchemy import and_, func, or_
+from app.treeitems.crud import exportCrud as treeitemsCrud
+
 
 class CRUDUser(CRUDBase[models.User, UserCreate, UserPatch]):
     async def search(self, db: Session, user: models.User, search: str, organization_id: uuid.UUID = None) -> List[models.User]:
@@ -50,10 +52,14 @@ class CRUDUser(CRUDBase[models.User, UserCreate, UserPatch]):
             return obj
         return
 
-    async def get_or_create(self, db: Session, data: dict) -> Optional[models.User]:
+    async def update_or_create(self, db: Session, data: dict) -> Optional[models.User]:
+        from app.worker import sync_asset_users
         if "sub" in data:
             data["id"] = data.get("sub")
             if user := await self.get(db=db, id=data.get("id")):
+                if data.get("additionalEmails", []) != user.additionalEmails:
+                    sync_asset_users.delay(user_ids=[user.id])
+
                 return await self.update(db=db, db_obj=user, obj_in=UserPatch(**data))
             else:
                 return await self.create(db=db, obj_in=UserCreate(**data))

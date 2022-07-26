@@ -20,7 +20,7 @@ async def me(
     """
     cookies = {'auth_token': token}
     response = requests.get(f"http://auth/auth/api/v1/users/me", cookies=cookies, timeout=3)
-    return await crud.user.get_or_create(db=db, data=response.json())
+    return await crud.user.update_or_create(db=db, data=response.json())
 
 @router.get("/search", response_model=List[schemas.UserOutFull])
 async def search_user(

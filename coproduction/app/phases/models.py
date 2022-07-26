@@ -53,7 +53,8 @@ class Phase(TreeItem):
     def tasks(self):
         lst = []
         for objective in self.children:
-            lst.append(objective.children)
+            for task in objective.children:
+                lst.append(task)
         return lst
     
     @hybrid_property
@@ -68,7 +69,8 @@ class Phase(TreeItem):
     def assets(self):
         lst = []
         for objective in self.children:
-            lst += objective.assets
+            for asset in objective.assets:
+                lst.append(asset)
         return lst
 
     def __repr__(self):

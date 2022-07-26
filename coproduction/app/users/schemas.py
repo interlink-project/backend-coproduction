@@ -10,8 +10,7 @@ class UserBase(BaseModel):
     full_name: Optional[str]
     last_login: datetime = datetime.now()
     email: Optional[str]
-    zoneinfo: Optional[str]
-    locale: Optional[str]
+    additionalEmails: Optional[List[str]]
 
 class UserCreate(UserBase):
     id: str

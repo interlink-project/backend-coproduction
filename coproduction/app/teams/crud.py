@@ -12,7 +12,6 @@ from app.organizations.crud import exportCrud as organizations_crud
 from sqlalchemy import or_, and_
 from fastapi.encoders import jsonable_encoder
 
-
 class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
     async def get_multi(self, db: Session, user: User, organization: Organization = None) -> Optional[List[Team]]:
         if organization:
@@ -25,6 +24,8 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
             ).all()
 
     async def add_user(self, db: Session, team: Team, user: models.User) -> Team:
+        from app.worker import sync_asset_treeitems
+        sync_asset_treeitems.delay([permission.treeitem_id for permission in team.permissions])
         team.users.append(user)
         db.commit()
         db.refresh(team)
@@ -35,9 +36,11 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
         return team
 
     async def remove_user(self, db: Session, team: Team, user: models.User) -> Team:
+        from app.worker import sync_asset_treeitems
         team.users.remove(user)
         db.commit()
         db.refresh(team)
+        sync_asset_treeitems.delay([permission.treeitem_id for permission in team.permissions])
         await log(self.enrich_log_data(team, {
             "action": "REMOVE_USER",
             "removed_user_id": user.id
