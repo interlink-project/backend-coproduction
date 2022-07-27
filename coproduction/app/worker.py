@@ -11,6 +11,7 @@ from app.models import (
     User,
     Team,
     CoproductionProcess,
+    InternalAsset,
     user_team_association_table,
     coproductionprocess_administrators_association_table
 )
@@ -82,12 +83,13 @@ def iterate(db, treeitems: List[TreeItem] = [], coproductionprocesses: List[Copr
                 data.append(toAdd)
 
         for asset in task.assets:
-            URL = asset.internal_link + "/sync_users"
-            print(URL, data)
-            try:
-                requests.post(URL, json=data)
-            except Exception as e:
-                print(str(e))
+            if type(asset) == InternalAsset:
+                URL = asset.internal_link + "/sync_users"
+                print(URL, data)
+                try:
+                    requests.post(URL, json=data)
+                except Exception as e:
+                    print(str(e))
 
 
 @celery_app.task
