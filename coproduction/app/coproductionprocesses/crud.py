@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
 from app import crud, models
 from app.general.utils.CRUDBase import CRUDBase
-from app.models import CoproductionProcess, Permission, User, Permission, TreeItem
+from app.models import CoproductionProcess, Permission, User, Permission, TreeItem, Asset
 from app.schemas import CoproductionProcessCreate, CoproductionProcessPatch
 from fastapi.encoders import jsonable_encoder
 from app.messages import log
@@ -53,12 +53,12 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
     async def get_assets(self, db: Session, coproductionprocess: CoproductionProcess, user: models.User):
         if user in coproductionprocess.administrators:
             return db.query(
-                models.Asset
+                Asset
                 ).filter(
-                    models.Asset.coproductionprocess_id == coproductionprocess.id,
+                    Asset.task_id.in_(coproductionprocess.task_ids())
                 ).order_by(models.Asset.created_at.desc()).all()
         
-        ids = [treeitem.id for treeitem in await treeitemsCrud.get_for_user_and_coproductionprocess(db=db, user=user, coproductionprocess_id=coproductionprocess.id)]
+        ids = [treeitem.id for treeitem in await treeitemsCrud.get_for_user_and_coproductionprocess(db=db, user=user, coproductionprocess_id=coproductionprocess.id) if not treeitem.disabled_on]
         return db.query(
                 models.Asset
             ).filter(
