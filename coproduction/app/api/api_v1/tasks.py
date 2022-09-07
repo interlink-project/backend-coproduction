@@ -40,7 +40,7 @@ async def create_task(
     if objective := await crud.objective.get(db=db, id=task_in.objective_id):
         if not crud.objective.can_update(current_user, objective):
             raise HTTPException(status_code=403, detail="Not enough permissions")
-        return await crud.task.create(db=db, task=task_in)
+        return await crud.task.create(db=db, obj_in=task_in)
     raise HTTPException(status_code=400, detail="Objective not found")
 
 

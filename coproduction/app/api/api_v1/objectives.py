@@ -39,7 +39,7 @@ async def create_objective(
     if phase := await crud.phase.get(db=db, id=objective_in.phase_id):
         if not crud.phase.can_update(current_user, phase):
             raise HTTPException(status_code=403, detail="Not enough permissions")
-        return await crud.objective.create(db=db, objective=objective_in)
+        return await crud.objective.create(db=db, obj_in=objective_in)
     raise HTTPException(status_code=400, detail="Phase not found")
 
 

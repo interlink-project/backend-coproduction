@@ -36,10 +36,10 @@ async def create_phase(
     """
     Create new phase.
     """
-    if coproductionprocess := await crud.phase.get(db=db, id=phase_in.coproductionprocess_id):
+    if coproductionprocess := await crud.coproductionprocess.get(db=db, id=phase_in.coproductionprocess_id):
         if not crud.coproductionprocess.can_update(current_user, coproductionprocess):
             raise HTTPException(status_code=403, detail="Not enough permissions")
-        return await crud.phase.create(db=db, phase=phase_in)
+        return await crud.phase.create(db=db, obj_in=phase_in)
     raise HTTPException(status_code=400, detail="Coproductionprocess not found")
 
 @router.get("/{id}/objectives", response_model=List[schemas.ObjectiveOut])
