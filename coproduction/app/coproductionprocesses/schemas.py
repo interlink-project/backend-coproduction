@@ -7,6 +7,7 @@ from pydantic import BaseModel, validator
 from app.config import settings
 from app.permissions.schemas import PermissionOut
 from pydantic_choices import choice
+from .models import Status
 
 Languages = choice(settings.ALLOWED_LANGUAGES_LIST)
 
@@ -18,6 +19,7 @@ class CoproductionProcessBase(BaseModel):
     idea: Optional[str]
     organization_id: Optional[uuid.UUID]
     challenges: Optional[str]
+    copro_state: Optional[Status]
 
 class CoproductionProcessCreate(CoproductionProcessBase):
     language: Languages
@@ -27,6 +29,7 @@ class CoproductionProcessCreate(CoproductionProcessBase):
 
 class CoproductionProcessPatch(CoproductionProcessCreate):
     name:  Optional[str]
+    copro_state: Status
     logotype: Optional[str]
     language: Optional[Languages]
 
