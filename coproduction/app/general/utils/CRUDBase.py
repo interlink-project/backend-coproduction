@@ -88,10 +88,12 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
         return db_obj
 
     async def add_administrator(self, db: Session, *, db_obj: ModelType, user: User = None) -> ModelType:
+        from app.worker import sync_asset_users
         db_obj.administrators.append(user)
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
+        sync_asset_users([user.id])
         enriched: dict = self.enrich_log_data(db_obj, {
             "action": "ADD_ADMINISTRATOR",
             "added_user_id": user.id
@@ -100,6 +102,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
         return db_obj
 
     async def remove_administrator(self, db: Session, *, db_obj: ModelType, user: User = None) -> ModelType:
+        from app.worker import sync_asset_users
         if len(db_obj.administrators) <= 1:
             raise HTTPException(status_code=400, detail="Can not delete the last administrator")
 
@@ -107,6 +110,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
+        sync_asset_users([user.id])
         enriched: dict = self.enrich_log_data(db_obj, {
             "action": "REMOVE_ADMINISTRATOR",
             "removed_user_id": user.id
