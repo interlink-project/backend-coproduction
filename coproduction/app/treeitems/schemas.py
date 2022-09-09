@@ -10,6 +10,7 @@ class TreeItemCreate(BaseModel):
     description: str
     from_schema: Optional[uuid.UUID]
     from_item: Optional[uuid.UUID]
+    prerequisites_ids: Optional[List[uuid.UUID]]
 
 class TreeItemPatch(BaseModel):
     name: Optional[str]

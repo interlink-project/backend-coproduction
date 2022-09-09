@@ -20,7 +20,34 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
         return await self.create(db=db, obj_in=creator, commit=False, extra={
             "coproductionprocess": coproductionprocess
         })
+        
+    async def create(self, db: Session, *, obj_in: PhaseCreate, creator: User = None, set_creator_admin: bool = False, extra: dict = {}, commit: bool = True) -> Phase:
+        obj_in_data = jsonable_encoder(obj_in)
+        prereqs = obj_in_data.get("prerequisites_ids")
+        print(prereqs)
+        del obj_in_data["prerequisites_ids"]
+        db_obj = self.model(**obj_in_data, **extra)  # type: ignore
 
+        if creator:
+            db_obj.creator_id = creator.id
+        
+        db.add(db_obj)
+        if commit:
+            db.commit()
+            db.refresh(db_obj)
+            await self.log_on_create(db_obj)
+            
+        if prereqs:
+            for id in prereqs:
+                phase = await self.get(db=db, id=id)
+                if phase:
+                   await self.add_prerequisite(db=db, phase=db_obj, prerequisite=phase)
+        if commit:
+            db.commit()
+            db.refresh(db_obj)
+
+        return db_obj
+            
     async def add_prerequisite(self, db: Session, phase: Phase, prerequisite: Phase, commit: bool = True) -> Phase:
         if phase == prerequisite:
             print(phase, prerequisite)
