@@ -1,6 +1,8 @@
+from email.policy import default
 import uuid
 from sqlalchemy import (
     Column,
+    Enum,
     ForeignKey,
     Integer,
     String,
@@ -18,6 +20,7 @@ from app.phases.models import Phase
 from sqlalchemy.ext.associationproxy import association_proxy
 from app.tables import coproductionprocess_administrators_association_table
 from sqlalchemy.orm import Session
+from app.utils import Status
 
 class CoproductionProcess(BaseModel):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -31,6 +34,11 @@ class CoproductionProcess(BaseModel):
     idea = Column(Text, nullable=True)
     organization = Column(Text, nullable=True)
     challenges = Column(Text, nullable=True)
+
+    copro_state = Column(String, default='in_progress')
+    status = Column(Enum(Status, create_constraint=False,
+                    native_enum=False), default=Status.in_progress)
+  
 
     # created by
     creator_id = Column(String, ForeignKey(
