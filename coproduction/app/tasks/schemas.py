@@ -7,7 +7,7 @@ from app.treeitems.schemas import *
 
 class TaskCreate(TreeItemCreate):
     objective_id: Optional[uuid.UUID]
-    problemprofiles: list
+    problemprofiles: Optional[list]
     status: Optional[str]
     start_date: Optional[date]
     end_date: Optional[date]
