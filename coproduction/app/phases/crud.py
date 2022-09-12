@@ -14,17 +14,18 @@ from fastapi.encoders import jsonable_encoder
 
 class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
     async def create_from_metadata(self, db: Session, phasemetadata: dict, coproductionprocess: CoproductionProcess, schema_id: uuid.UUID) -> Optional[Phase]:
-        phasemetadata["from_schema"] = schema_id
-        phasemetadata["from_item"] = phasemetadata.get("id")
-        creator = PhaseCreate(**phasemetadata)
+        data = phasemetadata.copy()
+        del data["prerequisites_ids"]
+        data["from_schema"] = schema_id
+        data["from_item"] = data.get("id")
+        creator = PhaseCreate(**data)
         return await self.create(db=db, obj_in=creator, commit=False, extra={
             "coproductionprocess": coproductionprocess
         })
         
-    async def create(self, db: Session, *, obj_in: PhaseCreate, creator: User = None, set_creator_admin: bool = False, extra: dict = {}, commit: bool = True) -> Phase:
+    async def create(self, db: Session, *, obj_in: PhaseCreate, creator: User = None, extra: dict = {}, commit: bool = True) -> Phase:
         obj_in_data = jsonable_encoder(obj_in)
         prereqs = obj_in_data.get("prerequisites_ids")
-        print(prereqs)
         del obj_in_data["prerequisites_ids"]
         db_obj = self.model(**obj_in_data, **extra)  # type: ignore
 

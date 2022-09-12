@@ -15,12 +15,40 @@ from fastapi.encoders import jsonable_encoder
 
 class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
     async def create_from_metadata(self, db: Session, objectivemetadata: dict, phase: Phase, schema_id: uuid.UUID) -> Optional[Objective]:
-        objectivemetadata["from_schema"] = schema_id
-        objectivemetadata["from_item"] = objectivemetadata.get("id")
-        creator = ObjectiveCreate(**objectivemetadata)
+        data = objectivemetadata.copy()
+        del data["prerequisites_ids"]
+        data["from_schema"] = schema_id
+        data["from_item"] = data.get("id")
+        creator = ObjectiveCreate(**data)
         return await self.create(db=db, obj_in=creator, commit=False, extra={
             "phase": phase
         })
+    
+    async def create(self, db: Session, *, obj_in: ObjectiveCreate, creator: User = None, extra: dict = {}, commit: bool = True) -> Objective:
+        obj_in_data = jsonable_encoder(obj_in)
+        prereqs = obj_in_data.get("prerequisites_ids")
+        del obj_in_data["prerequisites_ids"]
+        db_obj = self.model(**obj_in_data, **extra)  # type: ignore
+
+        if creator:
+            db_obj.creator_id = creator.id
+        
+        db.add(db_obj)
+        if commit:
+            db.commit()
+            db.refresh(db_obj)
+            await self.log_on_create(db_obj)
+            
+        if prereqs:
+            for id in prereqs:
+                objective = await self.get(db=db, id=id)
+                if objective:
+                   await self.add_prerequisite(db=db, objective=db_obj, prerequisite=objective)
+        if commit:
+            db.commit()
+            db.refresh(db_obj)
+
+        return db_obj
 
     async def add_prerequisite(self, db: Session, objective: Objective, prerequisite: Objective, commit: bool = True) -> Objective:
         if objective == prerequisite:
@@ -35,7 +63,7 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
             db.refresh(objective)
         return objective
 
-    async def remove(self, db: Session, *, id: uuid.UUID, user_id: str = None, remove_definitely: bool = False) -> Phase:
+    async def remove(self, db: Session, *, id: uuid.UUID, user_id: str = None, remove_definitely: bool = False) -> Objective:
         obj = db.query(self.model).get(id)
         if not obj:
             raise Exception("Object does not exist")

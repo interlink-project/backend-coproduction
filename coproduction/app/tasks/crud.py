@@ -14,13 +14,41 @@ from app.treeitems.crud import exportCrud as treeitems_crud
 
 class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
     async def create_from_metadata(self, db: Session, taskmetadata: dict, objective: Objective = None, schema_id = uuid.UUID) -> Optional[Task]:
-        taskmetadata["problemprofiles"] = [pp["id"] for pp in taskmetadata.get("problemprofiles", [])]
-        taskmetadata["from_schema"] = schema_id
-        taskmetadata["from_item"] = taskmetadata.get("id")
-        creator = TaskCreate(**taskmetadata)
+        data = taskmetadata.copy()
+        del data["prerequisites_ids"]
+        data["problemprofiles"] = [pp["id"] for pp in data.get("problemprofiles", [])]
+        data["from_schema"] = schema_id
+        data["from_item"] = data.get("id")
+        creator = TaskCreate(**data)
         return await self.create(db=db, obj_in=creator, commit=False, extra={
             "objective": objective,
         })
+
+    async def create(self, db: Session, *, obj_in: TaskCreate, creator: User = None, extra: dict = {}, commit: bool = True) -> Phase:
+        obj_in_data = jsonable_encoder(obj_in)
+        prereqs = obj_in_data.get("prerequisites_ids")
+        del obj_in_data["prerequisites_ids"]
+        db_obj = self.model(**obj_in_data, **extra)  # type: ignore
+
+        if creator:
+            db_obj.creator_id = creator.id
+        
+        db.add(db_obj)
+        if commit:
+            db.commit()
+            db.refresh(db_obj)
+            await self.log_on_create(db_obj)
+            
+        if prereqs:
+            for id in prereqs:
+                task = await self.get(db=db, id=id)
+                if task:
+                   await self.add_prerequisite(db=db, task=db_obj, prerequisite=task)
+        if commit:
+            db.commit()
+            db.refresh(db_obj)
+
+        return db_obj
 
     async def add_prerequisite(self, db: Session, task: Task, prerequisite: Task, commit : bool = True) -> Task:
         if task == prerequisite:
