@@ -29,7 +29,7 @@ class CoproductionProcessCreate(CoproductionProcessBase):
 
 class CoproductionProcessPatch(CoproductionProcessCreate):
     name:  Optional[str]
-    copro_state: Status
+    copro_state: Optional[Status]
     logotype: Optional[str]
     language: Optional[Languages]
 
