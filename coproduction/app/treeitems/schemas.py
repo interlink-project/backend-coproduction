@@ -11,12 +11,15 @@ class TreeItemCreate(BaseModel):
     from_schema: Optional[uuid.UUID]
     from_item: Optional[uuid.UUID]
     prerequisites_ids: Optional[List[uuid.UUID]]
+    postrequisites_ids: Optional[List[uuid.UUID]]
 
 class TreeItemPatch(BaseModel):
     name: Optional[str]
     description: Optional[str]
     disabler_id: Optional[str]
     disabled_on: Optional[datetime]
+    prerequisites_ids: Optional[List[uuid.UUID]]
+    postrequisites_ids: Optional[List[uuid.UUID]]
 
 class TreeItem(TreeItemCreate):
     id: uuid.UUID
@@ -24,7 +27,7 @@ class TreeItem(TreeItemCreate):
     created_at: datetime
     updated_at: Optional[datetime]
     prerequisites_ids: List[uuid.UUID]
-    
+
     start_date: Optional[date]
     end_date: Optional[date]
     status: Optional[Status]

@@ -28,6 +28,9 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
         obj_in_data = jsonable_encoder(obj_in)
         prereqs = obj_in_data.get("prerequisites_ids")
         del obj_in_data["prerequisites_ids"]
+        postreqs = obj_in_data.get("postrequisites_ids")
+        del obj_in_data["postrequisites_ids"]
+
         db_obj = self.model(**obj_in_data, **extra)  # type: ignore
 
         if creator:
@@ -43,7 +46,13 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
             for id in prereqs:
                 objective = await self.get(db=db, id=id)
                 if objective:
-                   await self.add_prerequisite(db=db, objective=db_obj, prerequisite=objective)
+                   await self.add_prerequisite(db=db, objective=db_obj, prerequisite=objective, commit=False)
+        if postreqs:
+            for id in postreqs:
+                objective = await self.get(db=db, id=id)
+                if objective:
+                   await self.add_prerequisite(db=db, objective=objective, prerequisite=db_obj, commit=False)
+        
         if commit:
             db.commit()
             db.refresh(db_obj)
@@ -57,6 +66,7 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
         # TODO: if objective in prerequisite.prerequisites => block
 
         recursive_check(objective.id, prerequisite)
+        objective.prerequisites.clear()
         objective.prerequisites.append(prerequisite)
         if commit:
             db.commit()

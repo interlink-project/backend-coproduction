@@ -74,7 +74,7 @@ def iterate(db, treeitems: List[TreeItem] = [], coproductionprocesses: List[Copr
 
         data = []
         for user in users:
-            if crud.permission.get_dict_for_treeitem(db=db, treeitem=task, user=user).get("access_assets_permission", False):
+            if crud.permission.get_dict_for_user_and_treeitem(db=db, treeitem=task, user=user).get("access_assets_permission", False):
                 toAdd = {
                     "emails": [user.email] + user.additionalEmails,
                     "user_id": user.id,

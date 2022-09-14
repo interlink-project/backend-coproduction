@@ -2,7 +2,7 @@ import copy
 import uuid
 from typing import List
 
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 from sqlalchemy.orm import Session
 
 from app import models, schemas
@@ -19,42 +19,23 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
             Permission.treeitem_id.in_(treeitem.path_ids)
         ).order_by(Permission.created_at.asc()).offset(skip).limit(limit).all()
 
-    def get_for_treeitem(
-        self, db: Session, treeitem: models.TreeItem
-    ):
-        return db.query(
-            Permission
-        ).filter(
-            Permission.treeitem_id.in_(treeitem.path_ids),
-            Permission.coproductionprocess_id == treeitem.coproductionprocess.id,
-        ).all()
-
     def get_for_user_and_treeitem(
         self, db: Session, user: models.User, treeitem: models.TreeItem
     ):
         return db.query(
             Permission
         ).filter(
-            Permission.treeitem_id.in_(treeitem.path_ids),
-            Permission.coproductionprocess_id == treeitem.coproductionprocess.id,
             or_(
-                Permission.user_id == user.id,
-                Permission.team_id.in_(user.teams_ids)
-            )
-        ).all()
-
-    def get_for_user_and_coproductionprocesss(
-        self, db: Session, user: models.User, coproductionprocess_id: uuid.UUID
-    ):
-        return db.query(
-            models.Permission
-        ).filter(
-            models.Permission.coproductionprocess_id == coproductionprocess_id
-        ).filter(
-            or_(
-                models.Permission.user_id == user.id,
-                models.Permission.team_id.in_(user.teams_ids)
-            )
+                and_(
+                    Permission.treeitem_id.in_(treeitem.path_ids),
+                    Permission.coproductionprocess_id == treeitem.coproductionprocess.id
+                ),
+                and_(
+                    Permission.treeitem_id == None,
+                    Permission.coproductionprocess_id == treeitem.coproductionprocess.id
+                ),
+            ),
+            Permission.team_id.in_(user.teams_ids)
         ).all()
 
     def get_user_roles(self, db: Session, treeitem: models.TreeItem, user: models.User):
@@ -68,7 +49,7 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
             roles.append('administrator')
         return roles
 
-    def get_dict_for_treeitem(self, db: Session, treeitem: models.TreeItem, user: models.User):
+    def get_dict_for_user_and_treeitem(self, db: Session, treeitem: models.TreeItem, user: models.User):
         if user in treeitem.coproductionprocess.administrators:
             return GRANT_ALL
         permissions = self.get_for_user_and_treeitem(db=db, user=user, treeitem=treeitem)
@@ -103,7 +84,7 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
         if user in task.coproductionprocess.administrators:
             return True
         if permission in PERMS:
-            perms : dict = self.get_dict_for_treeitem(db=db, treeitem=task, user=user)
+            perms : dict = self.get_dict_for_user_and_treeitem(db=db, treeitem=task, user=user)
             return perms[permission]
         raise Exception(permission + " is not a valid permission")
 

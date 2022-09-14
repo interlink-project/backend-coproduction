@@ -68,11 +68,11 @@ class CoproductionProcess(BaseModel):
     # the tree items can be disabled, so we need to retrieve only those teams or permissions that are not disabled
     @property
     def enabled_teams(self):
-        return [perm.team for perm in self.permissions if not perm.treeitem.disabled_on]
+        return [perm.team for perm in self.permissions if not perm.treeitem or (perm.treeitem and not perm.treeitem.disabled_on)]
     
     @property
     def enabled_permissions(self):
-        return [perm for perm in self.permissions if not perm.treeitem.disabled_on]
+        return [perm for perm in self.permissions if not perm.treeitem or (perm.treeitem and not perm.treeitem.disabled_on)]
 
     @property
     def logotype_link(self):

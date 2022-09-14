@@ -28,6 +28,9 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
         obj_in_data = jsonable_encoder(obj_in)
         prereqs = obj_in_data.get("prerequisites_ids")
         del obj_in_data["prerequisites_ids"]
+        postreqs = obj_in_data.get("postrequisites_ids")
+        del obj_in_data["postrequisites_ids"]
+
         db_obj = self.model(**obj_in_data, **extra)  # type: ignore
 
         if creator:
@@ -43,7 +46,12 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
             for id in prereqs:
                 task = await self.get(db=db, id=id)
                 if task:
-                   await self.add_prerequisite(db=db, task=db_obj, prerequisite=task)
+                   await self.add_prerequisite(db=db, task=db_obj, prerequisite=task, commit=False)
+        if postreqs:
+            for id in postreqs:
+                task = await self.get(db=db, id=id)
+                if task:
+                   await self.add_prerequisite(db=db, task=task, prerequisite=db_obj, commit=False)
         if commit:
             db.commit()
             db.refresh(db_obj)
@@ -56,6 +64,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
             raise Exception("Same object")
 
         recursive_check(task.id, prerequisite)
+        task.prerequisites.clear()
         task.prerequisites.append(prerequisite)
         if commit:
             db.commit()

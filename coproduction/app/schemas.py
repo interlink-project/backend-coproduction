@@ -39,11 +39,6 @@ class TreeItemOutFull(TreeItemOut):
     permissions: List[PermissionOutFull]
     teams: List[TeamOut]
 
-    @validator('teams', pre=True)
-    def teams_to_list(cls, v):
-        # set instead of list to avoid repeated teams
-        return set(v)
-
 
 class TaskOutFull(TaskOut, TreeItemOutFull):
     pass

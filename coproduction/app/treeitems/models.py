@@ -1,7 +1,7 @@
 import copy
 import uuid
 
-from sqlalchemy import Column, DateTime, Enum, ForeignKey, String, Table, or_, ARRAY
+from sqlalchemy import Column, DateTime, Enum, ForeignKey, String, Table, or_, and_, ARRAY
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import Session, relationship
@@ -55,7 +55,7 @@ class TreeItem(BaseModel):
     from_item = Column(UUID(as_uuid=True))
     from_schema = Column(UUID(as_uuid=True))
 
-    teams = association_proxy('_permissions', 'team')
+    # teams = association_proxy('_permissions', 'team')
 
     __mapper_args__ = {
         "polymorphic_identity": "treeitem",
@@ -65,14 +65,32 @@ class TreeItem(BaseModel):
     @cached_hybrid_property
     def permissions(self):
         db = Session.object_session(self)
-        # Get permissions of the treeitem for user (and teams he or she belongs to)...
+        # Get permissions of the treeitem teams of the user
         return db.query(
             Permission
         ).filter(
-            Permission.coproductionprocess_id == self.coproductionprocess.id,
-            Permission.treeitem_id.in_(self.path_ids)
+            or_(
+                and_(
+                    Permission.coproductionprocess_id == self.coproductionprocess.id,
+                    Permission.treeitem_id == None
+                ),
+                and_(
+                    Permission.treeitem_id.in_(self.path_ids),
+                    Permission.coproductionprocess_id == self.coproductionprocess.id
+                ),
+            )
         ).all()
     
+    @cached_hybrid_property
+    def teams(self):
+        t = []
+        ids = []
+        for permission in self.permissions:
+            if permission.team_id not in ids:
+                t.append(permission.team)
+                ids.append(permission.team_id)
+        return t
+
     @cached_hybrid_property
     def user_roles(self):
         from app.general.deps import get_current_user_from_context

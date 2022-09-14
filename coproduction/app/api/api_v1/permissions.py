@@ -112,6 +112,6 @@ async def yours(
     """
     if treeitem := await crud.treeitem.get(db=db, id=treeitem_id):
         return {
-            "your_permissions": crud.permission.get_dict_for_treeitem(db=db, treeitem=treeitem, user=current_user),
+            "your_permissions": crud.permission.get_dict_for_user_and_treeitem(db=db, treeitem=treeitem, user=current_user),
             "your_roles": crud.permission.get_user_roles(db=db, treeitem=treeitem, user=current_user)
         }

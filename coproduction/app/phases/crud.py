@@ -27,6 +27,9 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
         obj_in_data = jsonable_encoder(obj_in)
         prereqs = obj_in_data.get("prerequisites_ids")
         del obj_in_data["prerequisites_ids"]
+        postreqs = obj_in_data.get("postrequisites_ids")
+        del obj_in_data["postrequisites_ids"]
+
         db_obj = self.model(**obj_in_data, **extra)  # type: ignore
 
         if creator:
@@ -43,6 +46,12 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
                 phase = await self.get(db=db, id=id)
                 if phase:
                    await self.add_prerequisite(db=db, phase=db_obj, prerequisite=phase)
+        if postreqs:
+            for id in postreqs:
+                phase = await self.get(db=db, id=id)
+                if phase:
+                   await self.add_prerequisite(db=db, phase=phase, prerequisite=db_obj, commit=False)
+                   
         if commit:
             db.commit()
             db.refresh(db_obj)
@@ -55,6 +64,7 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
             raise Exception("Same object")
 
         recursive_check(phase.id, prerequisite)
+        phase.prerequisites.clear()
         phase.prerequisites.append(prerequisite)
         if commit:
             db.commit()
