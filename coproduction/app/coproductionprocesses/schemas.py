@@ -19,7 +19,7 @@ class CoproductionProcessBase(BaseModel):
     idea: Optional[str]
     organization_id: Optional[uuid.UUID]
     challenges: Optional[str]
-    copro_state: Optional[Status]
+    status: Optional[Status]
 
 class CoproductionProcessCreate(CoproductionProcessBase):
     language: Languages
@@ -29,7 +29,7 @@ class CoproductionProcessCreate(CoproductionProcessBase):
 
 class CoproductionProcessPatch(CoproductionProcessCreate):
     name:  Optional[str]
-    copro_state: Optional[Status]
+    status: Optional[Status]
     logotype: Optional[str]
     language: Optional[Languages]
 

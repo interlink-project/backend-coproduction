@@ -35,7 +35,6 @@ class CoproductionProcess(BaseModel):
     organization = Column(Text, nullable=True)
     challenges = Column(Text, nullable=True)
 
-    copro_state = Column(String, default='in_progress')
     status = Column(Enum(Status, create_constraint=False,
                     native_enum=False), default=Status.in_progress)
   
