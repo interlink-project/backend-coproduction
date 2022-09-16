@@ -87,8 +87,10 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
             db.refresh(db_obj)
             await self.log_on_create(db_obj)
 
-        if hasattr(db_obj, "coproductionprocess_id"):
-            await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName + "_created"})
+        if self.modelName == "COPRODUCTIONPROCESS":
+            await socket_manager.send_to_id(db_obj.id, {"event": self.modelName.lower() + "_created"})
+        elif hasattr(db_obj, "coproductionprocess_id"):
+            await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName.lower() + "_created"})
         return db_obj
 
     async def add_administrator(self, db: Session, *, db_obj: ModelType, user: User = None) -> ModelType:
@@ -103,8 +105,11 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
             "added_user_id": user.id
         })
         await log(enriched)
+
+        if self.modelName == "COPRODUCTIONPROCESS":
+            await socket_manager.send_to_id(db_obj.id, {"event": self.modelName.lower() + "_administrator_added"})
         if hasattr(db_obj, "coproductionprocess_id"):
-            await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName + "_administrator_added"})
+            await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName.lower() + "_administrator_added"})
         return db_obj
 
     async def remove_administrator(self, db: Session, *, db_obj: ModelType, user: User = None) -> ModelType:
@@ -122,8 +127,11 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
             "removed_user_id": user.id
         })
         await log(enriched)
-        if hasattr(db_obj, "coproductionprocess_id"):
-            await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName + "_administrator_removed"})
+
+        if self.modelName == "COPRODUCTIONPROCESS":
+            await socket_manager.send_to_id(db_obj.id, {"event": self.modelName.lower() + "_administrator_removed"})
+        elif hasattr(db_obj, "coproductionprocess_id"):
+            await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName.lower() + "_administrator_removed"})
         return db_obj
 
     async def update(
@@ -146,15 +154,23 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
         db.commit()
         db.refresh(db_obj)
         await self.log_on_update(db_obj)
-        if hasattr(db_obj, "coproductionprocess_id"):
-            await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName + "_updated"})
+
+        if self.modelName == "COPRODUCTIONPROCESS":
+            await socket_manager.send_to_id(db_obj.id, {"event": self.modelName.lower() + "_updated"})
+        elif hasattr(db_obj, "coproductionprocess_id"):
+            await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName.lower() + "_updated"})
+        
         return db_obj
 
     async def remove(self, db: Session, *, id: uuid.UUID) -> ModelType:
         db_obj = db.query(self.model).get(id)
-        await db_obj.log_on_remove(db_obj)
-        if hasattr(db_obj, "coproductionprocess_id"):
-            await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName + "_removed"})
+        await self.log_on_remove(db_obj)
+
+        if self.modelName == "COPRODUCTIONPROCESS":
+            await socket_manager.send_to_id(db_obj.id, {"event": self.modelName.lower() + "_removed"})
+        elif hasattr(db_obj, "coproductionprocess_id"):
+            await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName.lower() + "_removed"})
+
         db.delete(db_obj)
         db.commit()
         return None
