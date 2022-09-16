@@ -1,15 +1,17 @@
+from locale import strcoll
 import os
 import uuid
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 import aiofiles
 import requests
-from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from fastapi import WebSocket, WebSocketDisconnect, APIRouter, Depends, File, HTTPException, Query, UploadFile
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.general import deps
+from app.sockets import socket_manager 
 
 router = APIRouter()
 
@@ -289,3 +291,25 @@ async def delete_administrator(
                 status_code=403, detail="You are not allowed to update this coproductionprocess")
         raise HTTPException(status_code=404, detail="Coproductionprocess not found")
     raise HTTPException(status_code=404, detail="User not found")
+
+@router.post("/send_message")
+async def send_message(
+    *,
+    id: uuid.UUID,
+    message: str
+) -> Any:
+    await socket_manager.send_to_id(id=id, data={"data": message})
+
+
+@router.websocket("/{id}/ws")
+async def websocket_endpoint(
+    *,
+    id: uuid.UUID,
+    websocket: WebSocket
+):
+    await socket_manager.connect(websocket, id)
+    try:
+        while True:
+            data = await websocket.receive_text()
+    except WebSocketDisconnect:
+        socket_manager.disconnect(websocket, id)
