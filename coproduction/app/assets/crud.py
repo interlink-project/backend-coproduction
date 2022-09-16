@@ -14,6 +14,7 @@ import favicon
 from app.tasks.crud import update_status_and_progress
 from app.permissions.crud import exportCrud as permissionsCrud
 from app.general.deps import get_current_user_from_context
+from app.sockets import socket_manager
 
 class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
     async def get_multi(
@@ -66,6 +67,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
             
         db.refresh(db_obj)
         await self.log_on_create(db_obj)
+        await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": "asset_created"})
         return db_obj
 
     # Override log methods

@@ -10,8 +10,7 @@ from app.schemas import ObjectiveCreate, ObjectivePatch
 from app.treeitems.crud import exportCrud as treeitems_crud
 from app.utils import recursive_check
 from fastapi.encoders import jsonable_encoder
-
-
+from app.sockets import socket_manager
 
 class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
     async def create_from_metadata(self, db: Session, objectivemetadata: dict, phase: Phase, schema_id: uuid.UUID) -> Optional[Objective]:
@@ -57,6 +56,7 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
             db.commit()
             db.refresh(db_obj)
 
+        await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": "phase_created"})
         return db_obj
 
     async def add_prerequisite(self, db: Session, objective: Objective, prerequisite: Objective, commit: bool = True) -> Objective:

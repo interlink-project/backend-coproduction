@@ -21,11 +21,17 @@ class ConnectionManager:
     def disconnect(self, websocket: WebSocket, id: uuid.UUID):
         print("Disconnecting", id)
         if id in self.active_connections:
-            self.active_connections[id] = [conn for conn in self.active_connections[id] if conn != websocket]
+            filtered_active_connections = [conn for conn in self.active_connections[id] if conn != websocket]
+            if len(filtered_active_connections) == 0:
+                del self.active_connections[id]
+            else:
+                self.active_connections[id] = filtered_active_connections
 
     async def send_to_id(self, id: uuid.UUID, data: dict):
+        print(self.active_connections)
         if id in self.active_connections:
             for connection in self.active_connections[id]:
+                print("Sending", data, "to", connection, "in", id)
                 await connection.send_text(json.dumps(data))
 
 

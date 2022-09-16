@@ -52,6 +52,10 @@ class Objective(TreeItem):
         return "<Objective %r>" % self.name
     
     @hybrid_property
+    def coproductionprocess_id(self):
+        return self.coproductionprocess.id
+        
+    @hybrid_property
     def assets(self):
         lst = []
         for task in self.children:

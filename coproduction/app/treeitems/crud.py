@@ -7,6 +7,7 @@ from app.utils import update_status_and_progress
 from datetime import datetime
 from app import models
 from sqlalchemy import or_
+from app.sockets import socket_manager
 
 class CRUDTreeItem:
     async def get(self, db: Session, id: uuid.UUID) -> Optional[TreeItem]:
@@ -71,6 +72,8 @@ class CRUDTreeItem:
             update_status_and_progress(parent)
             db.add(parent)
         db.commit()
+        if hasattr(obj, "coproductionprocess_id"):
+            await socket_manager.send_to_id(obj.coproductionprocess_id, {"event": "treeitem_removed"})
         return obj
 
 exportCrud = CRUDTreeItem()

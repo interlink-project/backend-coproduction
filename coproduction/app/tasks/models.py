@@ -44,6 +44,11 @@ class Task(TreeItem):
     __mapper_args__ = {
         "polymorphic_identity": "task",
     }
+
+    @hybrid_property
+    def coproductionprocess_id(self):
+        return self.coproductionprocess.id
+
     @hybrid_property
     def phase_id(self):
         return self.objective.phase_id

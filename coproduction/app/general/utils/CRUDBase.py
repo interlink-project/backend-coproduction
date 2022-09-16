@@ -12,6 +12,7 @@ from app.general.db.base_class import Base
 from app.messages import log
 from app.users.models import User
 from app.config import settings
+from app.sockets import socket_manager
 
 ModelType = TypeVar("ModelType", bound=Base)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
@@ -85,6 +86,9 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
             db.commit()
             db.refresh(db_obj)
             await self.log_on_create(db_obj)
+
+        if hasattr(db_obj, "coproductionprocess_id"):
+            await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName + "_created"})
         return db_obj
 
     async def add_administrator(self, db: Session, *, db_obj: ModelType, user: User = None) -> ModelType:
@@ -99,6 +103,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
             "added_user_id": user.id
         })
         await log(enriched)
+        if hasattr(db_obj, "coproductionprocess_id"):
+            await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName + "_administrator_added"})
         return db_obj
 
     async def remove_administrator(self, db: Session, *, db_obj: ModelType, user: User = None) -> ModelType:
@@ -116,6 +122,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
             "removed_user_id": user.id
         })
         await log(enriched)
+        if hasattr(db_obj, "coproductionprocess_id"):
+            await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName + "_administrator_removed"})
         return db_obj
 
     async def update(
@@ -138,14 +146,18 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
         db.commit()
         db.refresh(db_obj)
         await self.log_on_update(db_obj)
+        if hasattr(db_obj, "coproductionprocess_id"):
+            await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName + "_updated"})
         return db_obj
 
     async def remove(self, db: Session, *, id: uuid.UUID) -> ModelType:
-        obj = db.query(self.model).get(id)
-        await self.log_on_remove(obj)
-        db.delete(obj)
+        db_obj = db.query(self.model).get(id)
+        await db_obj.log_on_remove(db_obj)
+        if hasattr(db_obj, "coproductionprocess_id"):
+            await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName + "_removed"})
+        db.delete(db_obj)
         db.commit()
-        return obj
+        return None
 
     # LOGS
     async def log_on_get(self, obj):

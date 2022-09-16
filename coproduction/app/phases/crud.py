@@ -10,7 +10,7 @@ from app.schemas import PhaseCreate, PhasePatch
 from app.treeitems.crud import exportCrud as treeitems_crud
 from app.utils import recursive_check
 from fastapi.encoders import jsonable_encoder
-
+from app.sockets import socket_manager
 
 class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
     async def create_from_metadata(self, db: Session, phasemetadata: dict, coproductionprocess: CoproductionProcess, schema_id: uuid.UUID) -> Optional[Phase]:
@@ -56,6 +56,7 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
             db.commit()
             db.refresh(db_obj)
 
+        await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": "phase_created"})
         return db_obj
             
     async def add_prerequisite(self, db: Session, phase: Phase, prerequisite: Phase, commit: bool = True) -> Phase:

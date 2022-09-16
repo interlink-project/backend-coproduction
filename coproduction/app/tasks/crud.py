@@ -11,6 +11,7 @@ from fastapi.encoders import jsonable_encoder
 from app.utils import recursive_check, update_status_and_progress
 from app.messages import log
 from app.treeitems.crud import exportCrud as treeitems_crud
+from app.sockets import socket_manager
 
 class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
     async def create_from_metadata(self, db: Session, taskmetadata: dict, objective: Objective = None, schema_id = uuid.UUID) -> Optional[Task]:
@@ -56,6 +57,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
             db.commit()
             db.refresh(db_obj)
 
+        await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": "task_created"})
         return db_obj
 
     async def add_prerequisite(self, db: Session, task: Task, prerequisite: Task, commit : bool = True) -> Task:
@@ -102,6 +104,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
         db.commit()
         db.refresh(db_obj)
         await self.log_on_update(db_obj)
+        await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": "task_updated"})
         return db_obj
 
     async def remove(self, db: Session, *, id: uuid.UUID, user_id: str = None, remove_definitely: bool = False) -> Phase:

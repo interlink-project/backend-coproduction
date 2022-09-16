@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from slugify import slugify
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, func
+from sqlalchemy import or_, and_
 from app import crud, models
 from app.general.utils.CRUDBase import CRUDBase
 from app.models import CoproductionProcess, Permission, User, Permission, TreeItem, Asset
@@ -11,6 +11,7 @@ from app.schemas import CoproductionProcessCreate, CoproductionProcessPatch
 from fastapi.encoders import jsonable_encoder
 from app.messages import log
 from app.treeitems.crud import exportCrud as treeitemsCrud
+from app.sockets import socket_manager
 
 class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessCreate, CoproductionProcessPatch]):
     async def get_multi_by_user(self, db: Session, user: User, search: str = None) -> Optional[List[CoproductionProcess]]:
@@ -35,10 +36,6 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                 Permission.user_id == user.id,
                 Permission.team_id.in_(user.teams_ids)
             ),
-        ).filter(
-            Permission.treeitem_id == TreeItem.id
-        ).filter(
-            TreeItem.disabled_on == None
         )
 
         query = admins.union(user_permissions)
@@ -80,6 +77,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         })
         await log(enriched)
         db.refresh(coproductionprocess)
+        await socket_manager.send_to_id(coproductionprocess.id, {"event": "schema_cleared"})
         return coproductionprocess
 
     async def set_schema(self, db: Session, coproductionprocess: models.CoproductionProcess, coproductionschema: dict):
@@ -149,6 +147,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         })
         await log(enriched)
         db.refresh(coproductionprocess)
+        await socket_manager.send_to_id(coproductionprocess.id, {"event": "schema_set"})
         return coproductionprocess
 
     # Override log methods
