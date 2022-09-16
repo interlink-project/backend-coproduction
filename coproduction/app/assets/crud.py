@@ -67,7 +67,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
             
         db.refresh(db_obj)
         await self.log_on_create(db_obj)
-        await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": "asset_created"})
+        await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": "asset_created", "extra": jsonable_encoder(db_obj)})
         return db_obj
 
     # Override log methods
