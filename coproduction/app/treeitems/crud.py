@@ -73,7 +73,7 @@ class CRUDTreeItem:
             db.add(parent)
         db.commit()
         if hasattr(obj, "coproductionprocess_id"):
-            await socket_manager.send_to_id(obj.coproductionprocess_id, {"event": "treeitem_removed"})
+            await socket_manager.send_to_id(obj.coproductionprocess_id, {"event": "treeitem_removed","name":obj.name})
         return obj
 
 exportCrud = CRUDTreeItem()
