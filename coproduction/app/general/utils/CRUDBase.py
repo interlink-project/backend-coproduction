@@ -175,8 +175,9 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
             #The case of the asset is (asset_removed)
             if self.modelName == "ASSET":
                 await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName.lower() + "_removed", "extra": { "task_id" : jsonable_encoder(db_obj.task_id) }})
-
-            await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName.lower() + "_removed"})
+            else:
+                # Any other case:
+                await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName.lower() + "_removed"})
 
         
         db.delete(db_obj)
