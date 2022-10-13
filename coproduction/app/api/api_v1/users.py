@@ -1,11 +1,13 @@
 from typing import Any, List, Optional
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.general import deps
 import requests
+from app.sockets import socket_manager 
+
 
 router = APIRouter()
 
@@ -34,3 +36,25 @@ async def search_user(
     Search users
     """
     return await crud.user.search(db=db, user=current_user, organization_id=organization_id, search=by)
+
+@router.post("/send_message")
+async def send_message(
+    *,
+    id: uuid.UUID,
+    message: str
+) -> Any:
+    await socket_manager.send_to_id(id=id, data={"data": message})
+
+
+@router.websocket("/{id}/ws")
+async def websocket_endpoint(
+    *,
+    id: str,
+    websocket: WebSocket
+):
+    await socket_manager.connect(websocket, id)
+    try:
+        while True:
+            data = await websocket.receive_text()
+    except WebSocketDisconnect:
+        socket_manager.disconnect(websocket, id)

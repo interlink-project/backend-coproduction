@@ -2,6 +2,8 @@ import logging
 import uuid
 from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
 
+from uuid_by_string import generate_uuid
+
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -90,7 +92,14 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
         if self.modelName == "COPRODUCTIONPROCESS":
             await socket_manager.send_to_id(db_obj.id, {"event": self.modelName.lower() + "_created"})
         elif hasattr(db_obj, "coproductionprocess_id"):
+            
             await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName.lower() + "_created"})
+        
+        # Send info to private socket to update workspace page
+        if hasattr(db_obj, "team") and self.modelName == "PERMISSION":
+            for user in db_obj.team.users:
+                await socket_manager.send_to_id(generate_uuid(user.id), {"event": self.modelName.lower() + "_created"})
+            
         return db_obj
 
     async def add_administrator(self, db: Session, *, db_obj: ModelType, user: User = None) -> ModelType:
@@ -105,11 +114,16 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
             "added_user_id": user.id
         })
         await log(enriched)
+        
 
         if self.modelName == "COPRODUCTIONPROCESS":
             await socket_manager.send_to_id(db_obj.id, {"event": self.modelName.lower() + "_administrator_added"})
         if hasattr(db_obj, "coproductionprocess_id"):
             await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName.lower() + "_administrator_added"})
+        
+        # Send info to private socket to update workspace page
+        await socket_manager.send_to_id(generate_uuid(user.id), {"event": self.modelName.lower() + "_administrator_added"})
+        
         return db_obj
 
     async def remove_administrator(self, db: Session, *, db_obj: ModelType, user: User = None) -> ModelType:
@@ -132,6 +146,10 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
             await socket_manager.send_to_id(db_obj.id, {"event": self.modelName.lower() + "_administrator_removed"})
         elif hasattr(db_obj, "coproductionprocess_id"):
             await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName.lower() + "_administrator_removed"})
+            
+        # Send info to private socket to update workspace page
+        await socket_manager.send_to_id(generate_uuid(user.id), {"event": self.modelName.lower() + "_administrator_removed"})
+            
         return db_obj
 
     async def update(
@@ -171,14 +189,18 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
             await socket_manager.send_to_id(db_obj.id, {"event": self.modelName.lower() + "_removed"})
         
         elif hasattr(db_obj, "coproductionprocess_id"):
-            
+          
             #The case of the asset is (asset_removed)
             if self.modelName == "ASSET":
                 await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName.lower() + "_removed", "extra": { "task_id" : jsonable_encoder(db_obj.task_id) }})
             else:
                 # Any other case:
                 await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName.lower() + "_removed"})
-
+            
+        # # Send info to private socket to update workspace page
+        if hasattr(db_obj, "team") and self.modelName == "PERMISSION":
+            for user in db_obj.team.users:
+                await socket_manager.send_to_id(generate_uuid(user.id), {"event": self.modelName.lower() + "_removed"})
         
         db.delete(db_obj)
         db.commit()
