@@ -48,7 +48,8 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
 
     async def get_assets(self, db: Session, coproductionprocess: CoproductionProcess, user: models.User):
-        if user in coproductionprocess.administrators:
+        # print(self.can_read(db, user, coproductionprocess))
+        if user in coproductionprocess.administrators or self.can_read(db, user, coproductionprocess):
             return db.query(
                 Asset
                 ).filter(
