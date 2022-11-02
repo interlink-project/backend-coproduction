@@ -33,6 +33,7 @@ cached-property = "^1.5.2"
 emails = "^0.6"
 uuid-by-string = "^0.1.0"
 tenacity = "^8.1.0"
+sqlalchemy-utils = "^0.38.3"
 
 
 [build-system]
