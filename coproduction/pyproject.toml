@@ -34,6 +34,8 @@ emails = "^0.6"
 uuid-by-string = "^0.1.0"
 tenacity = "^8.1.0"
 sqlalchemy-utils = "^0.38.3"
+httpx = "^0.23.0"
+redis = "^4.3.4"
 
 
 [build-system]
