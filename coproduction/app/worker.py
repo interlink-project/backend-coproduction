@@ -45,51 +45,55 @@ def iterate(db, treeitems: List[TreeItem] = [], coproductionprocesses: List[Copr
     # get users and their permissions for every task and call /sync_users of the software interlinkers used by the assets of the task
     task: Task
     for task_id, task in tasks.items():
-        permissions = db.query(
-            Permission
-        ).filter(
-            and_(
-                Permission.coproductionprocess_id == task.coproductionprocess.id,
-                Permission.treeitem_id.in_(task.path_ids),
+        try:
+            permissions = db.query(
+                Permission
+            ).filter(
+                and_(
+                    Permission.coproductionprocess_id == task.coproductionprocess.id,
+                    Permission.treeitem_id.in_(task.path_ids),
+                )
+            ).distinct().all()
+
+            res = db.query(
+                User
+            ).join(
+                user_team_association_table
+            ).filter(
+                Team.id.in_([permission.team_id for permission in permissions])
             )
-        ).distinct().all()
 
-        res = db.query(
-            User
-        ).join(
-            user_team_association_table
-        ).filter(
-            Team.id.in_([permission.team_id for permission in permissions])
-        )
+            res2 = db.query(
+                User
+            ).join(
+                coproductionprocess_administrators_association_table
+            ).filter(
+                CoproductionProcess.id == task.coproductionprocess.id
+            )
 
-        res2 = db.query(
-            User
-        ).join(
-            coproductionprocess_administrators_association_table
-        ).filter(
-            CoproductionProcess.id == task.coproductionprocess.id
-        )
+            users = res.union(res2).distinct().all()
 
-        users = res.union(res2).distinct().all()
+            data = []
+            for user in users:
+                if crud.permission.get_dict_for_user_and_treeitem(db=db, treeitem=task, user=user).get("access_assets_permission", False):
+                    toAdd = {
+                        "emails": [user.email] + user.additionalEmails,
+                        "user_id": user.id,
+                        "administrator": user in task.coproductionprocess.administrators
+                    }
+                    data.append(toAdd)
 
-        data = []
-        for user in users:
-            if crud.permission.get_dict_for_user_and_treeitem(db=db, treeitem=task, user=user).get("access_assets_permission", False):
-                toAdd = {
-                    "emails": [user.email] + user.additionalEmails,
-                    "user_id": user.id,
-                    "administrator": user in task.coproductionprocess.administrators
-                }
-                data.append(toAdd)
-
-        for asset in task.assets:
-            if type(asset) == InternalAsset:
-                URL = asset.internal_link + "/sync_users"
-                print(URL, data)
-                try:
-                    requests.post(URL, json=data)
-                except Exception as e:
-                    print(str(e))
+            for asset in task.assets:
+                if type(asset) == InternalAsset:
+                    URL = asset.internal_link + "/sync_users"
+                    print(URL, data)
+                    try:
+                        requests.post(URL, json=data)
+                    except Exception as e:
+                        print(str(e))
+        except Exception as e:
+            print("The task tiene un problema:"+task+" con id : "+task_id)
+            print(str(e))
 
 
 @celery_app.task
