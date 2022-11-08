@@ -92,8 +92,10 @@ def iterate(db, treeitems: List[TreeItem] = [], coproductionprocesses: List[Copr
                     except Exception as e:
                         print(str(e))
         except Exception as e:
+            print("==========================" )
             print(task)
-            print("The task tiene un problema: task con id : "+task_id)
+            print(task_id)
+            print("The task tiene un problema: task con id")
             print(str(e))
 
 
