@@ -11,6 +11,8 @@ from app.users.crud import exportCrud as users_crud
 from app.organizations.crud import exportCrud as organizations_crud
 from sqlalchemy import or_, and_
 from fastapi.encoders import jsonable_encoder
+from app.sockets import socket_manager
+from uuid_by_string import generate_uuid
 
 class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
     async def get_multi(self, db: Session, user: User, organization: Organization = None) -> Optional[List[Team]]:
@@ -33,6 +35,10 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
             "action": "ADD_USER",
             "added_user_id": user.id
         }))
+
+        #Send a msn to the user to know is added to a team
+        await socket_manager.send_to_id(generate_uuid(user.id), {"event": "team" + "_created"})
+
         return team
 
     async def remove_user(self, db: Session, team: Team, user: models.User) -> Team:
@@ -45,6 +51,10 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
             "action": "REMOVE_USER",
             "removed_user_id": user.id
         }))
+
+        #Send a msn to the user to know is removed to a team
+        await socket_manager.send_to_id(generate_uuid(user.id), {"event": "team" + "_created"})
+        
         return team
 
     async def create(self, db: Session, obj_in: TeamCreate, creator: models.User) -> Team:
@@ -61,6 +71,14 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
+
+        #Send msn to all user part of a team create
+        print("El team model is:")
+        print(user_ids)
+        for user_id in user_ids:
+            await socket_manager.send_to_id(generate_uuid(user_id), {"event": "team" + "_created"})
+
+
         await self.log_on_create(db_obj)
         return db_obj
 

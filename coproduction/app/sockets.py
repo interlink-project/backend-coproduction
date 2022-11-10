@@ -33,6 +33,14 @@ class ConnectionManager:
             for connection in self.active_connections[id]:
                 print("Sending", data, "to", connection, "in", id)
                 await connection.send_text(json.dumps(data))
-
+                
+    #Method to send events to everybody connected to personal socket:
+    async def broadcast(self, data: dict):
+        print(self.active_connections)
+        print(data)
+        for key in self.active_connections:
+            for connection in self.active_connections[key]:
+                print("Sending", data, "to", connection, "in", key)
+                await connection.send_text(json.dumps(data))
 
 socket_manager = ConnectionManager()

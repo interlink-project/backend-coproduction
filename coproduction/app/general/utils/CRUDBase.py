@@ -99,6 +99,9 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
         if hasattr(db_obj, "team") and self.modelName == "PERMISSION":
             for user in db_obj.team.users:
                 await socket_manager.send_to_id(generate_uuid(user.id), {"event": self.modelName.lower() + "_created"})
+        #Send info when you create an organization
+        if self.modelName == "ORGANIZATION":
+            await socket_manager.broadcast({"event": self.modelName.lower() + "_created"})
             
         return db_obj
 
@@ -178,11 +181,23 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
         elif hasattr(db_obj, "coproductionprocess_id"):
             await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName.lower() + "_updated"})
         
+        #Send info when you create an team
+        if self.modelName == "TEAM":
+            await socket_manager.broadcast({"event": self.modelName.lower() + "_updated"})
+
+        #Send info when you create an team
+        if self.modelName == "ORGANIZATION":
+            await socket_manager.broadcast({"event": self.modelName.lower() + "_updated"})
+
+
         return db_obj
 
     async def remove(self, db: Session, *, id: uuid.UUID) -> ModelType:
         db_obj = db.query(self.model).get(id)
         await self.log_on_remove(db_obj)
+
+        db.delete(db_obj)
+        db.commit()
 
         #General case where a (coproductionprocess_removed)
         if self.modelName == "COPRODUCTIONPROCESS":
@@ -202,8 +217,15 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
             for user in db_obj.team.users:
                 await socket_manager.send_to_id(generate_uuid(user.id), {"event": self.modelName.lower() + "_removed"})
         
-        db.delete(db_obj)
-        db.commit()
+        #Send info when you create an organization
+        if self.modelName == "ORGANIZATION":
+            await socket_manager.broadcast({"event": self.modelName.lower() + "_removed"})
+        
+        #Send info when you create an team
+        if self.modelName == "TEAM":
+            await socket_manager.broadcast({"event": self.modelName.lower() + "_removed"})
+        
+
         return None
 
     # LOGS
