@@ -10,6 +10,7 @@ from app.api.api_v1 import (
     users,
     permissions,
     organizations,
+    notifications,
     utils
 )
 
@@ -33,6 +34,8 @@ api_router.include_router(users.router,
                           prefix="/users", tags=["teammanagement"])
 api_router.include_router(organizations.router,
                           prefix="/organizations", tags=["teammanagement"])
+api_router.include_router(notifications.router,
+                          prefix="/notifications", tags=["util"])
 api_router.include_router(utils.router, prefix="/utils", tags=["utils"])
 
 

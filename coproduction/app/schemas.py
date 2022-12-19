@@ -9,6 +9,7 @@ from app.phases.schemas import *
 from app.tasks.schemas import *
 from app.teams.schemas import *
 from app.users.schemas import *
+from app.notifications.schemas import *
 
 # out
 
@@ -43,6 +44,9 @@ class TreeItemOutFull(TreeItemOut):
 class TaskOutFull(TaskOut, TreeItemOutFull):
     pass
 
+
+class NotificationOutFull(NotificationOut):
+    pass
 
 class ObjectiveOutFull(ObjectiveOut, TreeItemOutFull):
     children: List[TaskOutFull]

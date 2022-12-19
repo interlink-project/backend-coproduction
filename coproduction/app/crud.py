@@ -8,3 +8,4 @@ from app.teams.crud import exportCrud as team
 from app.users.crud import exportCrud as user
 from app.organizations.crud import exportCrud as organization
 from app.permissions.crud import exportCrud as permission
+from app.notifications.crud import exportCrud as notification
