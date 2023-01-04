@@ -3,12 +3,14 @@ from typing import Any, Dict, Optional, List
 
 from sqlalchemy.orm import Session
 from app.general.utils.CRUDBase import CRUDBase
-from app.models import Team, User, Organization
+from app.models import Team, User, Organization, UserNotification
 from app.schemas import TeamCreate, TeamPatch
 import uuid
 from app import models
 from app.users.crud import exportCrud as users_crud
 from app.organizations.crud import exportCrud as organizations_crud
+from app.usernotifications.crud import exportCrud as usernotification_crud
+from app.notifications.crud import exportCrud as notification_crud
 from sqlalchemy import or_, and_
 from fastapi.encoders import jsonable_encoder
 from app.sockets import socket_manager
@@ -76,7 +78,28 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
         print("El team model is:")
         print(user_ids)
         for user_id in user_ids:
+
+            #Create a notification for every user
+            newUserNotification=UserNotification()
+            newUserNotification.user_id=user_id
+            notification = await notification_crud.get_notification_by_event(db=db, event="add_user_team")
+            newUserNotification.notification_id=notification.id
+            newUserNotification.channel="in_app"
+            newUserNotification.state=False
+            print(db_obj)
+            print("El valor de team ID:")
+            print(db_obj.id)
+            print("El valor de org ID:")
+            print(db_obj.organization_id)
+            newUserNotification.parameters="{'teamName':'"+db_obj.name+"','team_id':'"+str(db_obj.id)+"','org_id':'"+str(db_obj.organization_id)+"'}"
+
+            db.add(newUserNotification)
+            db.commit()
+            db.refresh(newUserNotification)
+            
+
             await socket_manager.send_to_id(generate_uuid(user_id), {"event": "team" + "_created"})
+            
 
 
         await self.log_on_create(db_obj)

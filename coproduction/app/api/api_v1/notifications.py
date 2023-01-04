@@ -23,6 +23,15 @@ async def list_notifications(
     return await crud.notification.get_multi(db=db, user=current_user)
 
 
+@router.get("/{event}/notification", response_model=schemas.NotificationOutFull)
+async def notification_by_event(
+    db: Session = Depends(deps.get_db),
+    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
+    event: str = '',
+) -> Any:
+    return await crud.notification.get_notification_by_event(db=db,event=event)
+
+
 @router.post("", response_model=schemas.NotificationOutFull)
 async def create_notification(
     *,
@@ -59,12 +68,14 @@ async def update_notification(
     return await crud.notification.update(db=db, db_obj=notification, obj_in=notification_in)
 
 
-@router.get("/{id}/notifications", response_model=schemas.NotificationOutFull)
+
+
+@router.get("/{id}", response_model=schemas.NotificationOutFull)
 async def read_notification(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
-    current_user: Optional[models.User] = Depends(deps.get_current_user),
+    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Get notification by ID.
@@ -91,4 +102,5 @@ async def delete_notification(
     if not notification:
         raise HTTPException(status_code=404, detail="Notification not found")
     return await crud.notification.remove(db=db, id=id)
+
 

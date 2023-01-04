@@ -8,21 +8,12 @@ from app.utils import ChannelTypes
 
 
 class NotificationBase(BaseModel):
-   
     event : str
-    message : str
-    channel : ChannelTypes
-    template : Optional[str]
-    list_vars : Optional[str]
-    url_boton : Optional[str]
-    
-    #Resource
-    resource_id : Optional[str]
-
-    #Actor
-    actor_id : Optional[str]
-    notifier_id : Optional[str]
-    state : Optional[bool]
+    title : str
+    subtitle : Optional[str]
+    text : str
+    html_template : Optional[str]
+    url_link : Optional[str]
 
 
 
@@ -33,8 +24,6 @@ class Notification(NotificationBase):
 
     class Config:
         orm_mode = True
-  
-
 
 
 
@@ -46,4 +35,3 @@ class NotificationPatch(NotificationBase):
 
 class NotificationCreate(NotificationBase):
     pass
-
