@@ -38,6 +38,21 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
             "added_user_id": user.id
         }))
 
+        #Agrego la notificacion cuando un usuario es removido de un equipo:
+        newUserNotification=UserNotification()
+        newUserNotification.user_id=user.id
+        notification = await notification_crud.get_notification_by_event(db=db, event="add_user_team")
+        if(notification):
+            newUserNotification.notification_id=notification.id
+            newUserNotification.channel="in_app"
+            newUserNotification.state=False
+            newUserNotification.parameters="{'teamName':'"+team.name+"','team_id':'"+str(team.id)+"','org_id':'"+str(team.organization_id)+"'}"
+
+            db.add(newUserNotification)
+            db.commit()
+            db.refresh(newUserNotification)
+
+
         #Send a msn to the user to know is added to a team
         await socket_manager.send_to_id(generate_uuid(user.id), {"event": "team" + "_created"})
 
@@ -53,6 +68,21 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
             "action": "REMOVE_USER",
             "removed_user_id": user.id
         }))
+
+        #Agrego la notificacion cuando un usuario es removido de un equipo:
+        newUserNotification=UserNotification()
+        newUserNotification.user_id=user.id
+        notification = await notification_crud.get_notification_by_event(db=db, event="remove_user_team")
+        if(notification):
+            newUserNotification.notification_id=notification.id
+            newUserNotification.channel="in_app"
+            newUserNotification.state=False
+            newUserNotification.parameters="{'teamName':'"+team.name+"','team_id':'"+str(team.id)+"','org_id':'"+str(team.organization_id)+"'}"
+
+            db.add(newUserNotification)
+            db.commit()
+            db.refresh(newUserNotification)
+
 
         #Send a msn to the user to know is removed to a team
         await socket_manager.send_to_id(generate_uuid(user.id), {"event": "team" + "_created"})
@@ -83,19 +113,15 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
             newUserNotification=UserNotification()
             newUserNotification.user_id=user_id
             notification = await notification_crud.get_notification_by_event(db=db, event="add_user_team")
-            newUserNotification.notification_id=notification.id
-            newUserNotification.channel="in_app"
-            newUserNotification.state=False
-            print(db_obj)
-            print("El valor de team ID:")
-            print(db_obj.id)
-            print("El valor de org ID:")
-            print(db_obj.organization_id)
-            newUserNotification.parameters="{'teamName':'"+db_obj.name+"','team_id':'"+str(db_obj.id)+"','org_id':'"+str(db_obj.organization_id)+"'}"
+            if(notification):
+                newUserNotification.notification_id=notification.id
+                newUserNotification.channel="in_app"
+                newUserNotification.state=False
+                newUserNotification.parameters="{'teamName':'"+db_obj.name+"','team_id':'"+str(db_obj.id)+"','org_id':'"+str(db_obj.organization_id)+"'}"
 
-            db.add(newUserNotification)
-            db.commit()
-            db.refresh(newUserNotification)
+                db.add(newUserNotification)
+                db.commit()
+                db.refresh(newUserNotification)
             
 
             await socket_manager.send_to_id(generate_uuid(user_id), {"event": "team" + "_created"})
