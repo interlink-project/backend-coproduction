@@ -42,7 +42,7 @@ def send_test_email(email_to: str) -> None:
                       subject='Friday party',
                       mail_from=(settings.EMAILS_FROM_NAME, settings.EMAILS_FROM_EMAIL))
     response = message.send(render={"project_name": "user/project1", "username": 121},
-                  to='rubensancor@gmail.com',
+                  to='ruben.sanchez@deusto.es',
                   smtp={"host": settings.SMTP_HOST, "port": settings.SMTP_PORT})
     send_email(
         email_to=email_to,
