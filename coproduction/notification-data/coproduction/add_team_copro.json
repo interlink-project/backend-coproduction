@@ -1,0 +1,8 @@
+{
+    "event": "add_team_copro",
+    "title": "The team {teamName} was selected for the project {processName}",
+    "subtitle": "Add a team to a coproduction process",
+    "text": "<a href='/dashboard/organizations/{org_id}/{team_id}'>{teamName}</a> was assigned to coproduction process <a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a>",
+    "html_template": null,
+    "url_link": "/dashboard/coproductionprocesses/{copro_id}/overview/"
+  }

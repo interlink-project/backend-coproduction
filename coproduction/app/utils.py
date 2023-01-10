@@ -32,6 +32,11 @@ class Status(str, enum.Enum):
     in_progress = "in_progress"
     finished = "finished"
 
+class ChannelTypes(str, enum.Enum):
+    in_app = "in_app"
+    email  = "email"
+    chat   = "chat"
+
 class RoleTypes(str, enum.Enum):
     citizen = "citizen"
     public_administration = "public_administration"

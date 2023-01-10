@@ -1,6 +1,7 @@
-from sqlalchemy import ARRAY, Column, ForeignKey, String, Table, func
+from sqlalchemy import ARRAY, Column, ForeignKey, String, Table, func, Boolean, DateTime
 
 from app.general.db.base_class import Base as BaseModel
+from app.utils import ChannelTypes
 
 team_administrators_association_table = Table('team_administrators', BaseModel.metadata,
                                     Column('team_id', ForeignKey('team.id', ondelete="CASCADE"), primary_key=True),

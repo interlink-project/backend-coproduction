@@ -7,11 +7,104 @@ from sqlalchemy.orm import Session
 
 from app import models, schemas
 from app.general.utils.CRUDBase import CRUDBase
-from app.models import Permission, TreeItem
+from app.models import Permission, TreeItem, CoproductionProcessNotification, UserNotification
 from app.permissions.models import DENY_ALL, PERMS, GRANT_ALL, INDEXES
+from app.coproductionprocesses.crud import exportCrud as coproductionprocesses_crud
+from app.notifications.crud import exportCrud as notification_crud
+from app.teams.crud import exportCrud as team_crud
+from app.schemas import PermissionCreate
+from fastapi.encoders import jsonable_encoder
+from app.sockets import socket_manager
+from uuid_by_string import generate_uuid
 
 
 class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.PermissionPatch]):
+    
+    async def remove(self, db: Session, *, id: uuid.UUID) -> Permission:
+        db_obj = db.query(self.model).get(id)
+        await self.log_on_remove(db_obj)
+
+        db.delete(db_obj)
+        #db.commit()
+
+
+        #Save the event as a notification of coproduction
+        notification = await notification_crud.get_notification_by_event(db=db, event="remove_team_copro")
+        coproduction = await coproductionprocesses_crud.get(db=db, id=db_obj.coproductionprocess_id)
+
+        if(notification and db_obj.team_id):
+            team = await team_crud.get(db=db, id=db_obj.team_id)
+            newCoproNotification=CoproductionProcessNotification()
+            newCoproNotification.notification_id=notification.id
+            newCoproNotification.coproductionprocess_id=coproduction.id
+            newCoproNotification.parameters="{'teamName':'"+team.name+"','processName':'"+coproduction.name+"','team_id':'"+str(team.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+            db.add(newCoproNotification)
+        
+        db.commit()
+        db.refresh(newCoproNotification)
+
+
+        return None
+
+    async def create(self, db: Session, obj_in: PermissionCreate, creator: models.User) -> Permission:
+        print("LlAMA AL METODO CREATE DE PERMISSIONS:")
+
+        obj_in_data = jsonable_encoder(obj_in)
+        db_obj = Permission(**obj_in_data)
+
+        db_obj.creator_id = creator.id
+
+        db.add(db_obj)
+        db.commit()
+        db.refresh(db_obj)
+
+        #verify if the permission is of a (team or coproductionprocess)
+        
+        notification = await notification_crud.get_notification_by_event(db=db, event="add_team_copro")
+        coproduction = await coproductionprocesses_crud.get(db=db, id=db_obj.coproductionprocess_id)
+        
+
+        if(notification and db_obj.team_id):
+            #Create a notification for coproduction:
+            team = await team_crud.get(db=db, id=db_obj.team_id)
+            
+            newCoproNotification=CoproductionProcessNotification()
+            newCoproNotification.notification_id=notification.id
+            newCoproNotification.coproductionprocess_id=coproduction.id
+
+            # newCoproNotification.channel="in_app"
+            # newCoproNotification.state=False
+            newCoproNotification.parameters="{'teamName':'"+team.name+"','processName':'"+coproduction.name+"','team_id':'"+str(team.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+
+            db.add(newCoproNotification)
+
+            #Create a notification for every user:
+            user_ids = team.user_ids
+            for user_id in user_ids:
+                newUserNotification=UserNotification()
+                newUserNotification.user_id=user_id
+
+                newUserNotification.notification_id=notification.id
+                newUserNotification.channel="in_app"
+                newUserNotification.state=False
+                newUserNotification.parameters="{'teamName':'"+team.name+"','processName':'"+coproduction.name+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"','org_id':'"+str(team.organization_id)+"'}"
+
+                db.add(newUserNotification)
+
+            db.commit()
+            db.refresh(newCoproNotification)
+
+        
+
+        await socket_manager.send_to_id(generate_uuid(creator.id), {"event": "permission" + "_created"})
+
+
+        await self.log_on_create(db_obj)
+        return db_obj
+
+
+
+
     async def get_multi(
         self, db: Session, *, skip: int = 0, limit: int = 100, treeitem: TreeItem
     ) -> List[Permission]:

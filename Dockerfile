@@ -1,4 +1,4 @@
-FROM python:3.9-slim-buster as builder
+FROM python:3.9.15-slim-buster as builder
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 RUN apt-get update

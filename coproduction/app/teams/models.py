@@ -13,6 +13,8 @@ from sqlalchemy_utils import aggregated
 from sqlalchemy.orm import Session
 from app.utils import RoleTypes
 
+# from app.tables import team_notification_association_table
+
 class Team(BaseModel):
     """Team Class contains standard information for a Team."""
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -29,11 +31,20 @@ class Team(BaseModel):
     organization_id = Column(UUID(as_uuid=True), ForeignKey('organization.id', ondelete='CASCADE'))
     organization = relationship('Organization', foreign_keys=[organization_id], backref=backref('teams', passive_deletes=True))
 
+    #to obtain notifications
+    team_notification_associations = relationship(
+        "TeamNotification",
+        back_populates="team",
+        cascade="all, delete-orphan",
+    )
+    notifications = association_proxy("team_notification_associations", "notification")
+
     users = relationship(
         "User",
         secondary=user_team_association_table,
         backref="teams")
     user_ids = association_proxy('users', 'id')
+    
     @aggregated('users', Column(Integer))
     def users_count(self):
         return func.count('1')

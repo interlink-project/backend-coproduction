@@ -8,3 +8,8 @@ from app.users.models import *
 from app.treeitems.models import *
 from app.organizations.models import *
 from app.permissions.models import *
+from app.notifications.models import *
+from app.usernotifications.models import *
+from app.assetnotifications.models import *
+from app.coproductionprocessnotifications.models import *
+from app.teamnotifications.models import *

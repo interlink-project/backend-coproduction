@@ -1,0 +1,8 @@
+{
+    "event": "add_user_team",
+    "title": "You had been added to the team {teamName}",
+    "subtitle": "Add a new user to team",
+    "text": "Now you are in the team",
+    "html_template": null,
+    "url_link": "/dashboard/organizations/{org_id}/{team_id}"
+  }

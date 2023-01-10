@@ -9,6 +9,12 @@ from app.phases.schemas import *
 from app.tasks.schemas import *
 from app.teams.schemas import *
 from app.users.schemas import *
+from app.notifications.schemas import *
+from app.usernotifications.schemas import *
+
+from app.teamnotifications.schemas import *
+from app.coproductionprocessnotifications.schemas import *
+from app.assetnotifications.schemas import *
 
 # out
 
@@ -43,6 +49,25 @@ class TreeItemOutFull(TreeItemOut):
 class TaskOutFull(TaskOut, TreeItemOutFull):
     pass
 
+
+class NotificationOutFull(NotificationOut):
+    pass
+
+class UserNotificationOutFull(UserNotificationOut):
+    notification: NotificationOut
+    pass
+
+class AssetNotificationOutFull(AssetNotificationOut):
+    notification: NotificationOut
+    pass
+
+class CoproductionProcessNotificationOutFull(CoproductionProcessNotificationOut):
+    notification: NotificationOut
+    pass
+
+class TeamNotificationOutFull(TeamNotificationOut):
+    notification: NotificationOut
+    pass
 
 class ObjectiveOutFull(ObjectiveOut, TreeItemOutFull):
     children: List[TaskOutFull]
