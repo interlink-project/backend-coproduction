@@ -54,7 +54,7 @@ class Settings(BaseSettings):
     # MAIL
     SMTP_TLS: bool = False
     SMTP_PORT: Optional[int] = 25
-    SMTP_HOST: Optional[str] = "mail.interlink-project.eu"
+    SMTP_HOST: Optional[str] = "13.95.213.150"
     SMTP_USER: Optional[str] = None
     SMTP_PASSWORD: Optional[str] = None
     EMAILS_FROM_EMAIL: Optional[str] = "support@interlink-project.eu"
