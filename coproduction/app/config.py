@@ -60,7 +60,7 @@ class Settings(BaseSettings):
     EMAILS_FROM_EMAIL: Optional[str] = "support@interlink-project.eu"
     EMAILS_FROM_NAME: Optional[str] = "Interlink Support"
     EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48
-    EMAIL_TEMPLATES_DIR: str = "/app/email-templates/build"
+    EMAIL_TEMPLATES_DIR: str = "/app/email-templates/src"
     EMAILS_ENABLED: bool = True
 
     @validator("EMAILS_ENABLED", pre=True)
