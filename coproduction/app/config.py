@@ -52,9 +52,9 @@ class Settings(BaseSettings):
     CATALOGUE_SERVICE: str = os.getenv("CATALOGUE_SERVICE_NAME") + ":" + os.getenv("CATALOGUE_PORT")
 
     # MAIL
-    SMTP_TLS: bool = False
+    SMTP_TLS: bool = True
     SMTP_PORT: Optional[int] = 25
-    SMTP_HOST: Optional[str] = "13.95.213.150"
+    SMTP_HOST: Optional[str] = "mail.interlink-project.eu"
     SMTP_USER: Optional[str] = None
     SMTP_PASSWORD: Optional[str] = None
     EMAILS_FROM_EMAIL: Optional[str] = "support@interlink-project.eu"

@@ -15,7 +15,7 @@ from sqlalchemy import or_, and_
 from fastapi.encoders import jsonable_encoder
 from app.sockets import socket_manager
 from uuid_by_string import generate_uuid
-from app.general.emails import send_test_email
+from app.general.emails import send_email
 
 class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
     async def get_multi(self, db: Session, user: User, organization: Organization = None) -> Optional[List[Team]]:
@@ -40,7 +40,10 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
         }))
 
         #Send mail to user to know is added to a team
-        send_test_email('rubensancor@gmail.com')
+        send_email('ruben.sanchez@deusto.es',
+                   'Interlink: You have been added to a new team',
+                   'added_to_team.html',
+                   {"project_name": settings.PROJECT_NAME, "email": email_to, "username": "asdf", "password": "asdf", "link": "asdf"},)
         
         #Agrego la notificacion cuando un usuario es removido de un equipo:
         newUserNotification=UserNotification()
