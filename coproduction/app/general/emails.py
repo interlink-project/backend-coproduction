@@ -36,11 +36,18 @@ def send_email(
 def send_test_email(email_to: str) -> None:
     project_name = settings.PROJECT_NAME
     subject = f"{project_name} - Test email"
-    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "test_email.html") as f:
+    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "added_to_process.html") as f:
         template_str = f.read()
+        print(template_str)
+    message = emails.html(html=open(Path(settings.EMAIL_TEMPLATES_DIR) / "added_to_process.html"),
+                      subject='Friday party',
+                      mail_from=(settings.EMAILS_FROM_NAME, settings.EMAILS_FROM_EMAIL))
+    response = message.send(render={"project_name": "user/project1", "username": 121},
+                  to='rubensancor@gmail.com',
+                  smtp={"host": settings.SMTP_HOST, "port": settings.SMTP_PORT})
     send_email(
         email_to=email_to,
         subject_template=subject,
         html_template=template_str,
-        environment={"project_name": settings.PROJECT_NAME, "email": email_to},
+        environment={"project_name": settings.PROJECT_NAME, "email": email_to, "username": "asdf", "password": "asdf", "link": "asdf"},
     )

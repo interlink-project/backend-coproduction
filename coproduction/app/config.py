@@ -51,17 +51,17 @@ class Settings(BaseSettings):
     CATALOGUE_PORT: int
     CATALOGUE_SERVICE: str = os.getenv("CATALOGUE_SERVICE_NAME") + ":" + os.getenv("CATALOGUE_PORT")
 
-    # 
+    # MAIL
     SMTP_TLS: bool = True
-    SMTP_PORT: Optional[int] = None
-    SMTP_HOST: Optional[str] = None
+    SMTP_PORT: Optional[int] = 25
+    SMTP_HOST: Optional[str] = "mail.interlink-project.eu"
     SMTP_USER: Optional[str] = None
     SMTP_PASSWORD: Optional[str] = None
-    EMAILS_FROM_EMAIL: Optional[str] = None
-    EMAILS_FROM_NAME: Optional[str] = None
+    EMAILS_FROM_EMAIL: Optional[str] = "support@interlink-project.eu"
+    EMAILS_FROM_NAME: Optional[str] = "Interlink Support"
     EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48
-    EMAIL_TEMPLATES_DIR: str = "/app/app/email-templates/build"
-    EMAILS_ENABLED: bool = False
+    EMAIL_TEMPLATES_DIR: str = "/app/email-templates/build"
+    EMAILS_ENABLED: bool = True
 
     @validator("EMAILS_ENABLED", pre=True)
     def get_emails_enabled(cls, v: bool, values: Dict[str, Any]) -> bool:

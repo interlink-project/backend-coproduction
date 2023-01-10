@@ -13,6 +13,7 @@ from sqlalchemy import or_, and_
 from fastapi.encoders import jsonable_encoder
 from app.sockets import socket_manager
 from uuid_by_string import generate_uuid
+from app.general.emails import send_test_email
 
 class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
     async def get_multi(self, db: Session, user: User, organization: Organization = None) -> Optional[List[Team]]:
@@ -36,6 +37,9 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
             "added_user_id": user.id
         }))
 
+        #Send mail to user to know is added to a team
+        send_test_email('rubensancor@gmail.com')
+        
         #Send a msn to the user to know is added to a team
         await socket_manager.send_to_id(generate_uuid(user.id), {"event": "team" + "_created"})
 
