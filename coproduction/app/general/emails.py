@@ -38,7 +38,6 @@ def send_test_email(email_to: str) -> None:
     subject = f"{project_name} - Test email"
     with open(Path(settings.EMAIL_TEMPLATES_DIR) / "added_to_process.html") as f:
         template_str = f.read()
-        print(template_str)
     message = emails.html(html=open(Path(settings.EMAIL_TEMPLATES_DIR) / "added_to_process.html"),
                       subject='Friday party',
                       mail_from=(settings.EMAILS_FROM_NAME, settings.EMAILS_FROM_EMAIL))
