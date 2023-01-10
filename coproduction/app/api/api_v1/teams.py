@@ -41,6 +41,7 @@ async def create_team(
     team = await crud.team.get_by_name(db=db, name=team_in.name)
     if not team:
         if team_in.organization_id and await crud.team.can_create(db=db, organization_id=team_in.organization_id, user=current_user):
+            print('LLAMA AL POSR CREATE TEAM!!!!!!!!!!')
             return await crud.team.create(db=db, obj_in=team_in, creator=current_user)
         else:
             raise HTTPException(
