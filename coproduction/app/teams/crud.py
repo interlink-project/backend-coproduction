@@ -38,12 +38,11 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
             "action": "ADD_USER",
             "added_user_id": user.id
         }))
-
+        
         #Send mail to user to know is added to a team
-        send_email('ruben.sanchez@deusto.es',
-                   'Interlink: You have been added to a new team',
-                   'added_to_team.html',
-                   {"project_name": settings.PROJECT_NAME, "email": email_to, "username": "asdf", "password": "asdf", "link": "asdf"},)
+        send_email('ruben.sanchez@deusto.es', #user.mail
+                   'add_member_team',
+                   {"team_name": team.name, "link": "https://interlink-project.eu/"},)
         
         #Agrego la notificacion cuando un usuario es removido de un equipo:
         newUserNotification=UserNotification()
