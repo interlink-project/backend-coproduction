@@ -52,6 +52,13 @@ class CRUDUser(CRUDBase[models.User, UserCreate, UserPatch]):
             return obj
         return
 
+    async def getUser(self, db: Session, id: str) -> Optional[models.User]:
+        if obj := db.query(models.User).filter(
+            models.User.id == id,
+        ).first():
+            return obj
+        return
+        
     async def update_or_create(self, db: Session, data: dict) -> Optional[models.User]:
         from app.worker import sync_asset_users
         if "sub" in data:

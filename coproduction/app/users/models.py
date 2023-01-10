@@ -18,5 +18,12 @@ class User(BaseModel):
     teams_ids = association_proxy('teams', 'id')
     administered_teams_ids = association_proxy('administered_teams', 'id')
 
+    user_notification_associations = relationship(
+        "UserNotification",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    notifications = association_proxy("user_notification_associations", "notification")
+
     def __repr__(self) -> str:
         return f"<User {self.id}>"

@@ -14,6 +14,7 @@ from sqlalchemy.orm import backref, relationship
 from app.treeitems.models import TreeItem
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.associationproxy import association_proxy
+# from app.tables import task_notification_association_table
 
 
 class Task(TreeItem):
@@ -40,6 +41,12 @@ class Task(TreeItem):
     start_date = Column(Date, nullable=True)
     end_date = Column(Date, nullable=True)
     coproductionprocess = association_proxy('objective', 'coproductionprocess')
+
+    # notifications = relationship(
+    #     "Notification",
+    #     secondary=task_notification_association_table,
+    #     backref="notifications_task")
+    # notifications_ids = association_proxy('notifications', 'id')
 
     __mapper_args__ = {
         "polymorphic_identity": "task",

@@ -14,6 +14,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import orm
+from sqlalchemy.ext.associationproxy import association_proxy
 
 from app.config import settings
 from app.general.db.base_class import Base as BaseModel
@@ -36,6 +37,13 @@ class Asset(BaseModel):
     # created by
     creator_id = Column(String, ForeignKey("user.id", use_alter=True, ondelete='SET NULL'))
     creator = orm.relationship('User', foreign_keys=[creator_id], post_update=True, backref="created_assets")
+
+    asset_notification_associations = orm.relationship(
+        "AssetNotification",
+        back_populates="asset",
+        cascade="all, delete-orphan",
+    )
+    notifications = association_proxy("asset_notification_associations", "notification")
 
     __mapper_args__ = {
         "polymorphic_identity": "asset",
