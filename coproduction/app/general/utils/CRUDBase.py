@@ -130,7 +130,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
         await socket_manager.send_to_id(generate_uuid(user.id), {"event": self.modelName.lower() + "_administrator_added"})
         
         #Send mail to user to know is added to a team
-        send_email(user.email,
+        _ = send_email(user.email,
                    'add_admin_coprod',
                    {"coprod_id": db_obj.id,
                     "coprod_name": db_obj.name,})

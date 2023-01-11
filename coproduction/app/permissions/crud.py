@@ -12,6 +12,7 @@ from app.permissions.models import DENY_ALL, PERMS, GRANT_ALL, INDEXES
 from app.coproductionprocesses.crud import exportCrud as coproductionprocesses_crud
 from app.notifications.crud import exportCrud as notification_crud
 from app.teams.crud import exportCrud as teams_crud
+from app.treeitems.crud import exportCrud as treeitems_crud
 from app.schemas import PermissionCreate
 from fastapi.encoders import jsonable_encoder
 from app.sockets import socket_manager
@@ -67,14 +68,6 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
             #Create a notification for coproduction:
             team = await teams_crud.get(db=db, id=db_obj.team_id)
             
-            #Send mail to a team to know they are added to a coprod
-            send_team_email(team, 
-                'add_team_coprod',
-                            {"coprod_id": db_obj.coproductionprocess_id,
-                             "coprod_name": coproduction.name,
-                             "team_id": db_obj.team_id,
-                             "team_name": team.name})
-            
             newCoproNotification=CoproductionProcessNotification()
             newCoproNotification.notification_id=notification.id
             newCoproNotification.coproductionprocess_id=coproduction.id
@@ -100,6 +93,22 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
 
             db.commit()
             db.refresh(newCoproNotification)
+            
+            #Send mail to a team to know they are added to a coprod or treeitem
+            if db_obj.treeitem_id:
+                treeitem = await treeitems_crud.get(db=db, id=db_obj.treeitem_id)
+                _ = send_team_email(team,
+                                'add_team_treeitem',
+                                {"coprod_id": db_obj.coproductionprocess_id,
+                                 "coprod_name": coproduction.name,
+                                 "treeitem_id": db_obj.treeitem_id,
+                                 "treeitem_name": treeitem.name})
+            else:
+                _ = send_team_email(team,
+                                'add_team_coprod',
+                                {"coprod_id": db_obj.coproductionprocess_id,
+                                 "coprod_name": coproduction.name})
+
 
         
 
