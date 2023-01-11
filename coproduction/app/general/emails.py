@@ -42,7 +42,9 @@ def send_email(
     
     if type == 'add_member_team':
         subject = 'Interlink: You have been added to a new team'
-        template = JinjaTemplate(open(Path(settings.EMAIL_TEMPLATES_DIR) / "added_to_team.html"))
+        with open(Path(settings.EMAIL_TEMPLATES_DIR) / "add_member_team.html") as f:
+            template_str = f.read()
+        template = JinjaTemplate(template_str)
     
     message = emails.Message(
         subject=subject,
