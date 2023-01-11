@@ -11,11 +11,12 @@ from app.models import Permission, TreeItem, CoproductionProcessNotification, Us
 from app.permissions.models import DENY_ALL, PERMS, GRANT_ALL, INDEXES
 from app.coproductionprocesses.crud import exportCrud as coproductionprocesses_crud
 from app.notifications.crud import exportCrud as notification_crud
-from app.teams.crud import exportCrud as team_crud
+from app.teams.crud import exportCrud as teams_crud
 from app.schemas import PermissionCreate
 from fastapi.encoders import jsonable_encoder
 from app.sockets import socket_manager
 from uuid_by_string import generate_uuid
+from app.general.emails import send_email, send_team_email
 
 
 class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.PermissionPatch]):
@@ -33,7 +34,7 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
         coproduction = await coproductionprocesses_crud.get(db=db, id=db_obj.coproductionprocess_id)
 
         if(notification and db_obj.team_id):
-            team = await team_crud.get(db=db, id=db_obj.team_id)
+            team = await teams_crud.get(db=db, id=db_obj.team_id)
             newCoproNotification=CoproductionProcessNotification()
             newCoproNotification.notification_id=notification.id
             newCoproNotification.coproductionprocess_id=coproduction.id
@@ -48,7 +49,7 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
 
     async def create(self, db: Session, obj_in: PermissionCreate, creator: models.User) -> Permission:
         print("LlAMA AL METODO CREATE DE PERMISSIONS:")
-
+        
         obj_in_data = jsonable_encoder(obj_in)
         db_obj = Permission(**obj_in_data)
 
@@ -59,14 +60,20 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
         db.refresh(db_obj)
 
         #verify if the permission is of a (team or coproductionprocess)
-        
         notification = await notification_crud.get_notification_by_event(db=db, event="add_team_copro")
         coproduction = await coproductionprocesses_crud.get(db=db, id=db_obj.coproductionprocess_id)
-        
 
         if(notification and db_obj.team_id):
             #Create a notification for coproduction:
-            team = await team_crud.get(db=db, id=db_obj.team_id)
+            team = await teams_crud.get(db=db, id=db_obj.team_id)
+            
+            #Send mail to a team to know they are added to a coprod
+            send_team_email(team, 
+                'add_team_coprod',
+                            {"coprod_id": db_obj.coproductionprocess_id,
+                             "coprod_name": coproduction.name,
+                             "team_id": db_obj.team_id,
+                             "team_name": team.name})
             
             newCoproNotification=CoproductionProcessNotification()
             newCoproNotification.notification_id=notification.id

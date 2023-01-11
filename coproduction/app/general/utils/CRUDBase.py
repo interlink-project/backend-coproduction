@@ -16,6 +16,8 @@ from app.users.models import User
 from app.config import settings
 from app.sockets import socket_manager
 
+from app.general.emails import send_email
+
 ModelType = TypeVar("ModelType", bound=Base)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 PatchSchemaType = TypeVar("PatchSchemaType", bound=BaseModel)
@@ -110,7 +112,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
         db_obj.administrators.append(user)
         db.add(db_obj)
         db.commit()
-        db.refresh(db_obj)
+        db.refresh(db_obj)        
         sync_asset_users([user.id])
         enriched: dict = self.enrich_log_data(db_obj, {
             "action": "ADD_ADMINISTRATOR",
@@ -126,6 +128,12 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
         
         # Send info to private socket to update workspace page
         await socket_manager.send_to_id(generate_uuid(user.id), {"event": self.modelName.lower() + "_administrator_added"})
+        
+        #Send mail to user to know is added to a team
+        send_email(user.email,
+                   'add_admin_coprod',
+                   {"coprod_id": db_obj.id,
+                    "coprod_name": db_obj.name,})
         
         return db_obj
 
