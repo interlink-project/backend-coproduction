@@ -17,6 +17,7 @@ from app.schemas import PermissionCreate
 from fastapi.encoders import jsonable_encoder
 from app.sockets import socket_manager
 from uuid_by_string import generate_uuid
+from app.general.emails import send_email, send_team_email
 
 
 class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.PermissionPatch]):
@@ -88,7 +89,7 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
 
     async def create(self, db: Session, obj_in: PermissionCreate, creator: models.User) -> Permission:
         print("LlAMA AL METODO CREATE DE PERMISSIONS:")
-
+        
         obj_in_data = jsonable_encoder(obj_in)
         db_obj = Permission(**obj_in_data)
 
@@ -108,7 +109,7 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
             notification = await notification_crud.get_notification_by_event(db=db, event="add_team_treeitem")
             treeitem = await treeitem_crud.get(db=db, id=db_obj.treeitem_id)
             #Create a notification for coproduction:
-            team = await team_crud.get(db=db, id=db_obj.team_id)
+            team = await teams_crud.get(db=db, id=db_obj.team_id)
             
             newCoproNotification=CoproductionProcessNotification()
             newCoproNotification.notification_id=notification.id

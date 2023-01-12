@@ -15,92 +15,130 @@ from sqlalchemy import or_, and_
 from fastapi.encoders import jsonable_encoder
 from app.sockets import socket_manager
 from uuid_by_string import generate_uuid
-from app.general.emails import send_email
+from app.general.emails import send_email, send_team_email
+
 
 class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
-    async def get_multi(self, db: Session, user: User, organization: Organization = None) -> Optional[List[Team]]:
+    async def get_multi(
+        self, db: Session, user: User, organization: Organization = None
+    ) -> Optional[List[Team]]:
         if organization:
             return db.query(Team).filter(Team.organization_id == organization.id).all()
-        return db.query(Team).filter(
+        return (
+            db.query(Team)
+            .filter(
                 or_(
                     Team.id.in_(user.teams_ids),
-                    Team.id.in_(user.administered_teams_ids)
+                    Team.id.in_(user.administered_teams_ids),
                 )
-            ).all()
+            )
+            .all()
+        )
 
     async def add_user(self, db: Session, team: Team, user: models.User) -> Team:
         from app.worker import sync_asset_treeitems
-        sync_asset_treeitems.delay([permission.treeitem_id for permission in team.permissions])
+
+        sync_asset_treeitems.delay(
+            [permission.treeitem_id for permission in team.permissions]
+        )
         team.users.append(user)
         db.commit()
         db.refresh(team)
-        await log(self.enrich_log_data(team, {
-            "action": "ADD_USER",
-            "added_user_id": user.id
-        }))
+        await log(
+            self.enrich_log_data(team, {"action": "ADD_USER", "added_user_id": user.id})
+        )
 
-        #Send mail to user to know is added to a team
-        send_email('ruben.sanchez@deusto.es',
-                   'Interlink: You have been added to a new team',
-                   'added_to_team.html',
-                   {"project_name": settings.PROJECT_NAME, "email": email_to, "username": "asdf", "password": "asdf", "link": "asdf"},)
-        
-        #Agrego la notificacion cuando un usuario es removido de un equipo:
-        newUserNotification=UserNotification()
-        newUserNotification.user_id=user.id
-        notification = await notification_crud.get_notification_by_event(db=db, event="add_user_team")
-        if(notification):
-            newUserNotification.notification_id=notification.id
-            newUserNotification.channel="in_app"
-            newUserNotification.state=False
-            newUserNotification.parameters="{'teamName':'"+team.name+"','team_id':'"+str(team.id)+"','org_id':'"+str(team.organization_id)+"'}"
+        # Send mail to user to know is added to a team
+        _ = send_email(
+            user.email,
+            "add_member_team",
+            {"team_name": team.name},
+        )
+
+        # Agrego la notificacion cuando un usuario es removido de un equipo:
+        newUserNotification = UserNotification()
+        newUserNotification.user_id = user.id
+        notification = await notification_crud.get_notification_by_event(
+            db=db, event="add_user_team"
+        )
+        if notification:
+            newUserNotification.notification_id = notification.id
+            newUserNotification.channel = "in_app"
+            newUserNotification.state = False
+            newUserNotification.parameters = (
+                "{'teamName':'"
+                + team.name
+                + "','team_id':'"
+                + str(team.id)
+                + "','org_id':'"
+                + str(team.organization_id)
+                + "'}"
+            )
 
             db.add(newUserNotification)
             db.commit()
             db.refresh(newUserNotification)
 
-
-        #Send a msn to the user to know is added to a team
-        await socket_manager.send_to_id(generate_uuid(user.id), {"event": "team" + "_created"})
+        # Send a msn to the user to know is added to a team
+        await socket_manager.send_to_id(
+            generate_uuid(user.id), {"event": "team" + "_created"}
+        )
 
         return team
 
     async def remove_user(self, db: Session, team: Team, user: models.User) -> Team:
         from app.worker import sync_asset_treeitems
+
         team.users.remove(user)
         db.commit()
         db.refresh(team)
-        sync_asset_treeitems.delay([permission.treeitem_id for permission in team.permissions])
-        await log(self.enrich_log_data(team, {
-            "action": "REMOVE_USER",
-            "removed_user_id": user.id
-        }))
+        sync_asset_treeitems.delay(
+            [permission.treeitem_id for permission in team.permissions]
+        )
+        await log(
+            self.enrich_log_data(
+                team, {"action": "REMOVE_USER", "removed_user_id": user.id}
+            )
+        )
 
-        #Agrego la notificacion cuando un usuario es removido de un equipo:
-        newUserNotification=UserNotification()
-        newUserNotification.user_id=user.id
-        notification = await notification_crud.get_notification_by_event(db=db, event="remove_user_team")
-        if(notification):
-            newUserNotification.notification_id=notification.id
-            newUserNotification.channel="in_app"
-            newUserNotification.state=False
-            newUserNotification.parameters="{'teamName':'"+team.name+"','team_id':'"+str(team.id)+"','org_id':'"+str(team.organization_id)+"'}"
+        # Agrego la notificacion cuando un usuario es removido de un equipo:
+        newUserNotification = UserNotification()
+        newUserNotification.user_id = user.id
+        notification = await notification_crud.get_notification_by_event(
+            db=db, event="remove_user_team"
+        )
+        if notification:
+            newUserNotification.notification_id = notification.id
+            newUserNotification.channel = "in_app"
+            newUserNotification.state = False
+            newUserNotification.parameters = (
+                "{'teamName':'"
+                + team.name
+                + "','team_id':'"
+                + str(team.id)
+                + "','org_id':'"
+                + str(team.organization_id)
+                + "'}"
+            )
 
             db.add(newUserNotification)
             db.commit()
             db.refresh(newUserNotification)
 
+        # Send a msn to the user to know is removed to a team
+        await socket_manager.send_to_id(
+            generate_uuid(user.id), {"event": "team" + "_created"}
+        )
 
-        #Send a msn to the user to know is removed to a team
-        await socket_manager.send_to_id(generate_uuid(user.id), {"event": "team" + "_created"})
-        
         return team
 
-    async def create(self, db: Session, obj_in: TeamCreate, creator: models.User) -> Team:
+    async def create(
+        self, db: Session, obj_in: TeamCreate, creator: models.User
+    ) -> Team:
         obj_in_data = jsonable_encoder(obj_in)
         user_ids = obj_in.user_ids
         del obj_in_data["user_ids"]
-        
+
         db_obj = Team(**obj_in_data)
         db_obj.creator_id = creator.id
         db_obj.administrators.append(creator)
@@ -111,29 +149,48 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
         db.commit()
         db.refresh(db_obj)
 
-        #Send msn to all user part of a team create
+        # Send mail to user to know is added to a team
+        _ = send_team_email(
+            db_obj,
+            "add_member_team",
+            {
+                "team_id": db_obj.id,
+                "team_name": db_obj.name,
+            },
+        )
+
+        # Send msn to all user part of a team create
         print("El team model is:")
         print(user_ids)
         for user_id in user_ids:
 
-            #Create a notification for every user
-            newUserNotification=UserNotification()
-            newUserNotification.user_id=user_id
-            notification = await notification_crud.get_notification_by_event(db=db, event="add_user_team")
-            if(notification):
-                newUserNotification.notification_id=notification.id
-                newUserNotification.channel="in_app"
-                newUserNotification.state=False
-                newUserNotification.parameters="{'teamName':'"+db_obj.name+"','team_id':'"+str(db_obj.id)+"','org_id':'"+str(db_obj.organization_id)+"'}"
+            # Create a notification for every user
+            newUserNotification = UserNotification()
+            newUserNotification.user_id = user_id
+            notification = await notification_crud.get_notification_by_event(
+                db=db, event="add_user_team"
+            )
+            if notification:
+                newUserNotification.notification_id = notification.id
+                newUserNotification.channel = "in_app"
+                newUserNotification.state = False
+                newUserNotification.parameters = (
+                    "{'teamName':'"
+                    + db_obj.name
+                    + "','team_id':'"
+                    + str(db_obj.id)
+                    + "','org_id':'"
+                    + str(db_obj.organization_id)
+                    + "'}"
+                )
 
                 db.add(newUserNotification)
                 db.commit()
                 db.refresh(newUserNotification)
-            
 
-            await socket_manager.send_to_id(generate_uuid(user_id), {"event": "team" + "_created"})
-            
-
+            await socket_manager.send_to_id(
+                generate_uuid(user_id), {"event": "team" + "_created"}
+            )
 
         await self.log_on_create(db_obj)
         return db_obj
@@ -147,17 +204,27 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
         return logData
 
     # CRUD Permissions
-    async def can_create(self, db: Session, organization_id: uuid.UUID, user: models.User):
+    async def can_create(
+        self, db: Session, organization_id: uuid.UUID, user: models.User
+    ):
         org = await organizations_crud.get(db=db, id=organization_id)
         if org:
             if org.team_creation_permission == models.TeamCreationPermissions.anyone:
                 return True
-            elif org.team_creation_permission == models.TeamCreationPermissions.administrators:
+            elif (
+                org.team_creation_permission
+                == models.TeamCreationPermissions.administrators
+            ):
                 return user in org.administrators
             elif org.team_creation_permission == models.TeamCreationPermissions.members:
-                return org in db.query(models.Organization).join(Team).filter(
-                    Team.id.in_(user.teams_ids)
-                ).all() or user in org.administrators
+                return (
+                    org
+                    in db.query(models.Organization)
+                    .join(Team)
+                    .filter(Team.id.in_(user.teams_ids))
+                    .all()
+                    or user in org.administrators
+                )
         return True
 
     def can_list(self, user):
