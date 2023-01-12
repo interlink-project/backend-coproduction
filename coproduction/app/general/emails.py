@@ -10,7 +10,7 @@ from app.models import Team
 from app.config import settings
 
 
-async def send_email(
+def send_email(
     email_to: str,
     type: str = "",
     environment: Dict[str, Any] = {},
@@ -48,7 +48,7 @@ async def send_email(
     logging.info(f"send email result: {response}")
 
 
-async def send_team_email(
+def send_team_email(
     team: Team,
     type: str = "",
     environment: Dict[str, Any] = {},
