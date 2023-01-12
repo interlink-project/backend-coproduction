@@ -60,18 +60,18 @@ def send_team_email(
         environment["link"] = 'https://{server}/dashboard/coproductionprocesses/{id}'.format(
             server=settings.SERVER_NAME,
             id=environment['coprod_id'])
-        
+
     elif type == 'add_member_team':
         subject = 'Interlink: You have been added to a new team'
         environment["link"] = 'https://{server}/dashboard/organizations'.format(
             server=settings.SERVER_NAME)
-        
+
     elif type == 'add_team_treeitem':
         subject = 'Interlink: New permissions on a coproduction item'
-    environment["link"] = 'https://{server}/dashboard/coproductionprocesses/{coprod_id}/{treeitem_id}'.format(
-        server=settings.SERVER_NAME,
-        coprod_id=environment['coprod_id'],
-        treeitem_id=environment['treeitem_id'])
+        environment["link"] = 'https://{server}/dashboard/coproductionprocesses/{coprod_id}/{treeitem_id}'.format(
+            server=settings.SERVER_NAME,
+            coprod_id=environment['coprod_id'],
+            treeitem_id=environment['treeitem_id'])
 
     with open(Path(settings.EMAIL_TEMPLATES_DIR) / "{type}.html".format(type=type)) as f:
         template_str = f.read()

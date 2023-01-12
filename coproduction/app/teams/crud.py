@@ -151,9 +151,9 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
 
         # Send mail to user to know is added to a team
         _ = send_team_email(
-            db_obj,
-            "add_member_team",
-            {
+            team=db_obj,
+            type='add_member_team',
+            environment={
                 "team_id": db_obj.id,
                 "team_name": db_obj.name,
             },
