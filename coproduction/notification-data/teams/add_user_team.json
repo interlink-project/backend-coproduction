@@ -4,5 +4,6 @@
     "subtitle": "Add a new user to team",
     "text": "Now you are in the team",
     "html_template": null,
-    "url_link": "/dashboard/organizations/{org_id}/{team_id}"
+    "url_link": "/dashboard/organizations/{org_id}/{team_id}",
+    "icon":"group"
   }

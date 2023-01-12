@@ -11,6 +11,7 @@ from app.models import Permission, TreeItem, CoproductionProcessNotification, Us
 from app.permissions.models import DENY_ALL, PERMS, GRANT_ALL, INDEXES
 from app.coproductionprocesses.crud import exportCrud as coproductionprocesses_crud
 from app.notifications.crud import exportCrud as notification_crud
+from app.treeitems.crud import exportCrud as treeitem_crud
 from app.teams.crud import exportCrud as team_crud
 from app.schemas import PermissionCreate
 from fastapi.encoders import jsonable_encoder
@@ -29,16 +30,55 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
 
 
         #Save the event as a notification of coproduction
-        notification = await notification_crud.get_notification_by_event(db=db, event="remove_team_copro")
         coproduction = await coproductionprocesses_crud.get(db=db, id=db_obj.coproductionprocess_id)
 
-        if(notification and db_obj.team_id):
+        if(db_obj.team_id and db_obj.treeitem_id):
+        ###Se ha seleccionado un equipo para trabajar sonbre un treeitem. 
+            notification = await notification_crud.get_notification_by_event(db=db, event="remove_team_treeitem")
+            treeitem = await treeitem_crud.get(db=db, id=db_obj.treeitem_id)
+            #Create a notification for coproduction:
             team = await team_crud.get(db=db, id=db_obj.team_id)
+            
             newCoproNotification=CoproductionProcessNotification()
             newCoproNotification.notification_id=notification.id
             newCoproNotification.coproductionprocess_id=coproduction.id
-            newCoproNotification.parameters="{'teamName':'"+team.name+"','processName':'"+coproduction.name+"','team_id':'"+str(team.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+
+            # newCoproNotification.channel="in_app"
+            # newCoproNotification.state=False
+            newCoproNotification.parameters="{'teamName':'"+team.name+"','processName':'"+coproduction.name+"','team_id':'"+str(team.id)+"','treeItemName':'"+str(treeitem.name)+"','treeitem_id':'"+str(treeitem.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+
             db.add(newCoproNotification)
+        else:
+
+            notification = await notification_crud.get_notification_by_event(db=db, event="remove_team_copro")
+
+            if(notification and db_obj.team_id):
+                team = await team_crud.get(db=db, id=db_obj.team_id)
+                newCoproNotification=CoproductionProcessNotification()
+                newCoproNotification.notification_id=notification.id
+                newCoproNotification.coproductionprocess_id=coproduction.id
+                newCoproNotification.parameters="{'teamName':'"+team.name+"','processName':'"+coproduction.name+"','team_id':'"+str(team.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+                db.add(newCoproNotification)
+
+
+                db.add(newCoproNotification)
+
+                #Create a notification for every user:
+                user_ids = team.user_ids
+                for user_id in user_ids:
+                    newUserNotification=UserNotification()
+                    newUserNotification.user_id=user_id
+
+                    newUserNotification.notification_id=notification.id
+                    newUserNotification.channel="in_app"
+                    newUserNotification.state=False
+                    newUserNotification.parameters="{'teamName':'"+team.name+"','processName':'"+coproduction.name+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"','org_id':'"+str(team.organization_id)+"'}"
+
+                    db.add(newUserNotification)
+
+                    await socket_manager.send_to_id(generate_uuid(user_id), {"event": self.modelName.lower() + "_created"})
+
+              
         
         db.commit()
         db.refresh(newCoproNotification)
@@ -60,11 +100,13 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
 
         #verify if the permission is of a (team or coproductionprocess)
         
-        notification = await notification_crud.get_notification_by_event(db=db, event="add_team_copro")
         coproduction = await coproductionprocesses_crud.get(db=db, id=db_obj.coproductionprocess_id)
         
+        #Se ha seleccionado un equipo para trabajar sonbre un treeitem.
+        if(db_obj.team_id and db_obj.treeitem_id):
 
-        if(notification and db_obj.team_id):
+            notification = await notification_crud.get_notification_by_event(db=db, event="add_team_treeitem")
+            treeitem = await treeitem_crud.get(db=db, id=db_obj.treeitem_id)
             #Create a notification for coproduction:
             team = await team_crud.get(db=db, id=db_obj.team_id)
             
@@ -74,25 +116,45 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
 
             # newCoproNotification.channel="in_app"
             # newCoproNotification.state=False
-            newCoproNotification.parameters="{'teamName':'"+team.name+"','processName':'"+coproduction.name+"','team_id':'"+str(team.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+            newCoproNotification.parameters="{'teamName':'"+team.name+"','processName':'"+coproduction.name+"','team_id':'"+str(team.id)+"','treeItemName':'"+str(treeitem.name)+"','treeitem_id':'"+str(treeitem.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
 
             db.add(newCoproNotification)
+        else:
+            
+            #Se ha seleccionado un equipo para trabajar sonbre todo un proceso de coproduction.
+            notification = await notification_crud.get_notification_by_event(db=db, event="add_team_copro")
 
-            #Create a notification for every user:
-            user_ids = team.user_ids
-            for user_id in user_ids:
-                newUserNotification=UserNotification()
-                newUserNotification.user_id=user_id
+            if(notification and db_obj.team_id):
+                #Create a notification for coproduction:
+                team = await team_crud.get(db=db, id=db_obj.team_id)
+                
+                newCoproNotification=CoproductionProcessNotification()
+                newCoproNotification.notification_id=notification.id
+                newCoproNotification.coproductionprocess_id=coproduction.id
 
-                newUserNotification.notification_id=notification.id
-                newUserNotification.channel="in_app"
-                newUserNotification.state=False
-                newUserNotification.parameters="{'teamName':'"+team.name+"','processName':'"+coproduction.name+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"','org_id':'"+str(team.organization_id)+"'}"
+                # newCoproNotification.channel="in_app"
+                # newCoproNotification.state=False
+                newCoproNotification.parameters="{'teamName':'"+team.name+"','processName':'"+coproduction.name+"','team_id':'"+str(team.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
 
-                db.add(newUserNotification)
+                db.add(newCoproNotification)
 
-            db.commit()
-            db.refresh(newCoproNotification)
+                #Create a notification for every user:
+                user_ids = team.user_ids
+                for user_id in user_ids:
+                    newUserNotification=UserNotification()
+                    newUserNotification.user_id=user_id
+
+                    newUserNotification.notification_id=notification.id
+                    newUserNotification.channel="in_app"
+                    newUserNotification.state=False
+                    newUserNotification.parameters="{'teamName':'"+team.name+"','processName':'"+coproduction.name+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"','org_id':'"+str(team.organization_id)+"'}"
+
+                    db.add(newUserNotification)
+
+                    await socket_manager.send_to_id(generate_uuid(user_id), {"event": self.modelName.lower() + "_created"})
+
+        db.commit()
+        db.refresh(newCoproNotification)
 
         
 

@@ -21,6 +21,7 @@ class Notification(BaseModel):
     text = Column(Text, nullable=False)
     html_template = Column(Text, nullable=True)
     url_link = Column(String, nullable=True)
+    icon = Column(String,nullable=True)
  
 
     users = relationship('UserNotification', back_populates='notification')

@@ -30,11 +30,20 @@ class CRUDUserNotification(CRUDBase[UserNotification, UserNotificationCreate, Us
     async def get_unseen_user_notifications(self, db: Session, user_id: str) -> Optional[List[UserNotification]]:
         listofUserNotifications = db.query(UserNotification).filter(
             and_(models.UserNotification.user_id==user_id,models.UserNotification.state==False)
-            ).all()
+            ).order_by(models.UserNotification.created_at.desc()).all()
         print(listofUserNotifications)
         return listofUserNotifications
 
-    
+    #Set seen to all notifications by user:
+    async def set_seen_all_user_notifications(self, db: Session, user_id: uuid.UUID) -> Optional[List[UserNotification]]:
+        db.query(models.UserNotification).filter(models.UserNotification.user_id.hex == user_id).update({'state': True})
+        db.commit()
+        print(user_id)
+        # session.execute(
+        #     update(models.UserNotification).where(models.UserNotification.user_id == user_id).values(state=True)
+        # )
+        # session.commit()
+        return
 
 
     async def create(self, db: Session, obj_in: UserNotificationCreate) -> UserNotification:

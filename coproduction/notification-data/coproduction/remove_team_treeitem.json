@@ -1,0 +1,9 @@
+{
+    "event": "remove_team_treeitem",
+    "title": "The team {teamName} was removed from the topic '{treeItemName}' in the project '{processName}'",
+    "subtitle": "Remove a team of a topic in a coproduction process",
+    "text": "<a href='/dashboard/organizations/{org_id}/{team_id}'>{teamName}</a> was removed from  the topic '<a href='/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide'>{treeItemName}</a>' of the coproduction process <a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a>",
+    "html_template": null,
+    "url_link": "/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide",
+    "icon":"group"
+  }

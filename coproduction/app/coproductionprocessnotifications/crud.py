@@ -22,7 +22,9 @@ class CRUDCoproductionProcessNotification(CRUDBase[CoproductionProcessNotificati
 
     #Get all notifications by user:
     async def get_coproductionprocess_notifications(self, db: Session, coproductionprocess_id: str) -> Optional[List[CoproductionProcessNotification]]:
-        listofCoproductionProcessNotifications = db.query(CoproductionProcessNotification).filter(models.CoproductionProcessNotification.coproductionprocess_id==coproductionprocess_id).all()
+        
+        
+        listofCoproductionProcessNotifications = db.query(CoproductionProcessNotification).filter(models.CoproductionProcessNotification.coproductionprocess_id==coproductionprocess_id).order_by(models.CoproductionProcessNotification.created_at.desc()).all()
         print(listofCoproductionProcessNotifications)
         return listofCoproductionProcessNotifications
 

@@ -14,6 +14,7 @@ class NotificationBase(BaseModel):
     text : str
     html_template : Optional[str]
     url_link : Optional[str]
+    icon : Optional[str]
 
 
 

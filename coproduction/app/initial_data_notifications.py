@@ -25,7 +25,6 @@ try:
             if name.endswith((".json")):
 
                 full_path = os.path.join(root, name)
-                #print(full_path)
     
                 # Opening JSON file
                 f = open(full_path)
@@ -34,38 +33,76 @@ try:
 
                 #Get all data of the file:
                 event=dataNotification['event']
-                title=dataNotification['title']
-                subtitle=dataNotification['subtitle']
-                text=dataNotification['text']
-                html_template=dataNotification['html_template']
-                url_link=dataNotification['url_link']
 
+                if "event" in dataNotification:
+                    event=dataNotification['event']
+                else:
+                    #Skip this loop run
+                    continue
+              
+                if "title" in dataNotification:
+                    title=dataNotification['title']
+                else:
+                    title=''
+                
+                if "subtitle" in dataNotification:
+                    subtitle=dataNotification['subtitle']
+                else:
+                    subtitle=''
+
+                if "text" in dataNotification:
+                    text=dataNotification['text']
+                else:
+                    text=''
+               
+            
+                if "url_link" in dataNotification:
+                    url_link=dataNotification['url_link']
+                else:
+                    url_link='/'
+                
+                if "html_template" in dataNotification:
+                    html_template=dataNotification['html_template']
+                else:
+                    html_template=''
+                
+
+                if "icon" in dataNotification:
+                    icon=dataNotification['icon']
+                else:
+                    icon=''
+                
+                print(event)
+                
                 #Verify if exists:
                 postgres_select_query = "SELECT count(*) from notification WHERE event='"+event+"'"
-
                 cursor.execute(postgres_select_query)
                 filasEncontradas=cursor.fetchone()[0]
                 
                 if(filasEncontradas==0):
+                    print('L> Create')
                     #Creo
                     newId = str(uuid.uuid4())
-                    postgres_insert_query = """ INSERT INTO notification (ID,EVENT, TITLE, SUBTITLE,TEXT,HTML_TEMPLATE,URL_LINK) VALUES (%s,%s,%s,%s,%s,%s,%s)"""
-                    record_to_insert = (newId,event,title,subtitle,text,html_template,url_link)
+                    postgres_insert_query = """ INSERT INTO notification (ID,EVENT, TITLE, SUBTITLE,TEXT,HTML_TEMPLATE,URL_LINK,ICON) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"""
+                    record_to_insert = (newId,event,title,subtitle,text,html_template,url_link,icon)
                     cursor.execute(postgres_insert_query, record_to_insert)
                     connection.commit()
 
                 else:
+                    print('L> Update')
+                   
                     #Actualizo
                     dt = datetime.now(timezone.utc)
-                    postgres_update_query = """UPDATE notification SET title=%s, subtitle=%s, text=%s, html_template=%s,url_link=%s,updated_at=%s where event=%s"""
-                    record_to_update = (title, subtitle, text,html_template,url_link,dt,event)
+                    postgres_update_query = """UPDATE notification SET title=%s, subtitle=%s, text=%s, html_template=%s,url_link=%s,icon=%s,updated_at=%s where event=%s"""
+                    record_to_update = (title, subtitle, text,html_template,url_link,icon,dt,event)
+                    
                     cursor.execute(postgres_update_query, record_to_update)
                     connection.commit()
 
     #For delete a row:
     #DELETE FROM notification WHERE id = '310cecb7-d285-4ab6-bd83-425cd6ebea7b';
 
-    print( "All Record Notification were inserted successfully into notification table")
+    print( "Finish to insert and create Records on Notification")
 
 
     if connection:

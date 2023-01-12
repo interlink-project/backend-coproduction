@@ -4,5 +4,6 @@
     "subtitle": "Remove a team from a coproduction process",
     "text": "<a href='/dashboard/organizations/{org_id}/{team_id}'>{teamName}</a> was removed from the coproduction process <a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a>",
     "html_template": null,
-    "url_link": "/dashboard/coproductionprocesses/{copro_id}/overview/"
+    "url_link": "/dashboard/coproductionprocesses/{copro_id}/overview/",
+    "icon":"group"
   }
