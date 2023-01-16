@@ -1,0 +1,9 @@
+{
+    "event": "add_asset_copro",
+    "title": "An asset {assetName} was created for the project '{processName}'",
+    "subtitle": "{userName} added the asset {assetName} to the coproduction process '{processName}'",
+    "text": "{userName} added the asset <a href='/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide-resource'>{assetName}</a>  to coproduction process <a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a>",
+    "html_template": null,
+    "url_link": "/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide-resource",
+    "icon":"group" 
+  }

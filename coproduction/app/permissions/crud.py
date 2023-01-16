@@ -109,7 +109,7 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
             notification = await notifications_crud.get_notification_by_event(db=db, event="add_team_treeitem")
             treeitem = await treeitems_crud.get(db=db, id=db_obj.treeitem_id)
             #Create a notification for coproduction:
-            team = await teams_crud.get(db=db, id=db_obj.team_id)
+            team = await team_crud.get(db=db, id=db_obj.team_id)
             
             newCoproNotification=CoproductionProcessNotification()
             newCoproNotification.notification_id=notification.id

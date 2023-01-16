@@ -66,6 +66,23 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
             db.commit()
             
         db.refresh(db_obj)
+
+        # Create the coproductionNotification
+        # notification = await notification_crud.get_notification_by_event(db=db, event="add_asset_copro")
+        # coproduction = await coproductionprocesses_crud.get(db=db, id=db_obj.coproductionprocess_id)
+
+        # if(notification):
+        #     newCoproNotification=CoproductionProcessNotification()
+        #     newCoproNotification.notification_id=notification.id
+        #     newCoproNotification.coproductionprocess_id=coproduction.id
+        #     newCoproNotification.parameters="{'assetName':'"+db_obj.id+"','processName':'"+coproduction.name+"','team_id':'"+str(team.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+        #     db.add(newCoproNotification)
+
+
+        #     db.add(newCoproNotification)
+
+
+
         await self.log_on_create(db_obj)
         await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": "asset_created", "extra": { "task_id" : jsonable_encoder(db_obj.task_id) }})
         return db_obj
