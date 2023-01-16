@@ -158,19 +158,19 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
         db.refresh(newCoproNotification)
 
         #Send mail to a team to know they are added to a coprod or treeitem
-            if db_obj.treeitem_id:
-                treeitem = await treeitems_crud.get(db=db, id=db_obj.treeitem_id)
-                _ = send_team_email(team,
-                                'add_team_treeitem',
-                                {"coprod_id": db_obj.coproductionprocess_id,
-                                 "coprod_name": coproduction.name,
-                                 "treeitem_id": db_obj.treeitem_id,
-                                 "treeitem_name": treeitem.name})
-            else:
-                _ = send_team_email(team,
-                                'add_team_coprod',
-                                {"coprod_id": db_obj.coproductionprocess_id,
-                                 "coprod_name": coproduction.name})
+        if db_obj.treeitem_id and db_obj.team_id:
+            treeitem = await treeitems_crud.get(db=db, id=db_obj.treeitem_id)
+            _ = send_team_email(team,
+                            'add_team_treeitem',
+                            {"coprod_id": db_obj.coproductionprocess_id,
+                                "coprod_name": coproduction.name,
+                                "treeitem_id": db_obj.treeitem_id,
+                                "treeitem_name": treeitem.name})
+        else:
+            _ = send_team_email(team,
+                            'add_team_coprod',
+                            {"coprod_id": db_obj.coproductionprocess_id,
+                                "coprod_name": coproduction.name})
 
         await socket_manager.send_to_id(generate_uuid(creator.id), {"event": "permission" + "_created"})
 
