@@ -313,3 +313,24 @@ async def websocket_endpoint(
             data = await websocket.receive_text()
     except WebSocketDisconnect:
         socket_manager.disconnect(websocket, id)
+        
+
+@router.post("/{id}/clone")
+async def clone_coproductionprocess(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: uuid.UUID,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Clone an coproductionprocess.
+    """
+    coproductionprocess = await crud.coproductionprocess.get(db=db, id=id)
+    if not coproductionprocess:
+        raise HTTPException(status_code=404, detail="CoproductionProcess not found")
+    # if not crud.coproductionprocess.can_remove(user=current_user, object=coproductionprocess):
+    #     raise HTTPException(status_code=403, detail="Not enough permissions")
+    await crud.coproductionprocess.copy(db=db, coproductionprocess=coproductionprocess, user=current_user)
+    # coproductionprocess.id = uuid.uuid4()
+    # await crud.coproductionprocess.create(db=db, obj_in=coproductionprocess, creator=current_user, set_creator_admin=True)
+    return None

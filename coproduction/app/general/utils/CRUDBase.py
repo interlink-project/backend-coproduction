@@ -6,7 +6,7 @@ from uuid_by_string import generate_uuid
 
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, make_transient
 from sqlalchemy import or_, and_
 from fastapi import HTTPException
 
@@ -235,6 +235,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
         
 
         return None
+
 
     # LOGS
     async def log_on_get(self, obj):

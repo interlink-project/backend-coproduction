@@ -150,6 +150,26 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         db.refresh(coproductionprocess)
         await socket_manager.send_to_id(coproductionprocess.id, {"event": "schema_set"})
         return coproductionprocess
+    
+    async def copy(self, db: Session, coproductionprocess: models.CoproductionProcess, user: models.User):
+        new_coproductionprocess = models.CoproductionProcess(
+            id=uuid.uuid4(),
+            schema_used=coproductionprocess.schema_used,
+            name=coproductionprocess.name,
+            description=coproductionprocess.description,
+            logotype=coproductionprocess.logotype,
+            aim=coproductionprocess.aim,
+        )
+        await self.create(db, obj_in=new_coproductionprocess, creator=user, set_creator_admin=True)
+        # db.add(new_coproductionprocess)
+        # db.commit()
+        # db.refresh(new_coproductionprocess)
+        # for phase in coproductionprocess.children:
+            # await crud.phase.copy(db=db, phase=phase, coproductionprocess=new_coproductionprocess, schema_id=schema)
+        # db.commit()
+        # db.refresh(new_coproductionprocess)
+        return new_coproductionprocess
+        
 
     # Override log methods
     def enrich_log_data(self, coproductionprocess, logData):
