@@ -11,6 +11,7 @@ from app.config import settings
 from app.general import deps
 
 from app.messages import log
+from app.notificationsManager import notification_manager
 
 router = APIRouter()
 

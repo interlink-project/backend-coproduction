@@ -2,7 +2,7 @@ from fastapi import HTTPException
 import requests
 from sqlalchemy.orm import Session
 from typing import List
-from app.models import Asset, InternalAsset, ExternalAsset
+from app.models import Asset, InternalAsset, ExternalAsset, CoproductionProcessNotification
 from app.tasks.crud import exportCrud as tasksCrud
 from app.schemas import AssetCreate, AssetPatch, ExternalAssetCreate, InternalAssetCreate
 from app.general.utils.CRUDBase import CRUDBase
@@ -15,6 +15,10 @@ from app.tasks.crud import update_status_and_progress
 from app.permissions.crud import exportCrud as permissionsCrud
 from app.general.deps import get_current_user_from_context
 from app.sockets import socket_manager
+from app.notifications.crud import exportCrud as notification_crud
+from app.coproductionprocesses.crud import exportCrud as coproductionprocesses_crud
+from fastapi import Depends
+from app.general import deps
 
 class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
     async def get_multi(
@@ -25,10 +29,95 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
             queries.append(Asset.task_id == task.id)
         return db.query(Asset).filter(*queries).offset(skip).limit(limit).all()
 
+    def shortName(self,s):
+            # split the string into a list
+            l = s.split()
+            new = ""
+            # traverse in the list
+            for i in range(len(l)-1):
+                s = l[i]
+                # adds the capital first character
+                new += (s[0].upper()+'.')
+            
+            # l[-1] gives last item of list l. We
+            # use title to print first character in
+            # capital.
+            new += l[-1].title()
+            return new
+
+    async def remove(self, db: Session, *, id: uuid.UUID) -> Asset:
+        db_obj_Aseet = db.query(self.model).get(id)
+        await self.log_on_remove(db_obj_Aseet)
+
+        #Save the event as a notification of coproduction
+
+
+        if db_obj_Aseet.type == 'externalasset':
+            db_obj=db_obj_Aseet
+            #External Asset
+            #Create the coproductionNotification
+            notification = await notification_crud.get_notification_by_event(db=db, event="remove_asset_copro")
+            if(notification):
+                coproduction = await coproductionprocesses_crud.get(db=db, id=db_obj.coproductionprocess_id)
+                task = await tasksCrud.get(db=db, id=db_obj.task_id)
+
+                newCoproNotification=CoproductionProcessNotification()
+                newCoproNotification.notification_id=notification.id
+                newCoproNotification.coproductionprocess_id=coproduction.id
+
+                # print(data)
+                # print(db_obj.externalinterlinker)
+
+                nameInterlinker='external'
+                assetLink=asset.uri
+
+
+                newCoproNotification.parameters="{'treeitem_id':'"+str(task.id)+"','treeItemName':'"+str(task.name)+"','assetId':'"+str(db_obj.id)+"','assetName':'"+asset.name+"','assetLink':'"+str(assetLink)+"','interlinkerName':'"+nameInterlinker+"','processName':'"+coproduction.name+"','userName':'"+shortName(db_obj.creator.full_name)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+                db.add(newCoproNotification)
+        if db_obj_Aseet.type == 'internalasset':
+            db_obj=db_obj_Aseet
+            #Internal Asset
+            #Create the coproductionNotification
+            notification = await notification_crud.get_notification_by_event(db=db, event="remove_asset_copro")
+      
+            if(notification):
+              
+                coproduction = await coproductionprocesses_crud.get(db=db, id=db_obj.coproductionprocess_id)
+                task = await tasksCrud.get(db=db, id=db_obj.task_id)
+            
+                newCoproNotification=CoproductionProcessNotification()
+                newCoproNotification.notification_id=notification.id
+                newCoproNotification.coproductionprocess_id=coproduction.id
+
+                nameInterlinker=''
+                assetLink=''
+         
+
+                assetLink=db_obj.link+'/view'
+                if(db_obj.softwareinterlinker):
+                    nameInterlinker=db_obj.softwareinterlinker['name']
+                    
+
+                else:
+                    if(db_obj.knowledgeinterlinker):
+                        nameInterlinker=db_obj.knowledgeinterlinker['name']
+
+                #Obtengo la info del Asset:
+
+                newCoproNotification.parameters="{'treeitem_id':'"+str(task.id)+"','treeItemName':'"+str(task.name)+"','assetId':'"+str(db_obj.id)+"','assetName':'{assetid:"+str(db_obj.id)+"}','assetLink':'"+str(assetLink)+"','interlinkerName':'"+nameInterlinker+"','processName':'"+coproduction.name+"','userName':'"+self.shortName(db_obj.creator.full_name)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+                db.add(newCoproNotification)
+        
+        
+        db.delete(db_obj_Aseet)
+        db.commit()
+        
+        return None
+
+
     async def create(self, db: Session, asset: AssetCreate, creator: models.User, task: models.Task) -> Asset:
         data = jsonable_encoder(asset)
         if type(asset) == ExternalAssetCreate:
-            print("IS EXTERNAL")
+           
             data["type"] = "externalasset"
 
             # try to get favicon
@@ -42,14 +131,14 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                         for chunk in response.iter_content(1024):
                             image.write(chunk)
                     icon_path = icon_path.replace("/app", "")
-                    print(icon_path)
+                  
                     data["icon_path"] = icon_path
             except:
                 pass
             db_obj = ExternalAsset(**data, creator=creator, objective_id=task.objective_id, phase_id=task.objective.phase_id, coproductionprocess_id=task.objective.phase.coproductionprocess_id)
 
         if type(asset) == InternalAssetCreate:
-            print("IS INTERNAL")
+            
             data["type"] = "internalasset"
             db_obj = InternalAsset(**data, creator=creator, objective_id=task.objective_id, phase_id=task.objective.phase_id, coproductionprocess_id=task.objective.phase.coproductionprocess_id)
 
@@ -67,22 +156,59 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
             
         db.refresh(db_obj)
 
-        # Create the coproductionNotification
-        # notification = await notification_crud.get_notification_by_event(db=db, event="add_asset_copro")
-        # coproduction = await coproductionprocesses_crud.get(db=db, id=db_obj.coproductionprocess_id)
+        #Save the notifications:
 
-        # if(notification):
-        #     newCoproNotification=CoproductionProcessNotification()
-        #     newCoproNotification.notification_id=notification.id
-        #     newCoproNotification.coproductionprocess_id=coproduction.id
-        #     newCoproNotification.parameters="{'assetName':'"+db_obj.id+"','processName':'"+coproduction.name+"','team_id':'"+str(team.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
-        #     db.add(newCoproNotification)
+        if type(asset) == ExternalAssetCreate:
+        #     #External Asset
+        #     #Create the coproductionNotification
+            notification = await notification_crud.get_notification_by_event(db=db, event="add_asset_copro")
+            if(notification):
+                coproduction = await coproductionprocesses_crud.get(db=db, id=db_obj.coproductionprocess_id)
+                task = await tasksCrud.get(db=db, id=db_obj.task_id)
+
+                newCoproNotification=CoproductionProcessNotification()
+                newCoproNotification.notification_id=notification.id
+                newCoproNotification.coproductionprocess_id=coproduction.id
 
 
-        #     db.add(newCoproNotification)
+                nameInterlinker='external'
+                assetLink=asset.uri
 
 
+                newCoproNotification.parameters="{'treeitem_id':'"+str(task.id)+"','treeItemName':'"+str(task.name)+"','assetId':'"+str(db_obj.id)+"','assetName':'"+asset.name+"','assetLink':'"+str(assetLink)+"','interlinkerName':'"+nameInterlinker+"','processName':'"+coproduction.name+"','userName':'"+self.shortName(db_obj.creator.full_name)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+                db.add(newCoproNotification)
+        if type(asset) == InternalAssetCreate:
+            
+            #Internal Asset
+            #Create the coproductionNotification
+            notification = await notification_crud.get_notification_by_event(db=db, event="add_asset_copro")
+            
+            if(notification):
+                coproduction = await coproductionprocesses_crud.get(db=db, id=db_obj.coproductionprocess_id)
+                task = await tasksCrud.get(db=db, id=db_obj.task_id)
 
+                newCoproNotification=CoproductionProcessNotification()
+                newCoproNotification.notification_id=notification.id
+                newCoproNotification.coproductionprocess_id=coproduction.id
+
+                nameInterlinker=''
+                assetLink=''
+
+                assetLink=db_obj.link+'/view'
+                if(db_obj.softwareinterlinker):
+                    nameInterlinker=db_obj.softwareinterlinker['name']
+                    
+
+                else:
+                    if(db_obj.knowledgeinterlinker):
+                        nameInterlinker=db_obj.knowledgeinterlinker['name']
+
+                
+                newCoproNotification.parameters="{'treeitem_id':'"+str(task.id)+"','treeItemName':'"+str(task.name)+"','assetId':'"+str(db_obj.id)+"','assetName':'{assetid:"+str(db_obj.id)+"}','assetLink':'"+str(assetLink)+"','interlinkerName':'"+nameInterlinker+"','processName':'"+coproduction.name+"','userName':'"+shortName(db_obj.creator.full_name)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+                db.add(newCoproNotification)
+        
+        db.commit()
+      
         await self.log_on_create(db_obj)
         await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": "asset_created", "extra": { "task_id" : jsonable_encoder(db_obj.task_id) }})
         return db_obj

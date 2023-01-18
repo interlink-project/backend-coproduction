@@ -13,6 +13,7 @@ from app.api.api_v1 import (
     notifications,
     usernotifications,
     coproductionprocessnotifications,
+    assetsdata,
     utils
 )
 
@@ -28,6 +29,8 @@ api_router.include_router(tasks.router,
                           prefix="/tasks", tags=["tree"])
 api_router.include_router(assets.router,
                           prefix="/assets", tags=["tree"])
+api_router.include_router(assetsdata.router,
+                          prefix="/assetsdata", tags=["tree"])
 api_router.include_router(teams.router,
                           prefix="/teams", tags=["teammanagement"])
 api_router.include_router(permissions.router,

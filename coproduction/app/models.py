@@ -13,3 +13,4 @@ from app.usernotifications.models import *
 from app.assetnotifications.models import *
 from app.coproductionprocessnotifications.models import *
 from app.teamnotifications.models import *
+from app.assetsdata.models import *

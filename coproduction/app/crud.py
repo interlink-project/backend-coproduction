@@ -13,3 +13,4 @@ from app.usernotifications.crud import exportCrud as usernotification
 from app.assetnotifications.crud import exportCrud as assetnotification
 from app.coproductionprocessnotifications.crud import exportCrud as coproductionprocessnotification
 from app.teamnotifications.crud import exportCrud as teamnotification
+from app.assetsdata.crud import exportCrud as assetsdata
