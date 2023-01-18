@@ -10,9 +10,9 @@ from app.general.utils.CRUDBase import CRUDBase
 from app.models import Permission, TreeItem, CoproductionProcessNotification, UserNotification
 from app.permissions.models import DENY_ALL, PERMS, GRANT_ALL, INDEXES
 from app.coproductionprocesses.crud import exportCrud as coproductionprocesses_crud
-from app.notifications.crud import exportCrud as notification_crud
-from app.treeitems.crud import exportCrud as treeitem_crud
-from app.teams.crud import exportCrud as team_crud
+from app.notifications.crud import exportCrud as notifications_crud
+from app.treeitems.crud import exportCrud as treeitems_crud
+from app.teams.crud import exportCrud as teams_crud
 from app.schemas import PermissionCreate
 from fastapi.encoders import jsonable_encoder
 from app.sockets import socket_manager
@@ -35,10 +35,10 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
 
         if(db_obj.team_id and db_obj.treeitem_id):
         ###Se ha seleccionado un equipo para trabajar sonbre un treeitem. 
-            notification = await notification_crud.get_notification_by_event(db=db, event="remove_team_treeitem")
-            treeitem = await treeitem_crud.get(db=db, id=db_obj.treeitem_id)
+            notification = await notifications_crud.get_notification_by_event(db=db, event="remove_team_treeitem")
+            treeitem = await treeitems_crud.get(db=db, id=db_obj.treeitem_id)
             #Create a notification for coproduction:
-            team = await team_crud.get(db=db, id=db_obj.team_id)
+            team = await teams_crud.get(db=db, id=db_obj.team_id)
             
             newCoproNotification=CoproductionProcessNotification()
             newCoproNotification.notification_id=notification.id
@@ -51,10 +51,10 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
             db.add(newCoproNotification)
         else:
 
-            notification = await notification_crud.get_notification_by_event(db=db, event="remove_team_copro")
+            notification = await notifications_crud.get_notification_by_event(db=db, event="remove_team_copro")
 
             if(notification and db_obj.team_id):
-                team = await team_crud.get(db=db, id=db_obj.team_id)
+                team = await teams_crud.get(db=db, id=db_obj.team_id)
                 newCoproNotification=CoproductionProcessNotification()
                 newCoproNotification.notification_id=notification.id
                 newCoproNotification.coproductionprocess_id=coproduction.id
@@ -106,10 +106,10 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
         #Se ha seleccionado un equipo para trabajar sonbre un treeitem.
         if(db_obj.team_id and db_obj.treeitem_id):
 
-            notification = await notification_crud.get_notification_by_event(db=db, event="add_team_treeitem")
-            treeitem = await treeitem_crud.get(db=db, id=db_obj.treeitem_id)
+            notification = await notifications_crud.get_notification_by_event(db=db, event="add_team_treeitem")
+            treeitem = await treeitems_crud.get(db=db, id=db_obj.treeitem_id)
             #Create a notification for coproduction:
-            team = await team_crud.get(db=db, id=db_obj.team_id)
+            team = await teams_crud.get(db=db, id=db_obj.team_id)
             
             newCoproNotification=CoproductionProcessNotification()
             newCoproNotification.notification_id=notification.id
@@ -123,11 +123,11 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
         else:
             
             #Se ha seleccionado un equipo para trabajar sonbre todo un proceso de coproduction.
-            notification = await notification_crud.get_notification_by_event(db=db, event="add_team_copro")
+            notification = await notifications_crud.get_notification_by_event(db=db, event="add_team_copro")
 
             if(notification and db_obj.team_id):
                 #Create a notification for coproduction:
-                team = await team_crud.get(db=db, id=db_obj.team_id)
+                team = await teams_crud.get(db=db, id=db_obj.team_id)
                 
                 newCoproNotification=CoproductionProcessNotification()
                 newCoproNotification.notification_id=notification.id
@@ -157,7 +157,20 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
         db.commit()
         db.refresh(newCoproNotification)
 
-        
+        #Send mail to a team to know they are added to a coprod or treeitem
+        if db_obj.treeitem_id and db_obj.team_id:
+            treeitem = await treeitems_crud.get(db=db, id=db_obj.treeitem_id)
+            _ = send_team_email(team,
+                            'add_team_treeitem',
+                            {"coprod_id": db_obj.coproductionprocess_id,
+                                "coprod_name": coproduction.name,
+                                "treeitem_id": db_obj.treeitem_id,
+                                "treeitem_name": treeitem.name})
+        else:
+            _ = send_team_email(team,
+                            'add_team_coprod',
+                            {"coprod_id": db_obj.coproductionprocess_id,
+                                "coprod_name": coproduction.name})
 
         await socket_manager.send_to_id(generate_uuid(creator.id), {"event": "permission" + "_created"})
 
