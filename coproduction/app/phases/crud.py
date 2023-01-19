@@ -3,6 +3,7 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
+from app import models
 from app.general.utils.CRUDBase import CRUDBase
 from app.messages import log
 from app.models import CoproductionProcess, Phase, User
@@ -81,6 +82,19 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
         else:
             await self.log_on_disable(obj)
         await treeitems_crud.remove(db=db, obj=obj, model=self.model, user_id=user_id, remove_definitely=remove_definitely)
+
+    async def copy(self, db: Session, *, obj_in: PhaseCreate, creator: User = None, extra: dict = {}, commit: bool = True) -> Phase:
+        new_phase = models.Phase(
+            id=uuid.uuid4(),
+            is_part_of_codelivery=obj_in.is_part_of_codelivery,
+            coproductionprocess_id=obj_in.coproductionprocess_id,
+        )
+        # obj = db.query(self.model).get(id)
+        # if not obj:
+        #     raise Exception("Object does not exist")
+        
+        return await self.create(db=db, obj_in=new_phase)
+    # (db=db, phasemetadata=obj.to_metadata(), coproductionprocess=coproductionprocess, schema_id=schema_id)
 
     async def log_on_disable(self, obj):
         enriched: dict = self.enrich_log_data(obj, {

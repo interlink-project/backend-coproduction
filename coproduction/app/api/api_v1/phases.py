@@ -113,3 +113,16 @@ async def delete_phase(
         raise HTTPException(status_code=403, detail="Not enough permissions")
     await crud.phase.remove(db=db, id=id, user_id=current_user.id)
     return None
+
+
+@router.post("/{id}/copy")
+async def copy_phase(
+    *,
+    db: Session = Depends(deps.get_db),
+    phase_in: schemas.PhaseCreate,
+) -> Any:
+    """
+    Copy a phase.
+    """
+    await crud.phase.copy(db=db, obj_in=phase_in)
+    return None

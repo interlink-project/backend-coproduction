@@ -160,7 +160,17 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
             logotype=coproductionprocess.logotype,
             aim=coproductionprocess.aim,
         )
-        await self.create(db, obj_in=new_coproductionprocess, creator=user, set_creator_admin=True)
+        db_obj = await self.create(db=db, obj_in=new_coproductionprocess, creator=user, set_creator_admin=True)
+        administrators = coproductionprocess.administrators
+        for i in administrators:
+            await self.add_administrator(db=db, db_obj=db_obj, user=i)
+        
+        for phase in coproductionprocess.children:
+            print(phase)
+            await crud.phase.copy(db=db, obj_in=phase)
+        
+         
+        
         # db.add(new_coproductionprocess)
         # db.commit()
         # db.refresh(new_coproductionprocess)

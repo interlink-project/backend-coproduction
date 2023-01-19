@@ -313,17 +313,17 @@ async def websocket_endpoint(
             data = await websocket.receive_text()
     except WebSocketDisconnect:
         socket_manager.disconnect(websocket, id)
-        
 
-@router.post("/{id}/clone")
-async def clone_coproductionprocess(
+
+@router.post("/{id}/copy")
+async def copy_coproductionprocess(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Clone an coproductionprocess.
+    Copy a coproductionprocess.
     """
     coproductionprocess = await crud.coproductionprocess.get(db=db, id=id)
     if not coproductionprocess:
