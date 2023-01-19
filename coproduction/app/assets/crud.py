@@ -72,7 +72,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                 assetLink=asset.uri
 
 
-                newCoproNotification.parameters="{'treeitem_id':'"+str(task.id)+"','treeItemName':'"+str(task.name)+"','assetId':'"+str(db_obj.id)+"','assetName':'"+asset.name+"','assetLink':'"+str(assetLink)+"','interlinkerName':'"+nameInterlinker+"','processName':'"+coproduction.name+"','userName':'"+shortName(db_obj.creator.full_name)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+                newCoproNotification.parameters="{'treeitem_id':'"+str(task.id)+"','treeItemName':'"+str(task.name)+"','assetId':'"+str(db_obj.id)+"','assetName':'"+asset.name+"','assetLink':'"+str(assetLink)+"','interlinkerName':'"+nameInterlinker+"','processName':'"+coproduction.name+"','userName':'"+self.shortName(db_obj.creator.full_name)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
                 db.add(newCoproNotification)
         if db_obj_Aseet.type == 'internalasset':
             db_obj=db_obj_Aseet
@@ -204,7 +204,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                         nameInterlinker=db_obj.knowledgeinterlinker['name']
 
                 
-                newCoproNotification.parameters="{'treeitem_id':'"+str(task.id)+"','treeItemName':'"+str(task.name)+"','assetId':'"+str(db_obj.id)+"','assetName':'{assetid:"+str(db_obj.id)+"}','assetLink':'"+str(assetLink)+"','interlinkerName':'"+nameInterlinker+"','processName':'"+coproduction.name+"','userName':'"+shortName(db_obj.creator.full_name)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+                newCoproNotification.parameters="{'treeitem_id':'"+str(task.id)+"','treeItemName':'"+str(task.name)+"','assetId':'"+str(db_obj.id)+"','assetName':'{assetid:"+str(db_obj.id)+"}','assetLink':'"+str(assetLink)+"','interlinkerName':'"+nameInterlinker+"','processName':'"+coproduction.name+"','userName':'"+selfshortName(db_obj.creator.full_name)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
                 db.add(newCoproNotification)
         
         db.commit()
