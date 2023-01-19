@@ -1,8 +1,8 @@
 {
     "event": "add_asset_copro",
-    "title": "An asset '{assetName}' was created for the project '{processName}'",
+    "title": "An asset was created.",
     "subtitle": "{userName} added the asset {assetName} to the coproduction process '{processName}'",
-    "text": "{userName} added the asset  <img id='im_{assetId}' src='{assetIcon}'> <a id='lk_{assetId}' href='{assetLink}'  target='_blank'> {assetName}</a>  to coproduction process <a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a> in the topic '<a href='/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide'>{treeItemName}</a>'",
+    "text": "{userName} added the asset  <img id='im_{assetId}' src='{assetIcon}' {showIcon}> <a id='lk_{assetId}' href='{assetLink}'  target='_blank' {showIcon}> {assetName}</a> <span {showLink}>'{assetName}'</span>  to coproduction process <a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a> in the topic '<a href='/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide'>{treeItemName}</a>'",
     "html_template": null,
     "url_link": "{assetLink}",
     "icon":"changeresource" 

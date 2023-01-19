@@ -33,7 +33,7 @@ async def list_assetsdatas(
     return await crud.assetsdata.get_multi(db=db)
 
 
-@router.post("/", response_model=schemas.AssetsDataOutFull)
+@router.post("/create", response_model=schemas.AssetsDataOutFull)
 async def create_assetsdata(
     *,
     db: Session = Depends(deps.get_db),

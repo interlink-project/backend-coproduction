@@ -14,6 +14,7 @@ from fastapi.encoders import jsonable_encoder
 from app.sockets import socket_manager
 from uuid_by_string import generate_uuid
 from app import schemas
+import json
 
 
 class CRUDCoproductionProcessNotification(CRUDBase[CoproductionProcessNotification, CoproductionProcessNotificationCreate, CoproductionProcessNotificationPatch]):
@@ -25,7 +26,7 @@ class CRUDCoproductionProcessNotification(CRUDBase[CoproductionProcessNotificati
         
         
         listofCoproductionProcessNotifications = db.query(CoproductionProcessNotification).filter(models.CoproductionProcessNotification.coproductionprocess_id==coproductionprocess_id).order_by(models.CoproductionProcessNotification.created_at.desc()).all()
-        print(listofCoproductionProcessNotifications)
+        #print(listofCoproductionProcessNotifications)
         return listofCoproductionProcessNotifications
 
 
@@ -64,6 +65,38 @@ class CRUDCoproductionProcessNotification(CRUDBase[CoproductionProcessNotificati
         db.refresh(db_obj)
         await self.log_on_update(db_obj)
         return db_obj
+    
+    async def updateAssetNameParameter(
+        self,
+        db: Session,
+        asset_id: str,
+        name: str, 
+        coproductionprocess_id: str
+    ) -> Optional[List[CoproductionProcessNotification]]:
+
+        resultNot=db.query(models.CoproductionProcessNotification).filter(models.CoproductionProcessNotification.coproductionprocess_id==coproductionprocess_id).all()
+        
+        #Loop all notifications of the coproduction process
+        for copronot in resultNot:
+            
+            #Set the dinamic parameters
+            parametersJson= json.loads(copronot.parameters.replace("'", '"'))
+            parametersJson['assetName']=parametersJson['assetName'].replace('{assetid:'+asset_id+'}', name)
+            parametersJson['assetLink']=''
+            parametersJson['showIcon']='hidden'
+            parametersJson['showLink']=''
+
+            copronot.parameters=json.dumps(parametersJson)
+
+            #copronot.parameters=copronot.parameters.replace('{assetid:'+asset_id+'}', name)
+            #print('resp '+copronot.parameters)
+            db.add(copronot)
+        
+        
+        db.commit()
+        #print('Se ha reemplazado exitosamente los nombres: '+str(asset_id)+' por '+name)
+        
+        return
 
 
 exportCrud = CRUDCoproductionProcessNotification(CoproductionProcessNotification)

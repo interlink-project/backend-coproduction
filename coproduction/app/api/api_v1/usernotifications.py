@@ -39,7 +39,7 @@ async def list_unseenusernotifications(
     return await crud.usernotification.get_unseen_user_notifications(db=db,user_id=user_id)
 
 #Update the state of all unseen notifications:
-@router.get("/setallseen")
+@router.put("/setallseen")
 async def update_see_allusernotification(
     *,
     db: Session = Depends(deps.get_db),

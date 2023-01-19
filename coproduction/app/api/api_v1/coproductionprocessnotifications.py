@@ -49,7 +49,20 @@ async def create_coproductionprocessnotification(
     return await crud.coproductionprocessnotification.create(db=db, obj_in=coproductionprocessnotification_in)
     # raise HTTPException(status_code=400, detail="CoproductionProcessNotification already exists")
 
-
+@router.put("/updateAssetNameParameter/{asset_id}", response_model=schemas.CoproductionProcessNotificationOutFull)
+async def create_coproductionprocessnotification(
+    *,
+    db: Session = Depends(deps.get_db),
+    asset_id: str,
+    name: str,
+    coproductionprocess_id: str = '',
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Create new coproductionprocessnotification.
+    """
+    return await crud.coproductionprocessnotification.updateAssetNameParameter(db=db, asset_id=asset_id,name=name,coproductionprocess_id=coproductionprocess_id)
+    
 
 
 @router.put("/{id}", response_model=schemas.CoproductionProcessNotificationOutFull)
@@ -68,6 +81,7 @@ async def update_coproductionprocessnotification(
     if not coproductionprocessnotification:
         raise HTTPException(status_code=404, detail="CoproductionProcessNotification not found")
     return await crud.coproductionprocessnotification.update(db=db, db_obj=coproductionprocessnotification, obj_in=coproductionprocessnotification_in)
+
 
 
 @router.get("/{id}/coproductionprocessnotification", response_model=schemas.CoproductionProcessNotificationOutFull)
