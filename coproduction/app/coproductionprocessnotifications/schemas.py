@@ -22,6 +22,14 @@ class CoproductionProcessNotification(CoproductionProcessNotificationBase):
         orm_mode = True
 
 
+class CoproductionProcessNotificationCreatebyEvent(BaseModel):
+    coproductionprocess_id: uuid.UUID
+    notification_event: str
+    parameters: Optional[str]
+ 
+
+
+
 class CoproductionProcessNotificationOut(CoproductionProcessNotification):
     pass
 

@@ -3,6 +3,7 @@ import uuid
 from typing import Any, List, Optional
 
 import aiofiles
+import json
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -10,6 +11,7 @@ from sqlalchemy.sql.functions import user
 
 from app import crud, models, schemas
 from app.general import deps
+from app.models import CoproductionProcessNotification
 
 router = APIRouter()
 
@@ -48,6 +50,49 @@ async def create_coproductionprocessnotification(
     # if not coproductionprocessnotification:
     return await crud.coproductionprocessnotification.create(db=db, obj_in=coproductionprocessnotification_in)
     # raise HTTPException(status_code=400, detail="CoproductionProcessNotification already exists")
+
+@router.post("/createbyEvent", response_model=schemas.CoproductionProcessNotificationOutFull)
+async def create_copro_notification(
+    *,
+    db: Session = Depends(deps.get_db),
+    coproductionprocessnotification_in: schemas.CoproductionProcessNotificationCreatebyEvent,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Create new coproductionprocessnotification.
+    """
+    notification = await crud.notification.get_notification_by_event(db=db, event=coproductionprocessnotification_in.notification_event)
+    newCoproNotification=CoproductionProcessNotification()
+    newCoproNotification.notification_id=notification.id
+    newCoproNotification.coproductionprocess_id=coproductionprocessnotification_in.coproductionprocess_id
+
+    #Add the user to the information
+    import json
+
+    def shortName(s):
+        # split the string into a list
+        l = s.split()
+        new = ""
+        # traverse in the list
+        for i in range(len(l)-1):
+            s = l[i]
+            # adds the capital first character
+            new += (s[0].upper()+'.')
+        
+        # l[-1] gives last item of list l. We
+        # use title to print first character in
+        # capital.
+        new += l[-1].title()
+        return new
+
+    json_parameters = json.loads(coproductionprocessnotification_in.parameters)
+    json_parameters['userName']=shortName(current_user.full_name)
+    newCoproNotification.parameters=json.dumps(json_parameters)
+
+    return await crud.coproductionprocessnotification.create(db=db, obj_in=newCoproNotification)
+
+
+
 
 @router.put("/updateAssetNameParameter/{asset_id}", response_model=schemas.CoproductionProcessNotificationOutFull)
 async def create_coproductionprocessnotification(
