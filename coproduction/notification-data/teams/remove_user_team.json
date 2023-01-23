@@ -1,8 +1,8 @@
 {
     "event": "remove_user_team",
-    "title": "You had been removed from the team {teamName}",
-    "subtitle": "Remove a user from a team",
-    "text": "Now you are out of the team",
+    "title": "You had been removed from the team {teamName}.",
+    "subtitle": "",
+    "text": "",
     "html_template": null,
     "url_link": "/dashboard/organizations/{org_id}/{team_id}",
     "icon":"group"

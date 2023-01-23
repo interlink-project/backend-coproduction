@@ -81,16 +81,19 @@ class CRUDCoproductionProcessNotification(CRUDBase[CoproductionProcessNotificati
             
             #Set the dinamic parameters
             parametersJson= json.loads(copronot.parameters.replace("'", '"'))
-            parametersJson['assetName']=parametersJson['assetName'].replace('{assetid:'+asset_id+'}', name)
-            parametersJson['assetLink']=''
-            parametersJson['showIcon']='hidden'
-            parametersJson['showLink']=''
 
-            copronot.parameters=json.dumps(parametersJson)
+            if( 'assetName' in json.dumps(parametersJson)):
 
-            #copronot.parameters=copronot.parameters.replace('{assetid:'+asset_id+'}', name)
-            #print('resp '+copronot.parameters)
-            db.add(copronot)
+                parametersJson['assetName']=parametersJson['assetName'].replace('{assetid:'+asset_id+'}', name)
+                parametersJson['assetLink']=''
+                parametersJson['showIcon']='hidden'
+                parametersJson['showLink']=''
+
+                copronot.parameters=json.dumps(parametersJson)
+
+                #copronot.parameters=copronot.parameters.replace('{assetid:'+asset_id+'}', name)
+                #print('resp '+copronot.parameters)
+                db.add(copronot)
         
         
         db.commit()

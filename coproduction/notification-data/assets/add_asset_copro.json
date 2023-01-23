@@ -1,8 +1,8 @@
 {
     "event": "add_asset_copro",
-    "title": "An asset was created.",
-    "subtitle": "{userName} added the asset {assetName} to the coproduction process '{processName}'",
-    "text": "{userName} added the asset  <img class='im_{assetId}' src='{assetIcon}' style='width: 15px;' {showIcon}> <a class='lk_{assetId}' href='{assetLink}'  target='_blank' {showIcon}> {assetName}</a> <span {showLink}>'{assetName}'</span>  to coproduction process <a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a> in the topic '<a href='/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide'>{treeItemName}</a>'",
+    "title": "An resource was created.",
+    "subtitle": "",
+    "text": "<span style='color:green;font-weight:bold;'>{userName}</span> created the resource  <img class='im_{assetId}' src='{assetIcon}' style='width: 15px;' {showIcon}> <a class='lk_{assetId}' href='{assetLink}'  target='_blank' {showIcon}> '{assetName}'</a> <span {showLink}>'{assetName}'</span> to coproduction process <a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>'{processName}'</a> in task <a href='/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide'>'{treeItemName}'</a>.",
     "html_template": null,
     "url_link": "{assetLink}",
     "icon":"changeresource" 
