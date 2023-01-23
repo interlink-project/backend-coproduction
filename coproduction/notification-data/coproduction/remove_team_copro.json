@@ -1,7 +1,7 @@
 {
     "event": "remove_team_copro",
     "title": "A team was removed.",
-    "subtitle": "",
+    "subtitle": "The team '{teamName}' was removed from the coproduction process '{processName}'.",
     "text": "The team '<a href='/dashboard/organizations/{org_id}/{team_id}'>{teamName}</a>' was removed from the coproduction process '<a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a>'.",
     "html_template": null,
     "url_link": "/dashboard/coproductionprocesses/{copro_id}/overview/",
