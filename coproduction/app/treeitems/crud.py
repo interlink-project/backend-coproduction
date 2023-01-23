@@ -3,6 +3,7 @@ from typing import List, Optional
 
 from sqlalchemy.orm import Session
 from app.models import TreeItem, Task, Objective, Phase
+from app.schemas import PhaseCreate, ObjectiveCreate, TaskCreate
 from app.utils import update_status_and_progress
 from datetime import datetime
 from app import models

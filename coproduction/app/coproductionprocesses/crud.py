@@ -151,34 +151,42 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         await socket_manager.send_to_id(coproductionprocess.id, {"event": "schema_set"})
         return coproductionprocess
     
-    async def copy(self, db: Session, coproductionprocess: models.CoproductionProcess, user: models.User):
-        new_coproductionprocess = models.CoproductionProcess(
+    async def copy(self, db: Session, coproductionprocess: CoproductionProcessCreate, user: models.User):
+        new_coproductionprocess = CoproductionProcessCreate(
             id=uuid.uuid4(),
             schema_used=coproductionprocess.schema_used,
-            name=coproductionprocess.name,
+            name="Copy of " + coproductionprocess.name,
             description=coproductionprocess.description,
             logotype=coproductionprocess.logotype,
             aim=coproductionprocess.aim,
+            language=coproductionprocess.language,
         )
+        
         db_obj = await self.create(db=db, obj_in=new_coproductionprocess, creator=user, set_creator_admin=True)
         administrators = coproductionprocess.administrators
-        for i in administrators:
-            await self.add_administrator(db=db, db_obj=db_obj, user=i)
+        for admin in administrators:
+            await self.add_administrator(db=db, db_obj=db_obj, user=admin)
         
-        for phase in coproductionprocess.children:
-            print(phase)
-            await crud.phase.copy(db=db, obj_in=phase)
+        phases_temp = coproductionprocess.children.copy()
+        phases = []
+        for id, phase in enumerate(phases_temp):
+            if not phase.prerequisites_ids:
+                phases.append(phase)
+                phases_temp.pop(id)
         
-         
-        
-        # db.add(new_coproductionprocess)
-        # db.commit()
-        # db.refresh(new_coproductionprocess)
-        # for phase in coproductionprocess.children:
-            # await crud.phase.copy(db=db, phase=phase, coproductionprocess=new_coproductionprocess, schema_id=schema)
-        # db.commit()
-        # db.refresh(new_coproductionprocess)
-        return new_coproductionprocess
+        while phases_temp:
+            for id, phase in enumerate(phases_temp):
+                if str(phase.prerequisites_ids[0]) == str(phases[-1].id):
+                    phases.append(phase)
+                    phases_temp.pop(id)
+
+        #  Create a dict with the old ids and the new ids
+        ids_dict = {}
+        for phase in phases:
+            tmp_phase = await crud.phase.copy(db=db, obj_in=phase, coproductionprocess=db_obj, extra=ids_dict)
+            ids_dict['phase_'+str(phase.id)] = tmp_phase.id
+                
+        return db_obj
         
 
     # Override log methods

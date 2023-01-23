@@ -117,6 +117,36 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
             await self.log_on_disable(obj)
         await treeitems_crud.remove(db=db, obj=obj, model=self.model, user_id=user_id, remove_definitely=remove_definitely)
 
+    async def copy(self, db: Session, *, obj_in: TaskCreate, coproductionprocess, parent: Objective, extra: dict = {}) -> Task:
+        print("COPYING TASK", obj_in)
+        
+        # Get the new ids of the prerequistes
+        prereqs_ids = []
+        if obj_in.prerequisites_ids:
+            for p_id in obj_in.prerequisites_ids:
+                prereqs_ids.append(extra['task_'+str(p_id)])
+        
+        new_task = TaskCreate(
+                id=uuid.uuid4(),
+                name=obj_in.name,
+                description=obj_in.description,
+                problemprofiles=obj_in.problemprofiles,
+                objective_id=parent.id,
+                objective=parent,
+                start_date=obj_in.start_date,
+                end_date=obj_in.end_date,
+                coproductionprocess=coproductionprocess,
+                prerequisites=obj_in.prerequisites,
+                prerequisites_ids=prereqs_ids,
+                status=obj_in.status,
+                from_item=obj_in.from_item,
+                from_schema=obj_in.from_schema
+            )
+
+        new_task = await self.create(db=db, obj_in=new_task)
+        
+        return new_task
+    
     async def log_on_disable(self, obj):
         enriched: dict = self.enrich_log_data(obj, {
             "action": "DISABLE"
