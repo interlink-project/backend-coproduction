@@ -8,6 +8,7 @@ from app.messages import log
 from app.models import Objective, Phase, User
 from app.schemas import ObjectiveCreate, ObjectivePatch
 from app.treeitems.crud import exportCrud as treeitems_crud
+from app.tasks.crud import exportCrud as tasks_crud
 from app.utils import recursive_check
 from fastapi.encoders import jsonable_encoder
 from app.sockets import socket_manager
@@ -82,6 +83,52 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
         else:
             await self.log_on_disable(obj)
         await treeitems_crud.remove(db=db, obj=obj, model=self.model, user_id=user_id, remove_definitely=remove_definitely)
+
+    async def copy(self, db: Session, *, obj_in: ObjectiveCreate, coproductionprocess, parent: Phase, extra: dict = {}):
+        print("COPYING OBJECTIVE", obj_in)
+        
+        # Get the new ids of the prerequistes
+        prereqs_ids = []
+        if obj_in.prerequisites_ids:
+            for p_id in obj_in.prerequisites_ids:
+                prereqs_ids.append(extra['Objective_'+str(p_id)])
+        
+        new_objective = ObjectiveCreate(
+                id=uuid.uuid4(),
+                name=obj_in.name,
+                description=obj_in.description,
+                phase_id=parent.id,
+                phase=parent,
+                coproductionprocess=coproductionprocess,
+                prerequisites=obj_in.prerequisites,
+                prerequisites_ids=prereqs_ids,
+                status=obj_in.status,
+                from_item=obj_in.from_item,
+                from_schema=obj_in.from_schema
+            )
+
+        new_objective = await self.create(db=db, obj_in=new_objective)
+        
+        tasks_temp = obj_in.children.copy()
+        tasks = []
+        for id, task in enumerate(tasks_temp):
+            if not task.prerequisites_ids:
+                tasks.append(task)
+                tasks_temp.pop(id)
+        
+        while tasks_temp:
+            for id, task in enumerate(tasks_temp):
+                if str(task.prerequisites_ids[0]) == str(tasks[-1].id):
+                    tasks.append(task)
+                    tasks_temp.pop(id)
+
+        ids_dict = {}
+        for child in tasks:
+            tmp_task = await tasks_crud.copy(db=db, obj_in=child, coproductionprocess=coproductionprocess, parent=new_objective, extra=ids_dict)
+            ids_dict['Task_'+str(child.id)] = tmp_task.id
+
+        return new_objective, ids_dict
+
 
     async def log_on_disable(self, obj):
         enriched: dict = self.enrich_log_data(obj, {

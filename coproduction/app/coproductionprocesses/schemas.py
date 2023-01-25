@@ -17,6 +17,7 @@ class CoproductionProcessBase(BaseModel):
     description: Optional[str]
     aim: Optional[str]
     idea: Optional[str]
+    organization_desc: Optional[str]
     organization_id: Optional[uuid.UUID]
     challenges: Optional[str]
     status: Optional[Status]

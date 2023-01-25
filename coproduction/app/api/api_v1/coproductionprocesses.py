@@ -155,6 +155,7 @@ async def update_coproductionprocess(
     """
     Update an coproductionprocess.
     """
+    print(coproductionprocess_in)
     coproductionprocess = await crud.coproductionprocess.get(db=db, id=id)
     if not coproductionprocess:
         raise HTTPException(status_code=404, detail="CoproductionProcess not found")
@@ -313,3 +314,33 @@ async def websocket_endpoint(
             data = await websocket.receive_text()
     except WebSocketDisconnect:
         socket_manager.disconnect(websocket, id)
+
+
+@router.post("/{id}/copy")
+async def copy_coproductionprocess(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: uuid.UUID,
+    current_user: models.User = Depends(deps.get_current_active_user),
+    token: str = Depends(deps.get_current_active_token)
+) -> Any:
+    """
+    Copy a coproductionprocess.
+    """
+    coproductionprocess = await crud.coproductionprocess.get(db=db, id=id)
+    if not coproductionprocess:
+        raise HTTPException(status_code=404, detail="CoproductionProcess not found")
+    if not crud.coproductionprocess.can_remove(user=current_user, object=coproductionprocess):
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    
+    new_coprod = await crud.coproductionprocess.copy(db=db, coproductionprocess=coproductionprocess, user=current_user, token=token)
+    filename, extension = os.path.splitext(coproductionprocess.logotype.split('/')[-1])
+    in_file_path = coproductionprocess.logotype
+    out_file_path = f"/static/coproductionprocesses/{new_coprod.id}{extension}"
+    async with aiofiles.open("/app" + in_file_path, 'rb') as in_file:
+        content = await in_file.read()
+        async with aiofiles.open("/app" + out_file_path, 'wb') as out_file:
+            await out_file.write(content)  # async write
+    await crud.coproductionprocess.update(db=db, db_obj=new_coprod, obj_in=schemas.CoproductionProcessPatch(logotype=out_file_path))
+    
+    return new_coprod

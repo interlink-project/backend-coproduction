@@ -214,6 +214,37 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
         await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": "asset_created", "extra": { "task_id" : jsonable_encoder(db_obj.task_id) }})
         return db_obj
 
+    async def copy(self, db: Session, asset: AssetCreate, creator: models.User, task: models.Task, token) -> Asset:
+
+        if asset.type == 'internalasset':
+            print('Copying internal asset')
+            
+            try:
+                data_from_interlinker = requests.post(asset.internal_link + "/clone", headers={
+                "Authorization": "Bearer " + token
+                }).json()
+            except:
+                data_from_interlinker = requests.post(asset.link + "/clone", headers={
+                "Authorization": "Bearer " + token
+                }).json()
+            external_asset_id = data_from_interlinker["id"] if "id" in data_from_interlinker else data_from_interlinker["_id"]
+
+            new_asset = InternalAssetCreate(task_id=task.id,
+                                        softwareinterlinker_id=asset.softwareinterlinker_id,
+                                        knowledgeinterlinker_id=asset.knowledgeinterlinker_id,
+                                        external_asset_id=external_asset_id)
+            await self.create(db=db, asset=new_asset, creator=creator, task=task)
+        
+        elif asset.type == 'externalasset':
+            print('Copying external asset')
+            new_asset = ExternalAssetCreate(task_id=task.id,
+                                         externalinterlinker_id=asset.externalinterlinker_id,
+                                         name=asset.name,
+                                         uri=asset.uri)
+            await self.create(db=db, asset=new_asset, creator=creator, task=task)
+ 
+        return None
+
     # Override log methods
     def enrich_log_data(self, asset, logData):
         db = Session.object_session(asset)

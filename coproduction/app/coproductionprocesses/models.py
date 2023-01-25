@@ -32,7 +32,7 @@ class CoproductionProcess(BaseModel):
     logotype = Column(String, nullable=True)
     aim = Column(Text, nullable=True)
     idea = Column(Text, nullable=True)
-    organization = Column(Text, nullable=True)
+    organization_desc = Column(Text, nullable=True)
     challenges = Column(Text, nullable=True)
 
     status = Column(Enum(Status, create_constraint=False,

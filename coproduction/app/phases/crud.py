@@ -3,11 +3,13 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
+from app import models
 from app.general.utils.CRUDBase import CRUDBase
 from app.messages import log
 from app.models import CoproductionProcess, Phase, User
 from app.schemas import PhaseCreate, PhasePatch
 from app.treeitems.crud import exportCrud as treeitems_crud
+from app.objectives.crud import exportCrud as objectives_crud
 from app.utils import recursive_check
 from fastapi.encoders import jsonable_encoder
 from app.sockets import socket_manager
@@ -22,7 +24,7 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
         return await self.create(db=db, obj_in=creator, commit=False, extra={
             "coproductionprocess": coproductionprocess
         })
-        
+
     async def create(self, db: Session, *, obj_in: PhaseCreate, creator: User = None, extra: dict = {}, commit: bool = True) -> Phase:
         obj_in_data = jsonable_encoder(obj_in)
         prereqs = obj_in_data.get("prerequisites_ids")
@@ -81,6 +83,53 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
         else:
             await self.log_on_disable(obj)
         await treeitems_crud.remove(db=db, obj=obj, model=self.model, user_id=user_id, remove_definitely=remove_definitely)
+
+    async def copy(self, db: Session, *, obj_in: PhaseCreate, coproductionprocess: CoproductionProcess,creator: User = None, extra: dict = {}, commit: bool = True):
+        print("copying phase")
+        
+        # Get the new ids of the prerequistes
+        prereqs_ids = []
+        if obj_in.prerequisites_ids:
+            for p_id in obj_in.prerequisites_ids:
+                prereqs_ids.append(extra['Phase_'+str(p_id)])
+
+        new_phase = PhaseCreate(
+                progress=obj_in.progress,
+                status=obj_in.status,
+                id=uuid.uuid4(),
+                from_item=obj_in.from_item,
+                name=obj_in.name,
+                is_part_of_codelivery=obj_in.is_part_of_codelivery,
+                from_schema=obj_in.from_schema,
+                description=obj_in.description,
+                coproductionprocess_id=coproductionprocess.id,
+                prerequisites=obj_in.prerequisites,
+                prerequisites_ids=prereqs_ids
+            )
+            
+        new_phase = await self.create(db=db, obj_in=new_phase)
+        
+        objectives_temp = obj_in.children.copy()
+        objectives = []
+        for id, objective in enumerate(objectives_temp):
+            if not objective.prerequisites_ids:
+                objectives.append(objective)
+                objectives_temp.pop(id)
+        
+        while objectives_temp:
+            for id, objective in enumerate(objectives_temp):
+                if str(objective.prerequisites_ids[0]) == str(objectives[-1].id):
+                    objectives.append(objective)
+                    objectives_temp.pop(id)
+        
+        #  Create a dict with the old ids and the new ids
+        ids_dict = {}
+        for child in objectives:
+            tmp_obj, obj_id_updates = await objectives_crud.copy(db=db, obj_in=child, coproductionprocess=coproductionprocess, parent=new_phase, extra=ids_dict)
+            ids_dict['Objective_'+str(child.id)] = tmp_obj.id
+            ids_dict.update(obj_id_updates)
+            
+        return new_phase, ids_dict
 
     async def log_on_disable(self, obj):
         enriched: dict = self.enrich_log_data(obj, {
