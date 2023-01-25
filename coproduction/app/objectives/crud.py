@@ -84,14 +84,14 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
             await self.log_on_disable(obj)
         await treeitems_crud.remove(db=db, obj=obj, model=self.model, user_id=user_id, remove_definitely=remove_definitely)
 
-    async def copy(self, db: Session, *, obj_in: ObjectiveCreate, coproductionprocess, parent: Phase, extra: dict = {}) -> Objective:
+    async def copy(self, db: Session, *, obj_in: ObjectiveCreate, coproductionprocess, parent: Phase, extra: dict = {}):
         print("COPYING OBJECTIVE", obj_in)
         
         # Get the new ids of the prerequistes
         prereqs_ids = []
         if obj_in.prerequisites_ids:
             for p_id in obj_in.prerequisites_ids:
-                prereqs_ids.append(extra['obj_'+str(p_id)])
+                prereqs_ids.append(extra['Objective_'+str(p_id)])
         
         new_objective = ObjectiveCreate(
                 id=uuid.uuid4(),
@@ -121,15 +121,13 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
                 if str(task.prerequisites_ids[0]) == str(tasks[-1].id):
                     tasks.append(task)
                     tasks_temp.pop(id)
-        print("TASKS")
-        print(tasks)
+
         ids_dict = {}
         for child in tasks:
             tmp_task = await tasks_crud.copy(db=db, obj_in=child, coproductionprocess=coproductionprocess, parent=new_objective, extra=ids_dict)
-            ids_dict['task_'+str(child.id)] = tmp_task.id
-            print(ids_dict)
-        
-        return new_objective
+            ids_dict['Task_'+str(child.id)] = tmp_task.id
+
+        return new_objective, ids_dict
 
 
     async def log_on_disable(self, obj):

@@ -84,14 +84,14 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
             await self.log_on_disable(obj)
         await treeitems_crud.remove(db=db, obj=obj, model=self.model, user_id=user_id, remove_definitely=remove_definitely)
 
-    async def copy(self, db: Session, *, obj_in: PhaseCreate, coproductionprocess: CoproductionProcess,creator: User = None, extra: dict = {}, commit: bool = True) -> Phase:
+    async def copy(self, db: Session, *, obj_in: PhaseCreate, coproductionprocess: CoproductionProcess,creator: User = None, extra: dict = {}, commit: bool = True):
         print("copying phase")
         
         # Get the new ids of the prerequistes
         prereqs_ids = []
         if obj_in.prerequisites_ids:
             for p_id in obj_in.prerequisites_ids:
-                prereqs_ids.append(extra['phase_'+str(p_id)])
+                prereqs_ids.append(extra['Phase_'+str(p_id)])
 
         new_phase = PhaseCreate(
                 progress=obj_in.progress,
@@ -125,10 +125,11 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
         #  Create a dict with the old ids and the new ids
         ids_dict = {}
         for child in objectives:
-            tmp_obj = await objectives_crud.copy(db=db, obj_in=child, coproductionprocess=coproductionprocess, parent=new_phase, extra=ids_dict)
-            ids_dict['obj_'+str(child.id)] = tmp_obj.id
+            tmp_obj, obj_id_updates = await objectives_crud.copy(db=db, obj_in=child, coproductionprocess=coproductionprocess, parent=new_phase, extra=ids_dict)
+            ids_dict['Objective_'+str(child.id)] = tmp_obj.id
+            ids_dict.update(obj_id_updates)
             
-        return new_phase
+        return new_phase, ids_dict
 
     async def log_on_disable(self, obj):
         enriched: dict = self.enrich_log_data(obj, {

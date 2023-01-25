@@ -155,6 +155,7 @@ async def update_coproductionprocess(
     """
     Update an coproductionprocess.
     """
+    print(coproductionprocess_in)
     coproductionprocess = await crud.coproductionprocess.get(db=db, id=id)
     if not coproductionprocess:
         raise HTTPException(status_code=404, detail="CoproductionProcess not found")
@@ -321,6 +322,7 @@ async def copy_coproductionprocess(
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
     current_user: models.User = Depends(deps.get_current_active_user),
+    token: str = Depends(deps.get_current_active_token)
 ) -> Any:
     """
     Copy a coproductionprocess.
@@ -328,9 +330,12 @@ async def copy_coproductionprocess(
     coproductionprocess = await crud.coproductionprocess.get(db=db, id=id)
     if not coproductionprocess:
         raise HTTPException(status_code=404, detail="CoproductionProcess not found")
-    # if not crud.coproductionprocess.can_remove(user=current_user, object=coproductionprocess):
-    #     raise HTTPException(status_code=403, detail="Not enough permissions")
-    await crud.coproductionprocess.copy(db=db, coproductionprocess=coproductionprocess, user=current_user)
+    if not crud.coproductionprocess.can_remove(user=current_user, object=coproductionprocess):
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    await crud.coproductionprocess.copy(db=db, coproductionprocess=coproductionprocess, user=current_user, token=token)
+    
+    
+    
     # coproductionprocess.id = uuid.uuid4()
     # await crud.coproductionprocess.create(db=db, obj_in=coproductionprocess, creator=current_user, set_creator_admin=True)
     return None

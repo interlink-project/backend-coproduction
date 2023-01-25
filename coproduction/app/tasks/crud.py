@@ -5,12 +5,13 @@ from sqlalchemy.orm import Session
 
 from app import schemas
 from app.general.utils.CRUDBase import CRUDBase
-from app.models import Task, Phase, Objective, User
+from app.models import Task, Phase, Objective, User, Asset
 from app.schemas import TaskCreate, TaskPatch
 from fastapi.encoders import jsonable_encoder
 from app.utils import recursive_check, update_status_and_progress
 from app.messages import log
 from app.treeitems.crud import exportCrud as treeitems_crud
+from app.assets.crud import exportCrud as assets_crud
 from app.sockets import socket_manager
 
 class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
@@ -124,7 +125,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
         prereqs_ids = []
         if obj_in.prerequisites_ids:
             for p_id in obj_in.prerequisites_ids:
-                prereqs_ids.append(extra['task_'+str(p_id)])
+                prereqs_ids.append(extra['Task_'+str(p_id)])
         
         new_task = TaskCreate(
                 id=uuid.uuid4(),
@@ -144,9 +145,9 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
             )
 
         new_task = await self.create(db=db, obj_in=new_task)
-        
+
         return new_task
-    
+
     async def log_on_disable(self, obj):
         enriched: dict = self.enrich_log_data(obj, {
             "action": "DISABLE"
