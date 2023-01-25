@@ -334,13 +334,14 @@ async def copy_coproductionprocess(
         raise HTTPException(status_code=403, detail="Not enough permissions")
     
     new_coprod = await crud.coproductionprocess.copy(db=db, coproductionprocess=coproductionprocess, user=current_user, token=token)
-    filename, extension = os.path.splitext(coproductionprocess.logotype.split('/')[-1])
-    in_file_path = coproductionprocess.logotype
-    out_file_path = f"/static/coproductionprocesses/{new_coprod.id}{extension}"
-    async with aiofiles.open("/app" + in_file_path, 'rb') as in_file:
-        content = await in_file.read()
-        async with aiofiles.open("/app" + out_file_path, 'wb') as out_file:
-            await out_file.write(content)  # async write
-    await crud.coproductionprocess.update(db=db, db_obj=new_coprod, obj_in=schemas.CoproductionProcessPatch(logotype=out_file_path))
+    if coproductionprocess.logotype:
+        filename, extension = os.path.splitext(coproductionprocess.logotype.split('/')[-1])
+        in_file_path = coproductionprocess.logotype
+        out_file_path = f"/static/coproductionprocesses/{new_coprod.id}{extension}"
+        async with aiofiles.open("/app" + in_file_path, 'rb') as in_file:
+            content = await in_file.read()
+            async with aiofiles.open("/app" + out_file_path, 'wb') as out_file:
+                await out_file.write(content)  # async write
+        await crud.coproductionprocess.update(db=db, db_obj=new_coprod, obj_in=schemas.CoproductionProcessPatch(logotype=out_file_path))
     
     return new_coprod
