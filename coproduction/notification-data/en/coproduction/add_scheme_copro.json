@@ -1,0 +1,9 @@
+{
+    "event": "add_scheme_copro",
+    "title": "A new schema was selected for the project {processName}",
+    "subtitle": "Add a new schema",
+    "text": "This is the first step",
+    "html_template": null,
+    "url_link": "/dashboard/coproductionprocesses/{copro_id}/overview/",
+    "language":"en"
+  }

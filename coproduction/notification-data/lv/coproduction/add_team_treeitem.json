@@ -5,5 +5,6 @@
     "text": "The team '<a href='/dashboard/organizations/{org_id}/{team_id}'>{teamName}</a>' was assigned to a the task '<a href='/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide'>{treeItemName}</a>' in the process '<a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a>'.",
     "html_template": null,
     "url_link": "/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide",
-    "icon":"group"  
+    "icon":"group",
+    "language":"lv"  
   }

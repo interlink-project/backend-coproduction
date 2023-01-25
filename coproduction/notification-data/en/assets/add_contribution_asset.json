@@ -1,0 +1,10 @@
+{
+    "event": "add_contribution_asset",
+    "title": "A new contribution was performed over a resource.",
+    "subtitle": "{commentDescription}",
+    "text": "<span style='color:green;font-weight:bold;'>{userName}</span> contributed with the action: '{commentTitle}' to the resource <img class='im_{assetId}' src='{assetIcon}' style='width: 15px;' {showIcon}> <a class='lk_{assetId}' href='{assetLink}'  target='_blank' {showIcon}> {assetName}</a> <span {showLink}>'{assetName}'</span> in the topic <a href='/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide'>'{treeItemName}'</a>.",
+    "html_template": null,
+    "url_link": "{assetLink}",
+    "icon":"changeresource",
+    "language":"en" 
+  }

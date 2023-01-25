@@ -4,5 +4,6 @@
     "subtitle": "Add a new schema",
     "text": "This is the first step",
     "html_template": null,
-    "url_link": "/dashboard/coproductionprocesses/{copro_id}/overview/"
+    "url_link": "/dashboard/coproductionprocesses/{copro_id}/overview/",
+    "language":"lv"
   }

@@ -1,0 +1,10 @@
+{
+    "event": "remove_user_team",
+    "title": "A user was removed from the team '{teamName}'.",
+    "subtitle": "You had been removed from the team '{teamName}'.",
+    "text": "",
+    "html_template": null,
+    "url_link": "/dashboard/organizations/{org_id}/{team_id}",
+    "icon":"group",
+    "language":"lv"
+}

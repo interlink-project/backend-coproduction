@@ -1,11 +1,14 @@
 import uuid
-from typing import Optional, List
+from typing import Optional, List, Any
 
 from pydantic import BaseModel
 from app.general.utils.AllOptional import AllOptional
 from datetime import datetime
 from app.utils import ChannelTypes
 
+from pydantic_choices import choice
+from app.config import settings
+Languages = choice(settings.ALLOWED_LANGUAGES_LIST)
 
 class NotificationBase(BaseModel):
     event : str
@@ -29,10 +32,13 @@ class Notification(NotificationBase):
 
 
 class NotificationOut(Notification):
-    pass
+    language: Any
 
 class NotificationPatch(NotificationBase):
-    pass
+    language: Optional[Languages]
 
 class NotificationCreate(NotificationBase):
-    pass
+    language: Languages
+
+    class Config:
+        arbitrary_types_allowed = True

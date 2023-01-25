@@ -20,89 +20,98 @@ try:
 
     #Get data from folders:
     rootdir='/app/notification-data'
-    for root, dirs, files in os.walk(rootdir):
-        for name in files:
-            if name.endswith((".json")):
 
-                full_path = os.path.join(root, name)
-    
-                # Opening JSON file
-                f = open(full_path)
-                # returns JSON object as 
-                dataNotification = json.load(f)
+    listlanguagesfolders=os.listdir(rootdir)
+    for languagefolder in listlanguagesfolders:
+        rootdirlanguage='/app/notification-data/'+languagefolder
 
-                #Get all data of the file:
-                event=dataNotification['event']
+        for root, dirs, files in os.walk(rootdirlanguage):
+            for name in files:
+                if name.endswith((".json")):
 
-                if "event" in dataNotification:
+                    full_path = os.path.join(root, name)
+        
+                    # Opening JSON file
+                    f = open(full_path)
+                    # returns JSON object as 
+                    dataNotification = json.load(f)
+
+                    #Get all data of the file:
                     event=dataNotification['event']
-                else:
-                    #Skip this loop run
-                    continue
-              
-                if "title" in dataNotification:
-                    title=dataNotification['title']
-                else:
-                    title=''
-                
-                if "subtitle" in dataNotification:
-                    subtitle=dataNotification['subtitle']
-                else:
-                    subtitle=''
 
-                if "text" in dataNotification:
-                    text=dataNotification['text']
-                else:
-                    text=''
-               
-            
-                if "url_link" in dataNotification:
-                    url_link=dataNotification['url_link']
-                else:
-                    url_link='/'
+                    if "event" in dataNotification:
+                        event=dataNotification['event']
+                    else:
+                        #Skip this loop run
+                        continue
                 
-                if "html_template" in dataNotification:
-                    html_template=dataNotification['html_template']
-                else:
-                    html_template=''
-                
-
-                if "icon" in dataNotification:
-                    icon=dataNotification['icon']
-                else:
-                    icon=''
-                
-                print(event)
-                
-                #Verify if exists:
-                postgres_select_query = "SELECT count(*) from notification WHERE event='"+event+"'"
-                cursor.execute(postgres_select_query)
-                filasEncontradas=cursor.fetchone()[0]
-                
-                if(filasEncontradas==0):
-                    print('L> Create')
-                    #Creo
-                    newId = str(uuid.uuid4())
-                    postgres_insert_query = """ INSERT INTO notification (ID,EVENT, TITLE, SUBTITLE,TEXT,HTML_TEMPLATE,URL_LINK,ICON) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"""
-                    record_to_insert = (newId,event,title,subtitle,text,html_template,url_link,icon)
-                    cursor.execute(postgres_insert_query, record_to_insert)
-                    connection.commit()
-
-                else:
-                    print('L> Update')
-                   
-                    #Actualizo
-                    dt = datetime.now(timezone.utc)
-                    postgres_update_query = """UPDATE notification SET title=%s, subtitle=%s, text=%s, html_template=%s,url_link=%s,icon=%s,updated_at=%s where event=%s"""
-                    record_to_update = (title, subtitle, text,html_template,url_link,icon,dt,event)
+                    if "title" in dataNotification:
+                        title=dataNotification['title']
+                    else:
+                        title=''
                     
-                    cursor.execute(postgres_update_query, record_to_update)
-                    connection.commit()
+                    if "subtitle" in dataNotification:
+                        subtitle=dataNotification['subtitle']
+                    else:
+                        subtitle=''
 
-    #For delete a row:
-    #DELETE FROM notification WHERE id = '310cecb7-d285-4ab6-bd83-425cd6ebea7b';
+                    if "text" in dataNotification:
+                        text=dataNotification['text']
+                    else:
+                        text=''
+                
+                
+                    if "url_link" in dataNotification:
+                        url_link=dataNotification['url_link']
+                    else:
+                        url_link='/'
+                    
+                    if "html_template" in dataNotification:
+                        html_template=dataNotification['html_template']
+                    else:
+                        html_template=''
+                    
 
-    print( "Finish to insert and create Records on Notification")
+                    if "icon" in dataNotification:
+                        icon=dataNotification['icon']
+                    else:
+                        icon=''
+
+                    if "language" in dataNotification:
+                        language=dataNotification['language']
+                    else:
+                        language=''
+                    
+                    print(event)
+                    
+                    #Verify if exists:
+                    postgres_select_query = "SELECT count(*) from notification WHERE event='"+event+"' and language='"+language+"'" 
+                    cursor.execute(postgres_select_query)
+                    filasEncontradas=cursor.fetchone()[0]
+                    
+                    if(filasEncontradas==0):
+                        print('L> Create')
+                        #Creo
+                        newId = str(uuid.uuid4())
+                        postgres_insert_query = """ INSERT INTO notification (ID,EVENT, TITLE, SUBTITLE,TEXT,HTML_TEMPLATE,URL_LINK,ICON,LANGUAGE) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
+                        record_to_insert = (newId,event,title,subtitle,text,html_template,url_link,icon,language)
+                        cursor.execute(postgres_insert_query, record_to_insert)
+                        connection.commit()
+
+                    else:
+                        print('L> Update')
+                        #Actualizo
+                        dt = datetime.now(timezone.utc)
+                        postgres_update_query = """UPDATE notification SET title=%s, subtitle=%s, text=%s, html_template=%s,url_link=%s,icon=%s,language=%s,updated_at=%s where event=%s"""
+                        record_to_update = (title, subtitle, text,html_template,url_link,icon,language,dt,event)
+                        
+                        cursor.execute(postgres_update_query, record_to_update)
+                        connection.commit()
+
+        #For delete a row:
+        #DELETE FROM notification WHERE id = '310cecb7-d285-4ab6-bd83-425cd6ebea7b';
+
+        print( "Finish create and update all Notification in "+languagefolder+".")
 
 
     if connection:

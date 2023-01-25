@@ -1,0 +1,10 @@
+{
+    "event": "add_team_treeitem",
+    "title": "A team was assigned to a resource.",
+    "subtitle": "The team '{teamName}' was assigned to a the task '{treeItemName}' in the process '{processName}'.",
+    "text": "The team '<a href='/dashboard/organizations/{org_id}/{team_id}'>{teamName}</a>' was assigned to a the task '<a href='/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide'>{treeItemName}</a>' in the process '<a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a>'.",
+    "html_template": null,
+    "url_link": "/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide",
+    "icon":"group",
+    "language":"en"  
+  }
