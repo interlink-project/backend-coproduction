@@ -332,10 +332,15 @@ async def copy_coproductionprocess(
         raise HTTPException(status_code=404, detail="CoproductionProcess not found")
     if not crud.coproductionprocess.can_remove(user=current_user, object=coproductionprocess):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    await crud.coproductionprocess.copy(db=db, coproductionprocess=coproductionprocess, user=current_user, token=token)
     
+    new_coprod = await crud.coproductionprocess.copy(db=db, coproductionprocess=coproductionprocess, user=current_user, token=token)
+    filename, extension = os.path.splitext(coproductionprocess.logotype.split('/')[-1])
+    in_file_path = coproductionprocess.logotype
+    out_file_path = f"/static/coproductionprocesses/{new_coprod.id}{extension}"
+    async with aiofiles.open("/app" + in_file_path, 'rb') as in_file:
+        content = await in_file.read()
+        async with aiofiles.open("/app" + out_file_path, 'wb') as out_file:
+            await out_file.write(content)  # async write
+    await crud.coproductionprocess.update(db=db, db_obj=new_coprod, obj_in=schemas.CoproductionProcessPatch(logotype=out_file_path))
     
-    
-    # coproductionprocess.id = uuid.uuid4()
-    # await crud.coproductionprocess.create(db=db, obj_in=coproductionprocess, creator=current_user, set_creator_admin=True)
-    return None
+    return new_coprod

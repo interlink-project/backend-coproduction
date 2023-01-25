@@ -152,7 +152,6 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         return coproductionprocess
     
     async def copy(self, db: Session, coproductionprocess: CoproductionProcessCreate, user: models.User, token):
-        
         print(coproductionprocess.logotype)
         new_coproductionprocess = CoproductionProcessCreate(
             schema_used=coproductionprocess.schema_used,
@@ -162,25 +161,24 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
             logotype=coproductionprocess.logotype,
             aim=coproductionprocess.aim,
             idea=coproductionprocess.idea,
-            organization=coproductionprocess.organization,
+            organization_desc=coproductionprocess.organization,
             challenges=coproductionprocess.challenges,
             status=coproductionprocess.status,
         )
         
         db_obj = await self.create(db=db, obj_in=new_coproductionprocess, creator=user, set_creator_admin=True)
-        
-        
+
         administrators = coproductionprocess.administrators
         for admin in administrators:
             await self.add_administrator(db=db, db_obj=db_obj, user=admin)
-        
+
         phases_temp = coproductionprocess.children.copy()
         phases = []
         for id, phase in enumerate(phases_temp):
             if not phase.prerequisites_ids:
                 phases.append(phase)
                 phases_temp.pop(id)
-        
+
         while phases_temp:
             for id, phase in enumerate(phases_temp):
                 if str(phase.prerequisites_ids[0]) == str(phases[-1].id):
@@ -199,16 +197,13 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         for asset in assets:
             task = await crud.task.get(db, ids_dict['Task_' + str(asset.task_id)])
             await crud.asset.copy(db, asset, user, task, token)
-        
+
         # Copy the permissions of the project (THE NEW CREATOR IS THE CREATOR OF THE COPY)
         for permission in coproductionprocess.permissions:
-            print('PERMISSION')
-            print(permission.coproductionprocess)
-            
             treeitem = None
             if permission.treeitem:
                 treeitem = await treeitemsCrud.get(db, ids_dict[permission.treeitem.__class__.__name__ + '_' + str(permission.treeitem.id)])
-            
+
             new_permission = PermissionCreate(
                 creator_id=user.id,
                 creator=user,
@@ -223,7 +218,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                 delete_assets_permission=permission.delete_assets_permission)
 
             await crud.permission.create(db=db, obj_in=new_permission, creator=user)
-                
+
         return db_obj
 
 
