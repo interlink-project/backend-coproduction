@@ -5,13 +5,12 @@ from sqlalchemy.orm import Session
 
 from app import schemas
 from app.general.utils.CRUDBase import CRUDBase
-from app.models import Task, Phase, Objective, User, Asset
+from app.models import Task, Phase, Objective, User
 from app.schemas import TaskCreate, TaskPatch
 from fastapi.encoders import jsonable_encoder
 from app.utils import recursive_check, update_status_and_progress
 from app.messages import log
 from app.treeitems.crud import exportCrud as treeitems_crud
-from app.assets.crud import exportCrud as assets_crud
 from app.sockets import socket_manager
 
 class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
