@@ -61,7 +61,11 @@ async def create_copro_notification(
     """
     Create new coproductionprocessnotification.
     """
-    notification = await crud.notification.get_notification_by_event(db=db, event=coproductionprocessnotification_in.notification_event)
+    
+    coproduction = await crud.coproductionprocess.get(db=db, id=coproductionprocessnotification_in.coproductionprocess_id)  
+    print(coproduction)
+    print(coproduction.language)
+    notification = await crud.notification.get_notification_by_event(db=db, event=coproductionprocessnotification_in.notification_event,language= coproduction.language)
     newCoproNotification=CoproductionProcessNotification()
     newCoproNotification.notification_id=notification.id
     newCoproNotification.coproductionprocess_id=coproductionprocessnotification_in.coproductionprocess_id

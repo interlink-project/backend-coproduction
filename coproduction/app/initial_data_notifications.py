@@ -24,7 +24,7 @@ try:
     listlanguagesfolders=os.listdir(rootdir)
     for languagefolder in listlanguagesfolders:
         rootdirlanguage='/app/notification-data/'+languagefolder
-
+        print(rootdirlanguage)
         for root, dirs, files in os.walk(rootdirlanguage):
             for name in files:
                 if name.endswith((".json")):
@@ -82,13 +82,16 @@ try:
                     else:
                         language=''
                     
+                    print('El evento es:')
                     print(event)
+                    print(language)
                     
                     #Verify if exists:
                     postgres_select_query = "SELECT count(*) from notification WHERE event='"+event+"' and language='"+language+"'" 
+                    print(postgres_select_query)
                     cursor.execute(postgres_select_query)
                     filasEncontradas=cursor.fetchone()[0]
-                    
+                    print(filasEncontradas)
                     if(filasEncontradas==0):
                         print('L> Create')
                         #Creo
@@ -102,8 +105,8 @@ try:
                         print('L> Update')
                         #Actualizo
                         dt = datetime.now(timezone.utc)
-                        postgres_update_query = """UPDATE notification SET title=%s, subtitle=%s, text=%s, html_template=%s,url_link=%s,icon=%s,language=%s,updated_at=%s where event=%s"""
-                        record_to_update = (title, subtitle, text,html_template,url_link,icon,language,dt,event)
+                        postgres_update_query = """UPDATE notification SET title=%s, subtitle=%s, text=%s, html_template=%s,url_link=%s,icon=%s,language=%s,updated_at=%s where event=%s and language=%s    """
+                        record_to_update = (title, subtitle, text,html_template,url_link,icon,language,dt,event,language)
                         
                         cursor.execute(postgres_update_query, record_to_update)
                         connection.commit()
@@ -114,14 +117,14 @@ try:
         print( "Finish create and update all Notification in "+languagefolder+".")
 
 
-    if connection:
+    if (connection):
         cursor.close()
         connection.close()
         print("PostgreSQL connection is closed")
 
 except (Exception, psycopg2.Error) as error:
     print("Failed to insert record into notification table", error)
-    if connection:
+    if (connection):
         cursor.close()
         connection.close()
         print("PostgreSQL connection is closed")

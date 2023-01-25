@@ -29,9 +29,9 @@ class NotificationsManager:
         if type(db_obj) == ExternalAssetCreate:
             #External Asset
             #Create the coproductionNotification
-            notification = await notification_crud.get_notification_by_event(db=db, event="remove_asset_copro")
+            coproduction = await coproductionprocesses_crud.get(db=db, id=db_obj.coproductionprocess_id)
+            notification = await notification_crud.get_notification_by_event(db=db, event="remove_asset_copro",language=coproduction.language)
             if(notification):
-                coproduction = await coproductionprocesses_crud.get(db=db, id=db_obj.coproductionprocess_id)
                 task = await tasksCrud.get(db=db, id=db_obj.task_id)
 
                 newCoproNotification=CoproductionProcessNotification()
@@ -51,10 +51,10 @@ class NotificationsManager:
             
             #Internal Asset
             #Create the coproductionNotification
-            notification = await notification_crud.get_notification_by_event(db=db, event="remove_asset_copro")
+            coproduction = await coproductionprocesses_crud.get(db=db, id=db_obj.coproductionprocess_id)
+            notification = await notification_crud.get_notification_by_event(db=db, event="remove_asset_copro",language=coproduction.language)
             
             if(notification):
-                coproduction = await coproductionprocesses_crud.get(db=db, id=db_obj.coproductionprocess_id)
                 task = await tasksCrud.get(db=db, id=db_obj.task_id)
 
                 newCoproNotification=CoproductionProcessNotification()

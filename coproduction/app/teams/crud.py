@@ -16,6 +16,7 @@ from fastapi.encoders import jsonable_encoder
 from app.sockets import socket_manager
 from uuid_by_string import generate_uuid
 from app.general.emails import send_email, send_team_email
+from app.locales import get_language
 
 
 class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
@@ -59,7 +60,7 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
         newUserNotification = UserNotification()
         newUserNotification.user_id = user.id
         notification = await notification_crud.get_notification_by_event(
-            db=db, event="add_user_team"
+            db=db, event="add_user_team",language=get_language()
         )
         if notification:
             newUserNotification.notification_id = notification.id
@@ -105,7 +106,7 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
         newUserNotification = UserNotification()
         newUserNotification.user_id = user.id
         notification = await notification_crud.get_notification_by_event(
-            db=db, event="remove_user_team"
+            db=db, event="remove_user_team",language=get_language()
         )
         if notification:
             newUserNotification.notification_id = notification.id
@@ -160,17 +161,22 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
         )
 
         # Send msn to all user part of a team create
-        print("El team model is:")
+        print("El team model is:"+get_language())
         print(user_ids)
         for user_id in user_ids:
 
             # Create a notification for every user
             newUserNotification = UserNotification()
             newUserNotification.user_id = user_id
+            
             notification = await notification_crud.get_notification_by_event(
-                db=db, event="add_user_team"
+                db=db, event="add_user_team",language=get_language()
             )
+            print("La notification es:::::")
+            print(notification)
             if notification:
+                print("Entra a crear notificacion"+str(notification.id))
+                
                 newUserNotification.notification_id = notification.id
                 newUserNotification.channel = "in_app"
                 newUserNotification.state = False

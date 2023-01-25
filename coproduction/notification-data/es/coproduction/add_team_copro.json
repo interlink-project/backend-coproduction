@@ -1,0 +1,10 @@
+{
+    "event": "add_team_copro",
+    "title": "Un nuevo equipo fue agregado.",
+    "subtitle": "El equipo '{teamName}' fue seleccionado para el proceso de coproducción '{processName}'.",
+    "text": "El equipo '<a href='/dashboard/organizations/{org_id}/{team_id}'>{teamName}</a>' fue seleccionado para el proceso de coproducción '<a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a>'.",
+    "html_template": null,
+    "url_link": "/dashboard/coproductionprocesses/{copro_id}/overview/",
+    "icon":"group",
+    "language":"es"
+  }

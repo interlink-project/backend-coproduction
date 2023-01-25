@@ -23,13 +23,14 @@ async def list_notifications(
     return await crud.notification.get_multi(db=db, user=current_user)
 
 
-@router.get("/{event}/notification", response_model=schemas.NotificationOutFull)
+@router.get("/{event}/{language}/notification", response_model=schemas.NotificationOutFull)
 async def notification_by_event(
     db: Session = Depends(deps.get_db),
     current_user: Optional[models.User] = Depends(deps.get_current_active_user),
     event: str = '',
+    language: str = ''
 ) -> Any:
-    return await crud.notification.get_notification_by_event(db=db,event=event)
+    return await crud.notification.get_notification_by_event(db=db,event=event,language=language)
 
 
 @router.post("", response_model=schemas.NotificationOutFull)

@@ -56,9 +56,9 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
             db_obj=db_obj_Aseet
             #External Asset
             #Create the coproductionNotification
-            notification = await notification_crud.get_notification_by_event(db=db, event="remove_asset_copro")
+            coproduction = await coproductionprocesses_crud.get(db=db, id=db_obj.coproductionprocess_id)
+            notification = await notification_crud.get_notification_by_event(db=db, event="remove_asset_copro",language=coproduction.language)
             if(notification):
-                coproduction = await coproductionprocesses_crud.get(db=db, id=db_obj.coproductionprocess_id)
                 task = await tasksCrud.get(db=db, id=db_obj.task_id)
 
                 newCoproNotification=CoproductionProcessNotification()
@@ -79,11 +79,11 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
             db_obj=db_obj_Aseet
             #Internal Asset
             #Create the coproductionNotification
-            notification = await notification_crud.get_notification_by_event(db=db, event="remove_asset_copro")
+            coproduction = await coproductionprocesses_crud.get(db=db, id=db_obj.coproductionprocess_id)
+            notification = await notification_crud.get_notification_by_event(db=db, event="remove_asset_copro",language=coproduction.language)
       
             if(notification):
               
-                coproduction = await coproductionprocesses_crud.get(db=db, id=db_obj.coproductionprocess_id)
                 task = await tasksCrud.get(db=db, id=db_obj.task_id)
             
                 newCoproNotification=CoproductionProcessNotification()
@@ -162,9 +162,9 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
         if type(asset) == ExternalAssetCreate:
         #     #External Asset
         #     #Create the coproductionNotification
-            notification = await notification_crud.get_notification_by_event(db=db, event="add_asset_copro")
+            coproduction = await coproductionprocesses_crud.get(db=db, id=db_obj.coproductionprocess_id)
+            notification = await notification_crud.get_notification_by_event(db=db, event="add_asset_copro", language=coproduction.language)
             if(notification):
-                coproduction = await coproductionprocesses_crud.get(db=db, id=db_obj.coproductionprocess_id)
                 task = await tasksCrud.get(db=db, id=db_obj.task_id)
 
                 newCoproNotification=CoproductionProcessNotification()
@@ -182,10 +182,10 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
             
             #Internal Asset
             #Create the coproductionNotification
-            notification = await notification_crud.get_notification_by_event(db=db, event="add_asset_copro")
+            coproduction = await coproductionprocesses_crud.get(db=db, id=db_obj.coproductionprocess_id)
+            notification = await notification_crud.get_notification_by_event(db=db, event="add_asset_copro",language=coproduction.language)
             
             if(notification):
-                coproduction = await coproductionprocesses_crud.get(db=db, id=db_obj.coproductionprocess_id)
                 task = await tasksCrud.get(db=db, id=db_obj.task_id)
 
                 newCoproNotification=CoproductionProcessNotification()

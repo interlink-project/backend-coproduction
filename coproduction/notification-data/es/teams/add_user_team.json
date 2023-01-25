@@ -1,0 +1,10 @@
+{
+    "event": "add_user_team",
+    "title": "Un nuevo usuario fue agregado al equipo.",
+    "subtitle": "Has sido agregado al equipo {teamName}.",
+    "text": "",
+    "html_template": null,
+    "url_link": "/dashboard/organizations/{org_id}/{team_id}",
+    "icon":"group",
+    "language":"es"
+  }

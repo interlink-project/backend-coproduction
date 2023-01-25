@@ -35,7 +35,7 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
 
         if(db_obj.team_id and db_obj.treeitem_id):
         ###Se ha seleccionado un equipo para trabajar sonbre un treeitem. 
-            notification = await notifications_crud.get_notification_by_event(db=db, event="remove_team_treeitem")
+            notification = await notifications_crud.get_notification_by_event(db=db, event="remove_team_treeitem",language=coproduction.language)
             treeitem = await treeitems_crud.get(db=db, id=db_obj.treeitem_id)
             #Create a notification for coproduction:
             team = await teams_crud.get(db=db, id=db_obj.team_id)
@@ -51,7 +51,7 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
             db.add(newCoproNotification)
         else:
 
-            notification = await notifications_crud.get_notification_by_event(db=db, event="remove_team_copro")
+            notification = await notifications_crud.get_notification_by_event(db=db, event="remove_team_copro",language=coproduction.language)
 
             if(notification and db_obj.team_id):
                 team = await teams_crud.get(db=db, id=db_obj.team_id)
@@ -106,7 +106,7 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
         #Se ha seleccionado un equipo para trabajar sonbre un treeitem.
         if(db_obj.team_id and db_obj.treeitem_id):
 
-            notification = await notifications_crud.get_notification_by_event(db=db, event="add_team_treeitem")
+            notification = await notifications_crud.get_notification_by_event(db=db, event="add_team_treeitem",language=coproduction.language)
             treeitem = await treeitems_crud.get(db=db, id=db_obj.treeitem_id)
             #Create a notification for coproduction:
             team = await teams_crud.get(db=db, id=db_obj.team_id)
@@ -123,7 +123,7 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
         else:
             
             #Se ha seleccionado un equipo para trabajar sonbre todo un proceso de coproduction.
-            notification = await notifications_crud.get_notification_by_event(db=db, event="add_team_copro")
+            notification = await notifications_crud.get_notification_by_event(db=db, event="add_team_copro",language=coproduction.language)
 
             if(notification and db_obj.team_id):
                 #Create a notification for coproduction:

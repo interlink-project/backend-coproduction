@@ -1,0 +1,10 @@
+{
+    "event": "remove_team_treeitem",
+    "title": "Un equipo fue removido de un recurso",
+    "subtitle": "El equipo '{teamName}' fue removido del recurso '{treeItemName}' dentro del proceso '{processName}'.",
+    "text": "El equipo <a href='/dashboard/organizations/{org_id}/{team_id}'>'{teamName}'</a> fue removido de la tarea <a href='/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide'>'{treeItemName}'</a> en el proceso <a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>'{processName}'</a>.",
+    "html_template": null,
+    "url_link": "/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide",
+    "icon":"group",
+    "language":"es"
+  }

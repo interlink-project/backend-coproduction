@@ -1,0 +1,10 @@
+{
+    "event": "remove_asset_copro",
+    "title": "Un recurso fue borrado.",
+    "subtitle": "",
+    "text": "<span style='color:green;font-weight:bold;'>{userName}</span> borró el recurso <img class='im_{assetId}' src='{assetIcon}'  style='width: 15px;' {showIcon}> <a class='lk_{assetId}' href='{assetLink}'  target='_blank' {showIcon}> '{assetName}'</a><span {showLink}>'{assetName}'</span>  del proceso de coproducción <a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a> en la tarea '<a href='/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide'>{treeItemName}</a>'.",
+    "html_template": null,
+    "url_link": "{assetLink}",
+    "icon":"changeresource",
+    "language":"es"
+  }
