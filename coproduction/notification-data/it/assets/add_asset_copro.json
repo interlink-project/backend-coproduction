@@ -1,8 +1,8 @@
 {
     "event": "add_asset_copro",
-    "title": "An resource was created.",
+    "title": "È stata creata una risorsa.",
     "subtitle": "",
-    "text": "<span style='color:green;font-weight:bold;'>{userName}</span> created the resource  <img class='im_{assetId}' src='{assetIcon}' style='width: 15px;' {showIcon}> <a class='lk_{assetId}' href='{assetLink}'  target='_blank' {showIcon}> '{assetName}'</a> <span {showLink}>'{assetName}'</span> to coproduction process <a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>'{processName}'</a> in task <a href='/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide'>'{treeItemName}'</a>.",
+    "text": "<span style='color:green;font-weight:bold;'>{userName}</span>  ha creato la risorsa  <img class='im_{assetId}' src='{assetIcon}' style='width: 15px;' {showIcon}> <a class='lk_{assetId}' href='{assetLink}'  target='_blank' {showIcon}> '{assetName}'</a> <span {showLink}>'{assetName}'</span>  nel processo di coproduzione <a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>'{processName}'</a>  nell'attività <a href='/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide'>'{treeItemName}'</a>.",
     "html_template": null,
     "url_link": "{assetLink}",
     "icon":"changeresource",

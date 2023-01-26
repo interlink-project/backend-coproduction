@@ -1,8 +1,8 @@
 {
     "event": "add_team_copro",
-    "title": "A new team was added.",
-    "subtitle": "The team '{teamName}' was selected to the coproduction process '{processName}'.",
-    "text": "The team '<a href='/dashboard/organizations/{org_id}/{team_id}'>{teamName}</a>' was selected to the coproduction process '<a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a>'.",
+    "title": "Tika pievienota jauna komanda.",
+    "subtitle": "Procesam '{processName}'  tika izvēlēts  '{teamName}'.",
+    "text": "'<a href='/dashboard/organizations/{org_id}/{team_id}'>{teamName}</a>' tika atlasīts no kopražošanas procesa '<a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a>'.",
     "html_template": null,
     "url_link": "/dashboard/coproductionprocesses/{copro_id}/overview/",
     "icon":"group",

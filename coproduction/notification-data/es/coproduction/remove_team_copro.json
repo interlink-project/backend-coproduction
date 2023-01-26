@@ -1,8 +1,8 @@
 {
     "event": "remove_team_copro",
     "title": "Un equipo fue borrado.",
-    "subtitle": "El equipo '{teamName}' fué removido del proceso de coproducción '{processName}'.",
-    "text": "El equipo '<a href='/dashboard/organizations/{org_id}/{team_id}'>{teamName}</a>' fué removido del proceso de coproducción '<a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a>'.",
+    "subtitle": "El equipo '{teamName}' fue removido del proceso de coproducción '{processName}'.",
+    "text": "El equipo '<a href='/dashboard/organizations/{org_id}/{team_id}'>{teamName}</a>' fue removido del proceso de coproducción '<a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a>'.",
     "html_template": null,
     "url_link": "/dashboard/coproductionprocesses/{copro_id}/overview/",
     "icon":"group",

@@ -1,8 +1,8 @@
 {
     "event": "remove_asset_copro",
-    "title": "A resource was removed.",
+    "title": "Resurss tika noņemts.",
     "subtitle": "",
-    "text": "<span style='color:green;font-weight:bold;'>{userName}</span> removed the resource  <img class='im_{assetId}' src='{assetIcon}'  style='width: 15px;' {showIcon}> <a class='lk_{assetId}' href='{assetLink}'  target='_blank' {showIcon}> '{assetName}'</a><span {showLink}>'{assetName}'</span>  from coproduction process <a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a> in task '<a href='/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide'>{treeItemName}</a>'.",
+    "text": "<span style='color:green;font-weight:bold;'>{userName}</span> no kopražošanas procesa '<a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a>' noņēma resursu <img class='im_{assetId}' src='{assetIcon}'  style='width: 15px;' {showIcon}> <a class='lk_{assetId}' href='{assetLink}'  target='_blank' {showIcon}> '{assetName}'</a><span {showLink}>'{assetName}'</span> uzdevumā '<a href='/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide'>{treeItemName}</a>'.",
     "html_template": null,
     "url_link": "{assetLink}",
     "icon":"changeresource",
