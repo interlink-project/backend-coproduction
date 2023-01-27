@@ -37,6 +37,7 @@ class NotificationsManager:
                 newCoproNotification=CoproductionProcessNotification()
                 newCoproNotification.notification_id=notification.id
                 newCoproNotification.coproductionprocess_id=coproduction.id
+                newCoproNotification.asset_id=db_obj.id
 
                 # print(data)
                 # print(db_obj.externalinterlinker)
@@ -60,6 +61,7 @@ class NotificationsManager:
                 newCoproNotification=CoproductionProcessNotification()
                 newCoproNotification.notification_id=notification.id
                 newCoproNotification.coproductionprocess_id=coproduction.id
+                newCoproNotification.asset_id=db_obj.id
 
                 nameInterlinker=''
                 assetLink=''

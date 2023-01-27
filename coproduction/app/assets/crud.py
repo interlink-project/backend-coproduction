@@ -64,6 +64,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                 newCoproNotification=CoproductionProcessNotification()
                 newCoproNotification.notification_id=notification.id
                 newCoproNotification.coproductionprocess_id=coproduction.id
+                newCoproNotification.asset_id=db_obj.id
 
                 # print(data)
                 # print(db_obj.externalinterlinker)
@@ -89,6 +90,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                 newCoproNotification=CoproductionProcessNotification()
                 newCoproNotification.notification_id=notification.id
                 newCoproNotification.coproductionprocess_id=coproduction.id
+                newCoproNotification.asset_id=db_obj.id
 
                 nameInterlinker=''
                 assetLink=''
@@ -170,6 +172,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                 newCoproNotification=CoproductionProcessNotification()
                 newCoproNotification.notification_id=notification.id
                 newCoproNotification.coproductionprocess_id=coproduction.id
+                newCoproNotification.asset_id=db_obj.id
 
 
                 nameInterlinker='external'
@@ -191,6 +194,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                 newCoproNotification=CoproductionProcessNotification()
                 newCoproNotification.notification_id=notification.id
                 newCoproNotification.coproductionprocess_id=coproduction.id
+                newCoproNotification.asset_id=db_obj.id
 
                 nameInterlinker=''
                 assetLink=''

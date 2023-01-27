@@ -10,6 +10,8 @@ class CoproductionProcessNotificationBase(BaseModel):
     coproductionprocess_id: uuid.UUID
     notification_id: uuid.UUID
     parameters: Optional[str]
+    asset_id: Optional[str]
+    user_id: Optional[str]
  
 
 
@@ -26,6 +28,8 @@ class CoproductionProcessNotificationCreatebyEvent(BaseModel):
     coproductionprocess_id: uuid.UUID
     notification_event: str
     parameters: Optional[str]
+    asset_id: Optional[str]
+    user_id: Optional[str]
  
 
 

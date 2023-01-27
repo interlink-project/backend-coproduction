@@ -29,6 +29,15 @@ class CRUDCoproductionProcessNotification(CRUDBase[CoproductionProcessNotificati
         #print(listofCoproductionProcessNotifications)
         return listofCoproductionProcessNotifications
 
+    async def get_coproductionprocess_notifications_byAseetId(self, db: Session, coproductionprocess_id: str, asset_id:str) -> Optional[List[CoproductionProcessNotification]]:
+        listofCoproductionProcessNotifications = db.query(CoproductionProcessNotification).filter(and_(
+                                                                                                        models.CoproductionProcessNotification.coproductionprocess_id==coproductionprocess_id,
+                                                                                                        models.CoproductionProcessNotification.asset_id==asset_id
+                                                                                                        )                                                                                             
+                                                                                                    ).order_by(models.CoproductionProcessNotification.created_at.desc()).all()
+        #print(listofCoproductionProcessNotifications)
+        return listofCoproductionProcessNotifications
+
 
     async def create(self, db: Session, obj_in: CoproductionProcessNotificationCreate) -> CoproductionProcessNotification:
         obj_in_data = jsonable_encoder(obj_in)

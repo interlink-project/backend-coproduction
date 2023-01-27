@@ -32,6 +32,19 @@ async def list_coproductionprocessnotifications(
 ) -> Any:
     return await crud.coproductionprocessnotification.get_coproductionprocess_notifications(db=db,coproductionprocess_id=coproductionprocess_id)
 
+
+@router.get("/{coproductionprocess_id}/{asset_id}/listCoproductionProcessNotifications", response_model=List[schemas.CoproductionProcessNotificationOutFull])
+async def list_coproductionprocessnotifications(
+    db: Session = Depends(deps.get_db),
+    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
+    coproductionprocess_id: str = '',
+    asset_id: str = '',
+) -> Any:
+    return await crud.coproductionprocessnotification.get_coproductionprocess_notifications_byAseetId(db=db,coproductionprocess_id=coproductionprocess_id,asset_id=asset_id)
+
+
+
+
 # @router.get("/users/{username}", tags=["users"])
 # async def read_user(username: str):
 #     return {"username": username}
@@ -69,6 +82,8 @@ async def create_copro_notification(
     newCoproNotification=CoproductionProcessNotification()
     newCoproNotification.notification_id=notification.id
     newCoproNotification.coproductionprocess_id=coproductionprocessnotification_in.coproductionprocess_id
+    newCoproNotification.asset_id=coproductionprocessnotification_in.asset_id
+    newCoproNotification.user_id=current_user.id
 
     #Add the user to the information
     import json

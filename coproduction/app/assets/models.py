@@ -38,12 +38,13 @@ class Asset(BaseModel):
     creator_id = Column(String, ForeignKey("user.id", use_alter=True, ondelete='SET NULL'))
     creator = orm.relationship('User', foreign_keys=[creator_id], post_update=True, backref="created_assets")
 
-    asset_notification_associations = orm.relationship(
-        "AssetNotification",
-        back_populates="asset",
-        cascade="all, delete-orphan",
-    )
-    notifications = association_proxy("asset_notification_associations", "notification")
+    # asset_copronotification_associations = orm.relationship(
+    #     "CoproductionProcessNotification",
+    #     back_populates="asset"
+    # )
+    # copronotifications = association_proxy("asset_copronotification_associations", "copronotification")
+
+
 
     __mapper_args__ = {
         "polymorphic_identity": "asset",

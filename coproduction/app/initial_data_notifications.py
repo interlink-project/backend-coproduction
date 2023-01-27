@@ -30,6 +30,7 @@ try:
                 if name.endswith((".json")):
 
                     full_path = os.path.join(root, name)
+                    print(full_path)
         
                     # Opening JSON file
                     f = open(full_path)

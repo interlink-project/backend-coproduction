@@ -11,11 +11,8 @@ from app.teams.schemas import *
 from app.users.schemas import *
 from app.notifications.schemas import *
 from app.usernotifications.schemas import *
-
-from app.teamnotifications.schemas import *
 from app.coproductionprocessnotifications.schemas import *
-from app.assetnotifications.schemas import *
-from app.assetsdata.schemas import *
+
 
 # out
 
@@ -27,8 +24,7 @@ class UserOutFull(UserOut):
 class AssetOutFull(AssetOut):
     pass
 
-class AssetsDataOutFull(AssetsDataOut):
-    pass
+
 
 class TeamOutFull(TeamOut):
     # organization: OrganizationOut
@@ -60,15 +56,7 @@ class UserNotificationOutFull(UserNotificationOut):
     notification: NotificationOut
     pass
 
-class AssetNotificationOutFull(AssetNotificationOut):
-    notification: NotificationOut
-    pass
-
 class CoproductionProcessNotificationOutFull(CoproductionProcessNotificationOut):
-    notification: NotificationOut
-    pass
-
-class TeamNotificationOutFull(TeamNotificationOut):
     notification: NotificationOut
     pass
 

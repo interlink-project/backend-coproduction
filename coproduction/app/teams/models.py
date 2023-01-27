@@ -31,13 +31,6 @@ class Team(BaseModel):
     organization_id = Column(UUID(as_uuid=True), ForeignKey('organization.id', ondelete='CASCADE'))
     organization = relationship('Organization', foreign_keys=[organization_id], backref=backref('teams', passive_deletes=True))
 
-    #to obtain notifications
-    team_notification_associations = relationship(
-        "TeamNotification",
-        back_populates="team",
-        cascade="all, delete-orphan",
-    )
-    notifications = association_proxy("team_notification_associations", "notification")
 
     users = relationship(
         "User",

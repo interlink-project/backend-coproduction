@@ -26,9 +26,7 @@ class Notification(BaseModel):
     language = Column(String, default=settings.DEFAULT_LANGUAGE)
 
     users = relationship('UserNotification', back_populates='notification')
-    assets = relationship('AssetNotification', back_populates='notification')
     coproductionprocesses = relationship('CoproductionProcessNotification', back_populates='notification')
-    teams = relationship('TeamNotification', back_populates='notification')
 
     def __repr__(self) -> str:
         return f"<Notification {self.id} {self.event} {self.title} {self.subtitle} {self.url_link}>"

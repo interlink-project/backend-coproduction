@@ -44,8 +44,6 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
             newCoproNotification.notification_id=notification.id
             newCoproNotification.coproductionprocess_id=coproduction.id
 
-            # newCoproNotification.channel="in_app"
-            # newCoproNotification.state=False
             newCoproNotification.parameters="{'teamName':'"+team.name+"','processName':'"+coproduction.name+"','team_id':'"+str(team.id)+"','treeItemName':'"+str(treeitem.name)+"','treeitem_id':'"+str(treeitem.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
 
             db.add(newCoproNotification)
@@ -58,6 +56,7 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
                 newCoproNotification=CoproductionProcessNotification()
                 newCoproNotification.notification_id=notification.id
                 newCoproNotification.coproductionprocess_id=coproduction.id
+                # newCoproNotification.asset_id=null
                 newCoproNotification.parameters="{'teamName':'"+team.name+"','processName':'"+coproduction.name+"','team_id':'"+str(team.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
                 db.add(newCoproNotification)
 
@@ -79,7 +78,6 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
 
                     await socket_manager.send_to_id(generate_uuid(user_id), {"event": self.modelName.lower() + "_created"})
 
-              
         
         db.commit()
         db.refresh(newCoproNotification)
@@ -115,8 +113,6 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
             newCoproNotification.notification_id=notification.id
             newCoproNotification.coproductionprocess_id=coproduction.id
 
-            # newCoproNotification.channel="in_app"
-            # newCoproNotification.state=False
             newCoproNotification.parameters="{'teamName':'"+team.name+"','processName':'"+coproduction.name+"','team_id':'"+str(team.id)+"','treeItemName':'"+str(treeitem.name)+"','treeitem_id':'"+str(treeitem.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
 
             db.add(newCoproNotification)
@@ -133,8 +129,6 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
                 newCoproNotification.notification_id=notification.id
                 newCoproNotification.coproductionprocess_id=coproduction.id
 
-                # newCoproNotification.channel="in_app"
-                # newCoproNotification.state=False
                 newCoproNotification.parameters="{'teamName':'"+team.name+"','processName':'"+coproduction.name+"','team_id':'"+str(team.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
 
                 db.add(newCoproNotification)

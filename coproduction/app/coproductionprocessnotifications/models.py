@@ -16,6 +16,8 @@ class CoproductionProcessNotification(BaseModel):
     """Association Class contains for a Notification and CoproductionProcess."""
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     coproductionprocess_id = Column(UUID(as_uuid=True), ForeignKey("coproductionprocess.id", use_alter=True, ondelete='SET NULL'), nullable=False)
+    asset_id = Column(String, nullable=True)
+    user_id = Column(String, nullable=True)
     notification_id = Column(UUID(as_uuid=True), ForeignKey("notification.id", use_alter=True, ondelete='SET NULL'), nullable=False)
 
     #Json object with information relevant to a notification:
@@ -23,6 +25,7 @@ class CoproductionProcessNotification(BaseModel):
     
     notification = relationship('Notification', post_update=True, back_populates="coproductionprocesses")
     coproductionprocess = relationship('CoproductionProcess', back_populates="coproductionprocess_notification_associations")
+    #asset = relationship('Asset')
     
     def __repr__(self) -> str:
         return f"<CoproductionProcessNotification {self.created_at}>"
