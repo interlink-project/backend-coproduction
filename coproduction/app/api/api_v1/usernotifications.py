@@ -38,27 +38,7 @@ async def list_unseenusernotifications(
 ) -> Any:
     return await crud.usernotification.get_unseen_user_notifications(db=db,user_id=user_id)
 
-#Update the state of all unseen notifications:
-@router.put("/setallseen")
-async def update_see_allusernotification(
-    *,
-    db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
-) -> Any:
-    """
-    Update to seen all usernotification.
-    """
-    print('The user is the nexxxxt:')
-    print(current_user.id)
-    await crud.usernotification.set_seen_all_user_notifications(db=db,user_id=current_user.id)
-    return {"AllNotifications": True}
 
-
-
-
-# @router.get("/users/{username}", tags=["users"])
-# async def read_user(username: str):
-#     return {"username": username}
 
 @router.post("", response_model=Optional[schemas.UserNotificationOutFull])
 async def create_usernotification(

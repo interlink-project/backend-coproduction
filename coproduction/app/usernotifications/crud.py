@@ -34,14 +34,7 @@ class CRUDUserNotification(CRUDBase[UserNotification, UserNotificationCreate, Us
         print(listofUserNotifications)
         return listofUserNotifications
 
-    #Set seen to all notifications by user:
-    async def set_seen_all_user_notifications(self, db: Session, user_id: str) -> Optional[List[UserNotification]]:
-        db.query(models.UserNotification).filter(models.UserNotification.user_id.hex == user_id).update({'state': True})
-        db.commit()
-        #print(user_id)
-        
-        return
-
+    
 
     async def create(self, db: Session, obj_in: UserNotificationCreate) -> UserNotification:
         obj_in_data = jsonable_encoder(obj_in)
