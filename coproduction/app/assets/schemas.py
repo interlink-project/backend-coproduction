@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field, validator
 from typing_extensions import Annotated
 
 from app.general.utils.AllOptional import AllOptional
+from app.coproductionprocessnotifications.schemas import *
 
 
 class BaseAssetBase(BaseModel):
@@ -31,6 +32,12 @@ class BaseAsset(BaseAssetBase):
 
 class BaseAssetOut(BaseAssetBase):
     pass
+
+class AssetOutContributions(BaseAsset):
+    contributors: List[CoproductionProcessNotification]
+    
+    class Config:
+        orm_mode = True
 
 # Internal asset
 

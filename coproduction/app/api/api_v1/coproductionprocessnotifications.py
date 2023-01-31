@@ -17,7 +17,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=List[schemas.CoproductionProcessNotificationOutFull])
-async def list_coproductionprocessnotifications(
+async def list_coproductionprocessnotificationsbyUset(
     db: Session = Depends(deps.get_db),
     current_user: Optional[models.User] = Depends(deps.get_current_active_user),
   
@@ -25,7 +25,7 @@ async def list_coproductionprocessnotifications(
     return await crud.coproductionprocessnotification.get_multi(db=db, user=current_user)
 
 @router.get("/{coproductionprocess_id}/listCoproductionProcessNotifications", response_model=List[schemas.CoproductionProcessNotificationOutFull])
-async def list_coproductionprocessnotifications(
+async def list_coproductionprocessnotificationsbyCopro(
     db: Session = Depends(deps.get_db),
     current_user: Optional[models.User] = Depends(deps.get_current_active_user),
     coproductionprocess_id: str = '',
@@ -34,7 +34,7 @@ async def list_coproductionprocessnotifications(
 
 
 @router.get("/{coproductionprocess_id}/{asset_id}/listCoproductionProcessNotifications", response_model=List[schemas.CoproductionProcessNotificationOutFull])
-async def list_coproductionprocessnotifications(
+async def list_coproductionprocessnotificationsbyAsset(
     db: Session = Depends(deps.get_db),
     current_user: Optional[models.User] = Depends(deps.get_current_active_user),
     coproductionprocess_id: str = '',

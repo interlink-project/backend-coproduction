@@ -12,6 +12,9 @@ from app.general import deps
 
 from app.messages import log
 from app.notificationsManager import notification_manager
+from app.assets.schemas import *
+from app.models import  CoproductionProcessNotification
+from sqlalchemy import or_, and_
 
 router = APIRouter()
 
@@ -229,6 +232,31 @@ async def read_asset(
     if asset := await crud.asset.get(db=db, id=id):
         if not crud.asset.can_read(asset):
             raise HTTPException(status_code=403, detail="Not enough permissions")
+        return asset
+    raise HTTPException(status_code=404, detail="Asset not found")
+
+
+@router.get("/{id}/listContributions", response_model=AssetOutContributions)
+async def read_asset_contributions(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: uuid.UUID,
+    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
+    token: str = Depends(deps.get_current_active_token),
+) -> Any:
+    """
+    Get all assets contributions
+    """
+
+    if asset := await crud.asset.get(db=db, id=id):
+        #Get all contribution of users:
+        listofContribucionesNotifications = db.query(CoproductionProcessNotification).filter(and_(
+                                                                                                    models.CoproductionProcessNotification.asset_id==str(asset.id),
+                                                                                                    models.CoproductionProcessNotification.user_id!=None
+                                                                                                    )                                                                                             
+                                                                                                ).order_by(models.CoproductionProcessNotification.created_at.desc()).all()
+
+        asset.contributors=listofContribucionesNotifications
         return asset
     raise HTTPException(status_code=404, detail="Asset not found")
 

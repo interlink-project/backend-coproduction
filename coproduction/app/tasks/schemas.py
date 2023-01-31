@@ -4,6 +4,7 @@ from datetime import date, datetime
 from typing import List, Optional
 from pydantic import BaseModel
 from app.treeitems.schemas import *
+from app.assets.schemas import *
 
 class TaskCreate(TreeItemCreate):
     objective_id: Optional[uuid.UUID]
@@ -25,3 +26,10 @@ class Task(TreeItem, TaskCreate):
 
 class TaskOut(Task, TreeItemOut):
     phase_id: uuid.UUID
+
+
+class TaskAssetContributionsOut(Task):
+    assetsWithContribution: List[AssetOutContributions]
+    
+    class Config:
+        orm_mode = True
