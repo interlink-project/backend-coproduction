@@ -49,15 +49,16 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
     async def get_assets(self, db: Session, coproductionprocess: CoproductionProcess, user: models.User):
         # print(self.can_read(db, user, coproductionprocess))
-        if user in coproductionprocess.administrators or self.can_read(db, user, coproductionprocess):
+        if user in coproductionprocess.administrators: #or self.can_read(db, user, coproductionprocess):
             return db.query(
                 Asset
                 ).filter(
                     Asset.task_id.in_(coproductionprocess.task_ids())
                 ).order_by(models.Asset.created_at.desc()).all()
-        
+                
         ids = [treeitem.id for treeitem in await treeitemsCrud.get_for_user_and_coproductionprocess(db=db, user=user, coproductionprocess_id=coproductionprocess.id) if not treeitem.disabled_on]
-        return db.query(
+        
+        listOfAssets= db.query(
                 models.Asset
             ).filter(
                 or_(
@@ -66,6 +67,15 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                     models.Asset.task_id.in_(ids),
                 )
             ).order_by(models.Asset.created_at.desc()).all()
+        
+        #Check if the user has the permissions to see the asset.
+        for asset in listOfAssets:
+            print(asset)
+            tienePermisosListado=crud.asset.can_list(db=db,user=user,task=asset.task)
+            if not tienePermisosListado:
+                listOfAssets.remove(asset)
+        
+        return listOfAssets
 
     async def clear_schema(self, db: Session, coproductionprocess: models.CoproductionProcess):
         schema = coproductionprocess.schema_used
