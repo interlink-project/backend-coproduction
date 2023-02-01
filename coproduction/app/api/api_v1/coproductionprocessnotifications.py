@@ -30,7 +30,7 @@ async def list_coproductionprocessnotificationsbyCopro(
     current_user: Optional[models.User] = Depends(deps.get_current_active_user),
     coproductionprocess_id: str = '',
 ) -> Any:
-    return await crud.coproductionprocessnotification.get_coproductionprocess_notifications(db=db,coproductionprocess_id=coproductionprocess_id)
+    return await crud.coproductionprocessnotification.get_coproductionprocess_notifications(db=db,coproductionprocess_id=coproductionprocess_id,user=current_user)
 
 
 @router.get("/{coproductionprocess_id}/{asset_id}/listCoproductionProcessNotifications", response_model=List[schemas.CoproductionProcessNotificationOutFull])

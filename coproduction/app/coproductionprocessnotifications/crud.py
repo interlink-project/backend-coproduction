@@ -8,6 +8,8 @@ from app.schemas import NotificationCreate, NotificationPatch, CoproductionProce
 import uuid
 from app import models
 from app.users.crud import exportCrud as users_crud
+from app.assets.crud import exportCrud as assets_crud
+from app.treeitems.crud import exportCrud as treeitems_crud
 
 from sqlalchemy import or_, and_
 from fastapi.encoders import jsonable_encoder
@@ -22,11 +24,19 @@ class CRUDCoproductionProcessNotification(CRUDBase[CoproductionProcessNotificati
         return db.query(CoproductionProcessNotification).all()
 
     #Get all notifications by user:
-    async def get_coproductionprocess_notifications(self, db: Session, coproductionprocess_id: str) -> Optional[List[CoproductionProcessNotification]]:
-        
+    async def get_coproductionprocess_notifications(self, db: Session, coproductionprocess_id: str,user) -> Optional[List[CoproductionProcessNotification]]:
         
         listofCoproductionProcessNotifications = db.query(CoproductionProcessNotification).filter(models.CoproductionProcessNotification.coproductionprocess_id==coproductionprocess_id).order_by(models.CoproductionProcessNotification.created_at.desc()).all()
-        #print(listofCoproductionProcessNotifications)
+        
+        #Filtrar las notificaciones a las que tengo permisos:
+        for notification in listofCoproductionProcessNotifications:
+            if notification.asset_id:
+                asset=await assets_crud.get(db=db,id=notification.asset_id)
+                tienePermisosListado=assets_crud.can_list(db=db,user=user,task=asset.task)
+                #Remove the notification a user dont have permissions
+                if not tienePermisosListado:
+                    listofCoproductionProcessNotifications.remove(notification)
+
         return listofCoproductionProcessNotifications
 
     async def get_coproductionprocess_notifications_byAseetId(self, db: Session, coproductionprocess_id: str, asset_id:str) -> Optional[List[CoproductionProcessNotification]]:
