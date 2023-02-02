@@ -32,6 +32,9 @@ class Task(TreeItem):
     objective = relationship("Objective", foreign_keys=[
                              objective_id], backref=backref('children', passive_deletes=True))
 
+    management= Column(Integer, default=0, nullable=False)
+    development= Column(Integer, default=0, nullable=False)
+    exploitation= Column(Integer, default=0, nullable=False)
     # phase_id = Column(
     #     UUID(as_uuid=True)
     # )

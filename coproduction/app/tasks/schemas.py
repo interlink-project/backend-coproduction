@@ -12,12 +12,22 @@ class TaskCreate(TreeItemCreate):
     status: Optional[str]
     start_date: Optional[date]
     end_date: Optional[date]
+    
+    management: int
+    development: int
+    exploitation: int
+    
 
 class TaskPatch(TreeItemPatch):
     problemprofiles: Optional[list]
     status: Optional[str]
     start_date: Optional[date]
     end_date: Optional[date]
+    
+    management: Optional[int]
+    development: Optional[int]
+    exploitation: Optional[int]
+    
 
 class Task(TreeItem, TaskCreate):
     class Config:

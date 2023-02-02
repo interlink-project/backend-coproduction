@@ -59,6 +59,11 @@ class ModelTypes(str, enum.Enum):
     ASSET = "Asset"
     TREEITEM = "TreeItem"
 
+class ClaimTypes(str, enum.Enum):
+    management = "Management"
+    development = "Development"
+    exploitation = "Exploitation"
+
 def update_status_and_progress(treeitem):
     statuses = [child.status for child in getattr(treeitem, "children") if not getattr(child, "disabled_on")]
     status = Status.awaiting

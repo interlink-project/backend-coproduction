@@ -10,6 +10,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy_utils import aggregated
 from sqlalchemy.orm import Session
 from app.utils import ChannelTypes
+from app.utils import ClaimTypes
 from app.coproductionprocesses.models import CoproductionProcess
 
 class CoproductionProcessNotification(BaseModel):
@@ -22,6 +23,8 @@ class CoproductionProcessNotification(BaseModel):
 
     #Json object with information relevant to a notification:
     parameters = Column(JSON, nullable=True)
+
+    claim_type = Column(Enum(ClaimTypes, create_constraint=False, native_enum=False), nullable=True)
     
     notification = relationship('Notification', post_update=True, back_populates="coproductionprocesses")
     coproductionprocess = relationship('CoproductionProcess', back_populates="coproductionprocess_notification_associations")

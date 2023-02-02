@@ -125,6 +125,13 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                     "newObj": db_obj,
                 }
                 for taskmetadata in objectivemetadata.get("children", []):
+                    
+                    #print("Entra en create task from metadata con estos datos:")
+                    #print(taskmetadata)
+                    taskmetadata['management']=0
+                    taskmetadata['development']=0
+                    taskmetadata['exploitation']=0
+
                     db_task = await crud.task.create_from_metadata(
                         db=db,
                         taskmetadata=taskmetadata,
