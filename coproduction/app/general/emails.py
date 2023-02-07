@@ -57,14 +57,16 @@ def send_team_email(
 
     if type == 'add_team_coprod':
         subject = 'Interlink: Your team has been added to a coproduction process'
-        environment["link"] = 'https://{server}/dashboard/coproductionprocesses/{id}'.format(
+        environment["link"] = 'https://{server}/dashboard/coproductionprocesses/{id}/overview'.format(
             server=settings.SERVER_NAME,
             id=environment['coprod_id'])
 
     elif type == 'add_member_team':
         subject = 'Interlink: You have been added to a new team'
-        environment["link"] = 'https://{server}/dashboard/organizations'.format(
-            server=settings.SERVER_NAME)
+        environment["link"] = 'https://{server}/dashboard/organizations/{org_id}/{team_id}'.format(
+            server=settings.SERVER_NAME,
+            org_id=environment['organization'],
+            team_id=environment['id'])
 
     elif type == 'add_team_treeitem':
         subject = 'Interlink: New permissions on a coproduction item'
