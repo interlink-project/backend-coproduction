@@ -21,6 +21,7 @@ class CoproductionProcessBase(BaseModel):
     organization_id: Optional[uuid.UUID]
     challenges: Optional[str]
     status: Optional[Status]
+    incentive_and_rewards_state:Optional[bool]
 
 class CoproductionProcessCreate(CoproductionProcessBase):
     language: Languages
@@ -32,6 +33,7 @@ class CoproductionProcessPatch(CoproductionProcessCreate):
     name:  Optional[str]
     status: Optional[Status]
     logotype: Optional[str]
+    incentive_and_rewards_state:Optional[bool]
     language: Optional[Languages]
 
 

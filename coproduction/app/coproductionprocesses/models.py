@@ -34,6 +34,9 @@ class CoproductionProcess(BaseModel):
     idea = Column(Text, nullable=True)
     organization_desc = Column(Text, nullable=True)
     challenges = Column(Text, nullable=True)
+    
+    #Active Optional Modules
+    incentive_and_rewards_state =Column(Boolean,nullable=True)
 
     status = Column(Enum(Status, create_constraint=False,
                     native_enum=False), default=Status.in_progress)
