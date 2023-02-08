@@ -159,7 +159,8 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
                             {"coprod_id": db_obj.coproductionprocess_id,
                                 "coprod_name": coproduction.name,
                                 "treeitem_id": db_obj.treeitem_id,
-                                "treeitem_name": treeitem.name})
+                                "treeitem_name": treeitem.name,
+                                "team_name": team.name})
         else:
             _ = send_team_email(team,
                             'add_team_coprod',
