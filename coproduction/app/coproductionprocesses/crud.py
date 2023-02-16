@@ -188,7 +188,8 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         administrators = coproductionprocess.administrators
         for admin in administrators:
             await self.add_administrator(db=db, db_obj=db_obj, user=admin)
-
+                
+        print("STARTING TREEITEMS")
         phases_temp = coproductionprocess.children.copy()
         phases = []
         for id, phase in enumerate(phases_temp):
@@ -208,19 +209,23 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
             tmp_phase, phase_id_updates = await crud.phase.copy(db=db, obj_in=phase, coproductionprocess=db_obj, extra=ids_dict)
             ids_dict['Phase_'+str(phase.id)] = tmp_phase.id
             ids_dict.update(phase_id_updates)
-
+        print("TREEITEMS COPIED")
+        
+        print("STARTING ASSET")
         # Copy the assets of the project
         assets = await self.get_assets(db, coproductionprocess, user)
         for asset in assets:
             task = await crud.task.get(db, ids_dict['Task_' + str(asset.task_id)])
             await crud.asset.copy(db, asset, user, task, token)
-
+        print("ASSETS COPIED")
+        
+        print("STARTING PERMISSIONS")
         # Copy the permissions of the project (THE NEW CREATOR IS THE CREATOR OF THE COPY)
         for permission in coproductionprocess.permissions:
             treeitem = None
             if permission.treeitem:
                 treeitem = await treeitemsCrud.get(db, ids_dict[permission.treeitem.__class__.__name__ + '_' + str(permission.treeitem.id)])
-
+            print("New permission")
             new_permission = PermissionCreate(
                 creator_id=user.id,
                 creator=user,
