@@ -67,6 +67,13 @@ class CoproductionProcess(BaseModel):
     )
     notifications = association_proxy("coproductionprocess_notification_associations", "notification")
 
+    coproductionprocess_story_associations = relationship(
+        "Story",
+        back_populates="coproductionprocess",
+        cascade="all, delete-orphan",
+    )
+    stories = association_proxy("coproductionprocess_story_associations", "story")
+
     @aggregated('children', Column(Date))
     def end_date(self):
         return func.max(Phase.end_date)

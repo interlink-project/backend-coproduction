@@ -36,6 +36,7 @@ starlette_context = "0.3.4"
 cached-property = "1.5.2"
 emails = "0.6"
 uuid-by-string = "0.1.0"
+fastapi-pagination = "0.9.1"
 
 [tool.poetry.dev-dependencies]
 mypy = "0.770"

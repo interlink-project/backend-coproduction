@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
+from fastapi_pagination import add_pagination
 from starlette.middleware.cors import CORSMiddleware
 
 from app.api.api_v1 import api_router
@@ -66,3 +67,6 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 
 from fastapi.staticfiles import StaticFiles
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# PAGINATION
+add_pagination(app)

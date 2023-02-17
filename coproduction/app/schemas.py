@@ -12,7 +12,7 @@ from app.users.schemas import *
 from app.notifications.schemas import *
 from app.usernotifications.schemas import *
 from app.coproductionprocessnotifications.schemas import *
-
+from app.stories.schemas import *
 
 # out
 
@@ -58,6 +58,9 @@ class UserNotificationOutFull(UserNotificationOut):
 
 class CoproductionProcessNotificationOutFull(CoproductionProcessNotificationOut):
     notification: NotificationOut
+    pass
+
+class StoryOutFull(StoryOut):
     pass
 
 class ObjectiveOutFull(ObjectiveOut, TreeItemOutFull):

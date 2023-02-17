@@ -11,3 +11,4 @@ from app.permissions.crud import exportCrud as permission
 from app.notifications.crud import exportCrud as notification
 from app.usernotifications.crud import exportCrud as usernotification
 from app.coproductionprocessnotifications.crud import exportCrud as coproductionprocessnotification
+from app.stories.crud import exportCrud as story
