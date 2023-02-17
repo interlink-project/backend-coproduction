@@ -13,9 +13,9 @@ class TaskCreate(TreeItemCreate):
     start_date: Optional[date]
     end_date: Optional[date]
     
-    management: int
-    development: int
-    exploitation: int
+    management: Optional[int]
+    development: Optional[int]
+    exploitation: Optional[int]
     
 
 class TaskPatch(TreeItemPatch):

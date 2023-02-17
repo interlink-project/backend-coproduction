@@ -334,14 +334,20 @@ async def copy_coproductionprocess(
         raise HTTPException(status_code=403, detail="Not enough permissions")
     
     new_coprod = await crud.coproductionprocess.copy(db=db, coproductionprocess=coproductionprocess, user=current_user, token=token)
+    print("new_coprod", new_coprod)
     if coproductionprocess.logotype:
         filename, extension = os.path.splitext(coproductionprocess.logotype.split('/')[-1])
         in_file_path = coproductionprocess.logotype
         out_file_path = f"/static/coproductionprocesses/{new_coprod.id}{extension}"
+        print("in_file_path", in_file_path)
         async with aiofiles.open("/app" + in_file_path, 'rb') as in_file:
             content = await in_file.read()
+            print("content", content)
             async with aiofiles.open("/app" + out_file_path, 'wb') as out_file:
+                print("out_file", out_file)
                 await out_file.write(content)  # async write
+        print("PREUPDATE")
         await crud.coproductionprocess.update(db=db, db_obj=new_coprod, obj_in=schemas.CoproductionProcessPatch(logotype=out_file_path))
-    
-    return new_coprod
+    print("POSTUPDATE")
+    # If new_coprod is returned it raises an error regarding recursion with Python
+    return new_coprod.id

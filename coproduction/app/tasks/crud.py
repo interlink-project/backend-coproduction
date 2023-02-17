@@ -140,7 +140,10 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
                 prerequisites_ids=prereqs_ids,
                 status=obj_in.status,
                 from_item=obj_in.from_item,
-                from_schema=obj_in.from_schema
+                from_schema=obj_in.from_schema,
+                management=obj_in.management,
+                development=obj_in.development,
+                exploitation=obj_in.exploitation,
             )
 
         new_task = await self.create(db=db, obj_in=new_task)
