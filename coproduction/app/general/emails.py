@@ -22,7 +22,7 @@ def send_email(
         environment["link"] = 'https://{server}/dashboard/organizations/{org_id}/{team_id}'.format(
             server=settings.SERVER_NAME,
             org_id=environment['organization'],
-            team_id=environment['id'])
+            team_id=environment['team_id'])
     elif type == 'add_admin_coprod':
         subject = 'Interlink: You have been added to a new coproduction process'
         environment["link"] = 'https://{server}/dashboard/coproductionprocesses/{id}/overview'.format(
@@ -69,7 +69,7 @@ def send_team_email(
         environment["link"] = 'https://{server}/dashboard/organizations/{org_id}/{team_id}'.format(
             server=settings.SERVER_NAME,
             org_id=environment['organization'],
-            team_id=environment['id'])
+            team_id=environment['team_id'])
 
     elif type == 'add_team_treeitem':
         subject = 'Interlink: New permissions on a coproduction item'

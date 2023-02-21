@@ -53,7 +53,11 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
         _ = send_email(
             user.email,
             "add_member_team",
-            {"team_name": team.name},
+            environment={
+                "team_id": team.id,
+                "team_name": team.name,
+                "organization": team.organization_id,
+            },
         )
 
         # Agrego la notificacion cuando un usuario es removido de un equipo:
