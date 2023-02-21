@@ -22,6 +22,7 @@ class CoproductionProcessBase(BaseModel):
     challenges: Optional[str]
     status: Optional[Status]
     incentive_and_rewards_state:Optional[bool]
+    is_part_of_publication:Optional[bool]
 
 class CoproductionProcessCreate(CoproductionProcessBase):
     language: Languages
@@ -34,6 +35,7 @@ class CoproductionProcessPatch(CoproductionProcessCreate):
     status: Optional[Status]
     logotype: Optional[str]
     incentive_and_rewards_state:Optional[bool]
+    is_part_of_publication:Optional[bool]
     language: Optional[Languages]
 
 

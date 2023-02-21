@@ -37,6 +37,7 @@ class CoproductionProcess(BaseModel):
     
     #Active Optional Modules
     incentive_and_rewards_state =Column(Boolean,nullable=True)
+    is_part_of_publication = Column(Boolean,nullable=True)
 
     status = Column(Enum(Status, create_constraint=False,
                     native_enum=False), default=Status.in_progress)
