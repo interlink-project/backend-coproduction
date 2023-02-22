@@ -18,6 +18,7 @@ class Story(BaseModel):
     """Association Class contains for a Notification and CoproductionProcess."""
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     coproductionprocess_id = Column(UUID(as_uuid=True), ForeignKey("coproductionprocess.id", use_alter=True, ondelete='SET NULL'), nullable=False)
+    coproductionprocess_cloneforpub_id = Column(UUID(as_uuid=True),nullable=True)
     user_id = Column(String, nullable=True)
     state = Column(Boolean, nullable=False, default=False)
 

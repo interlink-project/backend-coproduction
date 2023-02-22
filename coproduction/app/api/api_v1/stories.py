@@ -97,6 +97,8 @@ async def create_story(
     newStory.user_id=current_user.id
     newStory.state=story_in['state']
     newStory.rating=story_in['rating']
+    newStory.coproductionprocess_cloneforpub_id=story_in['coproductionprocess_cloneforpub_id']
+
 
     print('Los datos de la historia son:')
     print(story_in['data_story'])

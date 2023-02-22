@@ -39,6 +39,22 @@ async def list_assets(
     return await crud.asset.get_multi(db, task=task)
 
 
+@router.get("/catalogue", response_model=List[schemas.AssetOutFull])
+async def list_assets_catalogue(
+    task_id: uuid.UUID,
+    db: Session = Depends(deps.get_db),
+    # coproductionprocess_id: Optional[uuid.UUID] = Query(None),
+    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Retrieve assets.
+    """
+    # check that task exists
+    if not (task := await crud.task.get(db=db, id=task_id)):
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    return await crud.asset.get_multi(db, task=task)
+
 def check_interlinker(id, token):
     url = f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{id}"
     response = requests.get(url, headers={"Authorization": f"Bearer {token}"})
@@ -277,6 +293,39 @@ async def read_internal_asset(
         if asset.type == "internalasset":
             if not crud.asset.can_read(db=db, user=current_user, task=asset.task):
                 raise HTTPException(status_code=403, detail="Not enough permissions")
+
+            print("Retrieving internal ", asset.link)
+            await log(crud.asset.enrich_log_data(asset, {
+                "action": "GET"
+            }))
+            try:
+                return requests.get(asset.internal_link, headers={
+                    "Authorization": "Bearer " + token
+                }).json()
+            except:
+                return requests.get(asset.link, headers={
+                    "Authorization": "Bearer " + token
+                }).json()
+        raise HTTPException(status_code=400, detail="Asset is not internal")
+    raise HTTPException(status_code=404, detail="Asset not found")
+
+
+@router.get("/internal/{id}/catalogue")
+async def read_internal_asset_catalogue(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: uuid.UUID,
+    token: str = Depends(deps.get_current_active_token),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Get asset by ID.
+    """
+
+    if asset := await crud.asset.get(db=db, id=id):
+        if asset.type == "internalasset":
+            # if not crud.asset.can_read(db=db, user=current_user, task=asset.task):
+            #     raise HTTPException(status_code=403, detail="Not enough permissions")
 
             print("Retrieving internal ", asset.link)
             await log(crud.asset.enrich_log_data(asset, {

@@ -182,6 +182,22 @@ async def read_coproductionprocess(
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return coproductionprocess
 
+@router.get("/{id}/catalogue", response_model=schemas.CoproductionProcessOutFull)
+async def read_coproductionprocess_catalogue(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: uuid.UUID,
+    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Get coproductionprocess by ID.
+    """
+    coproductionprocess = await crud.coproductionprocess.get(db=db, id=id)
+    if not coproductionprocess:
+        raise HTTPException(status_code=404, detail="CoproductionProcess not found")
+   
+    return coproductionprocess
+
 
 @router.delete("/{id}")
 async def delete_coproductionprocess(
@@ -219,6 +235,22 @@ async def get_coproductionprocess_tree(
         raise HTTPException(status_code=404, detail="CoproductionProcess not found")
     if not crud.coproductionprocess.can_read(db=db, user=current_user, object=coproductionprocess):
         raise HTTPException(status_code=403, detail="Not enough permissions")
+    return coproductionprocess.children
+
+@router.get("/{id}/tree/catalogue", response_model=Optional[List[schemas.PhaseOutFull]])
+async def get_coproductionprocess_tree_catalogue(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: uuid.UUID,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Get coproductionprocess tree.
+    """
+    coproductionprocess = await crud.coproductionprocess.get(db=db, id=id)
+    if not coproductionprocess:
+        raise HTTPException(status_code=404, detail="CoproductionProcess not found")
+   
     return coproductionprocess.children
 
 
@@ -322,7 +354,8 @@ async def copy_coproductionprocess(
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
     current_user: models.User = Depends(deps.get_current_active_user),
-    token: str = Depends(deps.get_current_active_token)
+    token: str = Depends(deps.get_current_active_token),
+    label_name: str = ''
 ) -> Any:
     """
     Copy a coproductionprocess.
@@ -332,8 +365,7 @@ async def copy_coproductionprocess(
         raise HTTPException(status_code=404, detail="CoproductionProcess not found")
     if not crud.coproductionprocess.can_remove(user=current_user, object=coproductionprocess):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    
-    new_coprod = await crud.coproductionprocess.copy(db=db, coproductionprocess=coproductionprocess, user=current_user, token=token)
+    new_coprod = await crud.coproductionprocess.copy(db=db, coproductionprocess=coproductionprocess, user=current_user, token=token, label_name=label_name)
     print("new_coprod", new_coprod)
     if coproductionprocess.logotype:
         filename, extension = os.path.splitext(coproductionprocess.logotype.split('/')[-1])

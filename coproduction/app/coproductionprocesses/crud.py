@@ -168,12 +168,16 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         await socket_manager.send_to_id(coproductionprocess.id, {"event": "schema_set"})
         return coproductionprocess
     
-    async def copy(self, db: Session, coproductionprocess: CoproductionProcessCreate, user: models.User, token):
+    async def copy(self, db: Session, coproductionprocess: CoproductionProcessCreate, user: models.User, token, label_name):
+        
+        if (label_name==""):
+            label_name="Copy of "  
+        
         print(coproductionprocess.logotype)
         new_coproductionprocess = CoproductionProcessCreate(
             schema_used=coproductionprocess.schema_used,
             language=coproductionprocess.language,
-            name="Copy of " + coproductionprocess.name,
+            name=label_name + coproductionprocess.name,
             description=coproductionprocess.description,
             logotype=coproductionprocess.logotype,
             aim=coproductionprocess.aim,

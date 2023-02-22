@@ -11,6 +11,7 @@ from typing import Dict,Any
 
 class StoryBase(BaseModel):
     coproductionprocess_id: uuid.UUID
+    coproductionprocess_cloneforpub_id: uuid.UUID
     data_story: Optional[dict]
     user_id: Optional[str]
     state: bool
