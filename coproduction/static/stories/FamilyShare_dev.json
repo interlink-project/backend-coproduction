@@ -1,0 +1,53 @@
+{
+  "title": "Families Share @ Work",
+  "short_description": "Co-creation of childcare services within companies by exploiting the time-shift model experimented in the Families Share approach.",
+  "countries": "Italy,Greece,Belgium",
+  "logo": "/coproduction/static/coproductionprocesses/f8c68b18-a8ce-4101-9067-40474c90c4ff.png",
+  "schema_template": "d248887d-034f-4f89-b37a-5ef171c0fafe",
+  "coproduction_story_squema_id": "",
+  "description": "Families Share @ Work  offers a bottom-up solution to work/life balance by supporting families with childcare, parenting advice and after-school activities. \r\nIt has been co-produced within the EU funded project Families Share and already tested  in 3 European Cities. \r\nFamilies Share represents an innovative solution for work-life balance, and can constitute a valuable integration to the existing local public childcare offers, during holiday periods in particular but even beyond. Co-playing weeks or activities can be either set up as new services or integrate existing ones.\r\nIn addition, it lays the basis for establishing good neighbourhood relationships from which to start for a wide range of other possible initiatives based on mutual help and solidarity.\r\nLast but not least, if under-utilized or unused public spaces are made available for the activities, Families Share can serve regeneration of urban common goods purposes too.\r\n\r\nThe Families Share approach has already been tested and validated in several pilot case studies, in different European countries where different models have been explored. In the Italian Cities of Venice and Bologna and in the Dutch City of Kortrijk, Families Share has been exploited to integrate the existing local public childcare offers (during holiday periods for instance) thanks to  neighborhood relationships based on mutual help and solidarity.\r\nDifferent legal and ethical regulations, as well as local financial support, might apply locally when the initiative is replicated in specific contexts.\r\n",
+  "objectives": "The challenge\r\nBalancing work and family life has become increasingly challenging in the last decade in Europe. The economic crisis has had a twofold effect, impacting labour market conditions on the one hand, and welfare provisions on the other. As a result, unemployment rates have risen (mainly in male-dominated sectors), while more women (including mothers) are working on a part-time basis. Stable jobs can no longer be taken for granted and precarious contracts are increasingly widespread, with many workers entering re-qualification schemes and facing periods of unemployment. A shrinking workforce of permanent workers is subject to augmented workloads and longer working hours, making the balance between work and everyday life more difficult, and the current model unsustainable.\r\n\r\nAs a result of budget cuts in public welfare expenditure, in many European cities the available childcare services are insufficient, putting families with children under significant pressure. After-school activities have also become a luxury that low- and medium-income families can rarely afford, leading to impoverishment in terms of learning and educational opportunities for children. At the same time, members of neighbourhoods and communities are often isolated.\r\n\r\nThe Families_Share solution\r\nThe Families_Share project offers a bottom-up solution in the form of a co-designed platform supporting families to share time and tasks related to childcare, parenting, after-school and leisure activities and other household tasks \u2014 with a particular focus on low-income families. The project also aspires to engage with the elderly by involving them in childcare activities and by offering them support in shopping and administrative tasks, but also by involving them in family events. To achieve this objective, the project borrows and integrates the concepts of time banking, capitalising on consortium members\u2019 existing digital social innovations in the childcare field. It also exploits the potential of information and communication technology (ICT) networks to increase participatory innovation by encouraging self-organising neighbourhoods.",
+  "results": "",
+  "lessons_learned": "Some important lessons learned emerged from the experimentation:\r\n1) need to incrementally build the trust in the process. Local communities need to learn how to autonomously evolve their understanding of collaborative childcare. While in some of our innovation labs, the model relying on parents being entirely self-organized has been fully embraced, others prefer a milder but more manageable mixed model by involving professional third parties. Again, the possibility to customize and adapt the approach is crucial for its adoption, and attention is needed to balance socio-cultural homogeneity as a leverage of trust, particularly with entirely self-organized groups. \r\n2) Other key learning aspects for Families_Share concern the relation with \u201Ctraditional\u201D formal childcare/welfare and gender implications of shared-care models. The experiences in the innovation labs have demonstrated that an integration of the two models is the key to a successful implementation of effective childcare initiatives with parents undertaking an active role. In some cases, the integration is driven by the grassroot initiatives (like for the case of Bologna and Kortrijk) with support from the public services; in other cases (such as Venezia and Gyor), the role of NGOs was crucial.\r\n3) gender implications: it appeared from the case studies that, unless specific efforts are undertaken to address and engage with fathers, structural gender inequalities in childcare tend to be reproduced also in informal and bottom up settings, leading to female dominated groups. Therefore the risk is that this becomes for them an additional negative incentive towards employment should be taken into account and mitigation measures set in place. In the case of Trento, the formal role of an organization was the key to trigger and support collaboration (among employees): although the process was driven from the top, the self-organizing component was present and crucial to the success of the initiative.\r\n4)The digital platform proved to be a valuable support to the collaboration, in particular for the more complex situations and tasks. Nevertheless, it is worth noting that a digital technology may aim to foster and support new practices but it can never succeed alone. In this respect, the relative success of the Families_Share approach is because of the combined design of both the technology and the service together.",
+  "licenses": "The primary result of the project is the Families_Share software platform, as well as the Families_Share methodology developed to provide support to childcare, which is based entirely on re-use, re-design and co-design of an already existing open source multi-tier platform. It is being offered under an open source license and especially the Apache license 2.0 (http://www.apache.org/licenses/LICENSE-2.0), as a non-exclusive, no-charge, royalty-free, irrevocable copyright license to reproduce and distribute the platform. The already developed mobile applications will be maintained for free for a period of three years after the project completion.",
+  "incentives": "",
+  "materials": [
+    {
+      "name": "Families Share EU youtube channel.",
+      "order": 1,
+      "type": "video_channel",
+      "link": "https://www.youtube.com/channel/UCUd_D8PkEic9pPEY3SysmXw"
+    }
+  ],
+  "owners": [
+    {
+      "order": 1,
+      "name": "Fondazione Bruno Kessler ",
+      "info": "Other information, official contacts",
+      "logo": "https://scontent.fbio2-1.fna.fbcdn.net/v/t39.30808-6/289031298_3646376775588636_5175545513629962723_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=09cbfe&_nc_ohc=0A6TBkH965wAX-mL5EW&_nc_ht=scontent.fbio2-1.fna&oh=00_AfCSxml0auv5r2mb5og9Ipu0tXFjKkhEsd0HEsc5jX9xMg&oe=63F7C4B7",
+      "link": "https://www.fbk.eu/en/about-fbk/"
+    }
+  ],
+  "stats": [
+    {
+      "order": 1,
+      "name": "Duration of the project",
+      "value": "34",
+      "units_measure": "meses",
+      "category": "Project"
+    },
+    {
+      "order": 2,
+      "name": "Number of teams",
+      "value": "5",
+      "units_measure": "teams",
+      "category": "Project"
+    }
+  ],
+  "languages": "en,it,el,nl",
+  "story_language":"en",
+  "tags": "B2C,CE",
+  "keywords": "childcare,families,share",
+  "start_at": "18-01-2018",
+  "end_at": "31-10-2020"
+}

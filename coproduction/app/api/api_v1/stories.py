@@ -159,6 +159,11 @@ async def delete_story(
     Delete an story.
     """
     story = await crud.story.get(db=db, id=id)
+
+    #Borro el proceso clonado que soporta a la story
+    await crud.coproductionprocess.remove(db=db, id=story.coproductionprocess_cloneforpub_id)
+
+
     if not story:
         raise HTTPException(status_code=404, detail="Story not found")
     return await crud.story.remove(db=db, id=id)
