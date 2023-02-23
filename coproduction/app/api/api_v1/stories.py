@@ -1,5 +1,6 @@
 import os
 import uuid
+import copy
 from typing import Any, List, Optional
 
 import aiofiles
@@ -16,6 +17,7 @@ from app.models import Story
 from typing import Dict,Any
 from app.locales import get_language
 
+
 router = APIRouter()
 
 
@@ -23,6 +25,7 @@ router = APIRouter()
 async def list_stories(
     rating: Optional[int] = Query(None),
     search: Optional[str] = Query(None),
+    keyword: Optional[str] = Query(None),
     db: Session = Depends(deps.get_db),
     current_user: Optional[dict] = Depends(deps.get_current_user),
     language: str = Depends(get_language)
@@ -32,7 +35,7 @@ async def list_stories(
     """
     print("La busqueda es:")
     print(search)
-    return await crud.story.get_multiDict(db, search=search,  rating=rating,  language=language)
+    return await crud.story.get_multiDict(db, search=search,  rating=rating,  language=language, keyword=keyword)
 
 # @router.get("", response_model=List[schemas.StoryOutFull])
 # async def list_storiesbyUser(
@@ -100,6 +103,13 @@ async def create_story(
     newStory.coproductionprocess_cloneforpub_id=story_in['coproductionprocess_cloneforpub_id']
 
 
+    # Set the flag in the Coproduction Process to identify it is from catalogue
+    coproductionprocess=await crud.coproductionprocess.get(db=db, id=story_in['coproductionprocess_cloneforpub_id'])
+    coproductionprocess.is_part_of_publication=True
+    db.add(coproductionprocess)
+    db.commit()
+    db.refresh(coproductionprocess)
+   
     print('Los datos de la historia son:')
     print(story_in['data_story'])
 

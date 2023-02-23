@@ -358,6 +358,16 @@ async def delete_asset(
     if asset := await crud.asset.get(db=db, id=id):
         if not crud.asset.can_remove(db=db, user=current_user, task=asset.task):
             raise HTTPException(status_code=403, detail="Not enough permissions")
+
+
+        #Erase all notification related with this asset.
+        listNotificationbyAsset=await crud.coproductionprocessnotification.get_coproductionprocess_notifications_justbyAseetId( db= db, asset_id=str(asset.id))
+        for notification in listNotificationbyAsset:
+            db.delete(notification)
+        db.commit()
+
+
+
         await crud.asset.remove(db=db, id=id)
         return None
 

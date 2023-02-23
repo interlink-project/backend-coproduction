@@ -24,7 +24,7 @@ class CRUDStory(CRUDBase[Story, StoryCreate, StoryPatch]):
 
   
     async def get_multiDict(
-        self, db: Session, exclude: list = [], search: str = "", rating: int = 0, language: str = "en"
+        self, db: Session, exclude: list = [], search: str = "", rating: int = 0, language: str = "en", keyword: str = "en"
     ) -> List[Story]:
         queries = []
 
@@ -49,10 +49,12 @@ class CRUDStory(CRUDBase[Story, StoryCreate, StoryPatch]):
                         Story.data_story['description'].astext).contains(func.lower(search))
                 ))
         
-        # if natures:
-        #     queries.append(
-        #         Interlinker.nature.in_(natures)
-        #     )
+        if keyword:
+            queries.append(
+                #Story.data_story.keywords.in_(keyword)
+                func.lower(Story.data_story['keywords'].astext).contains(func.lower(
+                        keyword))
+            )
         
         # if creator:
         #     queries.append(
