@@ -210,6 +210,15 @@ async def delete_coproductionprocess(
     Delete an coproductionprocess.
     """
     coproductionprocess = await crud.coproductionprocess.get(db=db, id=id)
+
+    # If the coproductionprocess is part of a publication it most delete the publication.
+    if (coproductionprocess.is_part_of_publication):
+        #Delete the story
+        story = await crud.story.get_stories_bycopro_catalogue(db=db, coproductionprocess_cloneforpub_id=id,user=current_user)
+        print("Delete story")
+        print(story.id)
+        await crud.story.remove(db=db, id=story.id)
+        
     if not coproductionprocess:
         raise HTTPException(status_code=404, detail="CoproductionProcess not found")
     if not crud.coproductionprocess.can_remove(user=current_user, object=coproductionprocess):
@@ -355,7 +364,8 @@ async def copy_coproductionprocess(
     id: uuid.UUID,
     current_user: models.User = Depends(deps.get_current_active_user),
     token: str = Depends(deps.get_current_active_token),
-    label_name: str = ''
+    label_name: str = '',
+    from_view:str='',
 ) -> Any:
     """
     Copy a coproductionprocess.
@@ -363,9 +373,12 @@ async def copy_coproductionprocess(
     coproductionprocess = await crud.coproductionprocess.get(db=db, id=id)
     if not coproductionprocess:
         raise HTTPException(status_code=404, detail="CoproductionProcess not found")
-    if not crud.coproductionprocess.can_remove(user=current_user, object=coproductionprocess):
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-    new_coprod = await crud.coproductionprocess.copy(db=db, coproductionprocess=coproductionprocess, user=current_user, token=token, label_name=label_name)
+    
+    if(from_view != 'story'):    
+        if not crud.coproductionprocess.can_remove(user=current_user, object=coproductionprocess):
+            raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    new_coprod = await crud.coproductionprocess.copy(db=db, coproductionprocess=coproductionprocess, user=current_user, token=token, label_name=label_name,from_view=from_view)
     print("new_coprod", new_coprod)
     if coproductionprocess.logotype:
         filename, extension = os.path.splitext(coproductionprocess.logotype.split('/')[-1])

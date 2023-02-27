@@ -168,7 +168,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         await socket_manager.send_to_id(coproductionprocess.id, {"event": "schema_set"})
         return coproductionprocess
     
-    async def copy(self, db: Session, coproductionprocess: CoproductionProcessCreate, user: models.User, token, label_name):
+    async def copy(self, db: Session, coproductionprocess: CoproductionProcessCreate, user: models.User, token, label_name,from_view):
         
         if (label_name==""):
             label_name="Copy of "  
@@ -189,10 +189,18 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         
         db_obj = await self.create(db=db, obj_in=new_coproductionprocess, creator=user, set_creator_admin=True)
 
-        administrators = coproductionprocess.administrators
-        for admin in administrators:
-            await self.add_administrator(db=db, db_obj=db_obj, user=admin)
-                
+        if(from_view=='story'):
+            #In case the clone is made from story the only administrator is the user.
+            #The current user is set as admin of the process in the previous line.
+            pass
+
+        else:
+            #In case is made from settings the administrators are the same as the process
+            administrators = coproductionprocess.administrators
+            for admin in administrators:
+                await self.add_administrator(db=db, db_obj=db_obj, user=admin)
+
+
         print("STARTING TREEITEMS")
         phases_temp = coproductionprocess.children.copy()
         phases = []
@@ -225,25 +233,29 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         
         print("STARTING PERMISSIONS")
         # Copy the permissions of the project (THE NEW CREATOR IS THE CREATOR OF THE COPY)
-        for permission in coproductionprocess.permissions:
-            treeitem = None
-            if permission.treeitem:
-                treeitem = await treeitemsCrud.get(db, ids_dict[permission.treeitem.__class__.__name__ + '_' + str(permission.treeitem.id)])
-            print("New permission")
-            new_permission = PermissionCreate(
-                creator_id=user.id,
-                creator=user,
-                team_id=permission.team_id,
-                team=permission.team,
-                coproductionprocess_id=db_obj.id if permission.coproductionprocess else None,
-                coproductionprocess=db_obj if permission.coproductionprocess else None,
-                treeitem_id=treeitem.id if treeitem else None,
-                treeitem=treeitem,
-                access_assets_permission=permission.access_assets_permission,
-                create_assets_permission=permission.create_assets_permission,
-                delete_assets_permission=permission.delete_assets_permission)
+        if(from_view=='story'):
+            #If the copy is made from the story then the dont need to create permissions
+            pass
+        else:
+            for permission in coproductionprocess.permissions:
+                treeitem = None
+                if permission.treeitem:
+                    treeitem = await treeitemsCrud.get(db, ids_dict[permission.treeitem.__class__.__name__ + '_' + str(permission.treeitem.id)])
+                print("New permission")
+                new_permission = PermissionCreate(
+                    creator_id=user.id,
+                    creator=user,
+                    team_id=permission.team_id,
+                    team=permission.team,
+                    coproductionprocess_id=db_obj.id if permission.coproductionprocess else None,
+                    coproductionprocess=db_obj if permission.coproductionprocess else None,
+                    treeitem_id=treeitem.id if treeitem else None,
+                    treeitem=treeitem,
+                    access_assets_permission=permission.access_assets_permission,
+                    create_assets_permission=permission.create_assets_permission,
+                    delete_assets_permission=permission.delete_assets_permission)
 
-            await crud.permission.create(db=db, obj_in=new_permission, creator=user)
+                await crud.permission.create(db=db, obj_in=new_permission, creator=user)
 
         return db_obj
 

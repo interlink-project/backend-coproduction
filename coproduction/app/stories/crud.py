@@ -69,12 +69,17 @@ class CRUDStory(CRUDBase[Story, StoryCreate, StoryPatch]):
     async def get_multi(self, db: Session, user: User) -> Optional[List[Story]]:
         return db.query(Story).all()
 
-    #Get all stories by user:
+    #Get all stories by coproductionprocess_id:
     async def get_coproductionprocess_stories(self, db: Session, coproductionprocess_id: str,user) -> Optional[List[Story]]:
         
         listofStories = db.query(Story).filter(models.Story.coproductionprocess_id==coproductionprocess_id).order_by(models.Story.created_at.desc()).all()
 
         return listofStories
+
+    #Get all stories by user:
+    async def get_stories_bycopro_catalogue(self, db: Session, coproductionprocess_cloneforpub_id: str,user) -> Optional[List[Story]]:
+        story = db.query(Story).filter(models.Story.coproductionprocess_cloneforpub_id==coproductionprocess_cloneforpub_id).order_by(models.Story.created_at.desc()).first()
+        return story
 
 
     async def create(self, db: Session, obj_in: StoryCreate) -> Story:
