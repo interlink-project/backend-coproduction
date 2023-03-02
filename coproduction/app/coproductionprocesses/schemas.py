@@ -21,8 +21,10 @@ class CoproductionProcessBase(BaseModel):
     organization_id: Optional[uuid.UUID]
     challenges: Optional[str]
     status: Optional[Status]
-    incentive_and_rewards_state:Optional[bool]
-    is_part_of_publication:Optional[bool]
+    incentive_and_rewards_state: Optional[bool]
+    is_part_of_publication: Optional[bool]
+    game_id: Optional[str]
+
 
 class CoproductionProcessCreate(CoproductionProcessBase):
     language: Languages
@@ -34,9 +36,10 @@ class CoproductionProcessPatch(CoproductionProcessCreate):
     name:  Optional[str]
     status: Optional[Status]
     logotype: Optional[str]
-    incentive_and_rewards_state:Optional[bool]
-    is_part_of_publication:Optional[bool]
+    incentive_and_rewards_state: Optional[bool]
+    is_part_of_publication: Optional[bool]
     language: Optional[Languages]
+    game_id: Optional[str]
 
 
 class CoproductionProcess(CoproductionProcessBase):

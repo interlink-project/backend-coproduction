@@ -43,8 +43,6 @@ async def list_coproductionprocessnotificationsbyAsset(
     return await crud.coproductionprocessnotification.get_coproductionprocess_notifications_byAseetId(db=db,coproductionprocess_id=coproductionprocess_id,asset_id=asset_id)
 
 
-
-
 # @router.get("/users/{username}", tags=["users"])
 # async def read_user(username: str):
 #     return {"username": username}

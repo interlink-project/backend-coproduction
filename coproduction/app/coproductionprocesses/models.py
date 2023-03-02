@@ -34,14 +34,14 @@ class CoproductionProcess(BaseModel):
     idea = Column(Text, nullable=True)
     organization_desc = Column(Text, nullable=True)
     challenges = Column(Text, nullable=True)
-    
+
     #Active Optional Modules
     incentive_and_rewards_state =Column(Boolean,nullable=True)
     is_part_of_publication = Column(Boolean,nullable=True)
 
     status = Column(Enum(Status, create_constraint=False,
                     native_enum=False), default=Status.in_progress)
-  
+
 
     # created by
     creator_id = Column(String, ForeignKey(
@@ -53,7 +53,7 @@ class CoproductionProcess(BaseModel):
         secondary=coproductionprocess_administrators_association_table,
         backref="administered_processes")
     administrators_ids = association_proxy('administrators', 'id')
-    
+
     organization_id = Column(UUID(as_uuid=True), ForeignKey(
         "organization.id", use_alter=True, ondelete='SET NULL'))
     organization = relationship('Organization', post_update=True, backref="coproductionprocesses")
@@ -73,6 +73,10 @@ class CoproductionProcess(BaseModel):
         back_populates="coproductionprocess",
         cascade="all, delete-orphan",
     )
+    
+    # Gamification
+    game_id = Column(String, nullable=True)
+    
     stories = association_proxy("coproductionprocess_story_associations", "story")
 
     @aggregated('children', Column(Date))
