@@ -211,13 +211,12 @@ async def delete_coproductionprocess(
     """
     coproductionprocess = await crud.coproductionprocess.get(db=db, id=id)
 
-    # If the coproductionprocess is part of a publication it most delete the publication.
+    # If the coproductionprocess is part of a publication it most delete the story first.
     if (coproductionprocess.is_part_of_publication):
         #Delete the story
         story = await crud.story.get_stories_bycopro_catalogue(db=db, coproductionprocess_cloneforpub_id=id,user=current_user)
-        print("Delete story")
-        print(story.id)
-        await crud.story.remove(db=db, id=story.id)
+        if(story):
+            await crud.story.remove(db=db, id=story.id)
         
     if not coproductionprocess:
         raise HTTPException(status_code=404, detail="CoproductionProcess not found")
@@ -281,7 +280,7 @@ async def get_activity(
     return requests.get(f"http://logging/api/v1/log?coproductionprocess_ids={id}&size=20").json()
 
 
-@router.get("/{id}/assets", response_model=List[schemas.AssetOut])
+@router.get("/{id}/assets")
 async def read_coproductionprocess_assets(
     *,
     db: Session = Depends(deps.get_db),
@@ -291,11 +290,14 @@ async def read_coproductionprocess_assets(
     """
     Get coproductionprocess by ID.
     """
+
     coproductionprocess = await crud.coproductionprocess.get(db=db, id=id)
+
     if not coproductionprocess:
         raise HTTPException(status_code=404, detail="CoproductionProcess not found")
     if not crud.coproductionprocess.can_read(db=db, user=current_user, object=coproductionprocess):
         raise HTTPException(status_code=403, detail="Not enough permissions")
+        
     return await crud.coproductionprocess.get_assets(db=db, user=current_user, coproductionprocess=coproductionprocess)
 
 

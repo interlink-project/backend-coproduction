@@ -1,5 +1,7 @@
 from fastapi import HTTPException
 import requests
+import os.path
+from app.config import settings
 from sqlalchemy.orm import Session
 from typing import List
 from app.models import Asset, InternalAsset, ExternalAsset, CoproductionProcessNotification
@@ -28,6 +30,31 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
         if task:
             queries.append(Asset.task_id == task.id)
         return db.query(Asset).filter(*queries).offset(skip).limit(limit).all()
+
+    async def get_multi_withIntData(
+        self, db: Session, task: models.Task, skip: int = 0, limit: int = 100
+    ) -> List[Asset]:
+        queries = []
+        if task:
+            queries.append(Asset.task_id == task.id)
+        
+        listAssets=db.query(Asset).filter(*queries).offset(skip).limit(limit).all()
+
+        for asset in listAssets:
+            if asset.type == "internalasset":
+                serviceName=os.path.split(asset.link)[0].split('/')[3]
+                response = requests.get(f"http://{serviceName}/assets/{asset.external_asset_id}")
+                """ , headers={
+                    "Authorization": "Bearer " + token,
+                    "Accept-Language": asset_in.language
+                }) """
+                
+                datosAsset = response.json()
+                asset.internalData=datosAsset
+               
+
+        return listAssets
+
 
     def shortName(self,s):
             # split the string into a list

@@ -38,6 +38,25 @@ async def list_assets(
     
     return await crud.asset.get_multi(db, task=task)
 
+@router.get("/listAssetswithInternalInfo")
+async def list_assets_with_internaldata(
+    task_id: uuid.UUID,
+    db: Session = Depends(deps.get_db),
+    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Retrieve assets with public info.
+    """
+    # check that task exists
+    if not (task := await crud.task.get(db=db, id=task_id)):
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    if not crud.asset.can_list(db=db, user=current_user, task=task):
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    
+    return await crud.asset.get_multi_withIntData(db, task=task)
+
+
 
 @router.get("/catalogue", response_model=List[schemas.AssetOutFull])
 async def list_assets_catalogue(

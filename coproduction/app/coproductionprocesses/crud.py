@@ -1,4 +1,6 @@
 import uuid
+import os.path
+import requests
 from typing import List, Optional
 
 from slugify import slugify
@@ -48,13 +50,37 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
 
     async def get_assets(self, db: Session, coproductionprocess: CoproductionProcess, user: models.User):
-        # print(self.can_read(db, user, coproductionprocess))
+
+        #Query and add public info to the asset
+        def obtainpublicData(listOfAssets):
+
+            for asset in listOfAssets:
+                if asset.type == "internalasset":
+                    
+                    serviceName=os.path.split(asset.link)[0].split('/')[3]
+                    response = requests.get(f"http://{serviceName}/assets/{asset.external_asset_id}")
+                    """ , headers={
+                        "Authorization": "Bearer " + token,
+                        "Accept-Language": asset_in.language
+                    }) """
+
+                    datosAsset = response.json()
+                    asset.internalData=datosAsset
+            return listOfAssets
+
+        
         if user in coproductionprocess.administrators: #or self.can_read(db, user, coproductionprocess):
-            return db.query(
+
+            listOfAssets=db.query(
                 Asset
                 ).filter(
                     Asset.task_id.in_(coproductionprocess.task_ids())
                 ).order_by(models.Asset.created_at.desc()).all()
+
+            #Agrego informacion del asset interno
+            listOfAssets=obtainpublicData(listOfAssets)
+
+            return listOfAssets
                 
         ids = [treeitem.id for treeitem in await treeitemsCrud.get_for_user_and_coproductionprocess(db=db, user=user, coproductionprocess_id=coproductionprocess.id) if not treeitem.disabled_on]
         
@@ -74,6 +100,10 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
             tienePermisosListado=crud.asset.can_list(db=db,user=user,task=asset.task)
             if not tienePermisosListado:
                 listOfAssets.remove(asset)
+
+        #Agrego informacion del asset interno
+        listOfAssets=obtainpublicData(listOfAssets)
+        
         
         return listOfAssets
 

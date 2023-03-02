@@ -68,6 +68,7 @@ class InternalAsset(InternalAssetBase):
 
 class InternalAssetOut(BaseAssetOut, InternalAsset):
     link: str
+    internalData: Optional[str]
 
 
 # External asset
@@ -111,6 +112,7 @@ AssetPatch = Annotated[
 
 
 class AssetOut(BaseModel):
+
     __root__: Annotated[
         Union[ExternalAssetOut, InternalAssetOut],
         Field(discriminator="type"),
