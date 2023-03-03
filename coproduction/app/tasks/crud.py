@@ -12,6 +12,7 @@ from app.utils import recursive_check, update_status_and_progress
 from app.messages import log
 from app.treeitems.crud import exportCrud as treeitems_crud
 from app.sockets import socket_manager
+from app import models
 
 class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
     async def create_from_metadata(self, db: Session, taskmetadata: dict, objective: Objective = None, schema_id = uuid.UUID) -> Optional[Task]:
@@ -56,6 +57,31 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
         if commit:
             db.commit()
             db.refresh(db_obj)
+
+        # In case there is another node with pre-requisite equal the one 
+        # of the task it must change it prerequisite to the new id
+        
+        # Find other nodes wit the pre-requisite
+ 
+        if prereqs:
+            for id in prereqs:
+                #Get all prerrequisites task with the id
+                listTaskWithPrereq=db.query(Task).filter(models.Task.prerequisites_ids==id).all()
+                
+                for task in listTaskWithPrereq:
+                    #Add the correct prerrequisite (the id of the new node)
+                    if(task.id!=db_obj.id):
+                        #Remove any previous prerrequisite
+                        task.prerequisites.clear()
+                        #Append the just created node
+                        task.prerequisites.append(db_obj)
+                        #Save in database
+                        db.add(task)
+                        db.commit()
+                        db.refresh(task)
+                        
+
+        #Update its id to my
 
         await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": "task_created"})
         return db_obj

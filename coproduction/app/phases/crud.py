@@ -13,6 +13,7 @@ from app.objectives.crud import exportCrud as objectives_crud
 from app.utils import recursive_check
 from fastapi.encoders import jsonable_encoder
 from app.sockets import socket_manager
+from app import models
 
 class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
     async def create_from_metadata(self, db: Session, phasemetadata: dict, coproductionprocess: CoproductionProcess, schema_id: uuid.UUID) -> Optional[Phase]:
@@ -57,6 +58,29 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
         if commit:
             db.commit()
             db.refresh(db_obj)
+
+
+         # In case there is another node with pre-requisite equal the one 
+        # of the phase it must change it prerequisite to the new id
+        
+        # Find other nodes wit the pre-requisite
+ 
+        if prereqs:
+            for id in prereqs:
+                #Get all prerrequisites phase with the id
+                listPhaseWithPrereq=db.query(Phase).filter(models.Phase.prerequisites_ids==id).all()
+                
+                for phase in listPhaseWithPrereq:
+                    #Add the correct prerrequisite (the id of the new node)
+                    if(phase.id!=db_obj.id):
+                        #Remove any previous prerrequisite
+                        phase.prerequisites.clear()
+                        #Append the just created node
+                        phase.prerequisites.append(db_obj)
+                        #Save in database
+                        db.add(phase)
+                        db.commit()
+                        db.refresh(phase)
 
         await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": "phase_created"})
         return db_obj
