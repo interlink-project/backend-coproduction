@@ -137,14 +137,16 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
         objectives = []
         for id, objective in enumerate(objectives_temp):
             if not objective.prerequisites_ids:
-                objectives.append(objective)
-                objectives_temp.pop(id)
+                if not objective.is_disabled:
+                    objectives.append(objective)
+                    objectives_temp.pop(id)
         
         while objectives_temp:
             for id, objective in enumerate(objectives_temp):
                 if str(objective.prerequisites_ids[0]) == str(objectives[-1].id):
-                    objectives.append(objective)
-                    objectives_temp.pop(id)
+                    if not objective.is_disabled:
+                        objectives.append(objective)
+                        objectives_temp.pop(id)
         
         #  Create a dict with the old ids and the new ids
         ids_dict = {}

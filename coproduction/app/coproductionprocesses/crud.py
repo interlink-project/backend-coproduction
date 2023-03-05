@@ -121,6 +121,18 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         await socket_manager.send_to_id(coproductionprocess.id, {"event": "schema_cleared"})
         return coproductionprocess
 
+    async def set_logotype(self, db: Session, coproductionprocess: models.CoproductionProcess, logotype_path:str):
+
+        coproductionprocess.logotype=logotype_path
+        db.add(coproductionprocess)
+        db.commit()
+        db.refresh(coproductionprocess)
+
+
+        await socket_manager.send_to_id(coproductionprocess.id, {"event": "coproductionprocess_updated"})
+
+        return coproductionprocess
+
     async def set_schema(self, db: Session, coproductionprocess: models.CoproductionProcess, coproductionschema: dict):
         total = {}
         schema_id = coproductionschema.get("id")
@@ -236,14 +248,16 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         phases = []
         for id, phase in enumerate(phases_temp):
             if not phase.prerequisites_ids:
-                phases.append(phase)
-                phases_temp.pop(id)
+                if not phase.is_disabled:
+                    phases.append(phase)
+                    phases_temp.pop(id)
 
         while phases_temp:
             for id, phase in enumerate(phases_temp):
                 if str(phase.prerequisites_ids[0]) == str(phases[-1].id):
-                    phases.append(phase)
-                    phases_temp.pop(id)
+                    if not phase.is_disabled:
+                        phases.append(phase)
+                        phases_temp.pop(id)
 
         #  Create a dict with the old ids and the new ids
         ids_dict = {}
