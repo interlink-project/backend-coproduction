@@ -128,8 +128,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         db.commit()
         db.refresh(coproductionprocess)
 
-
-        await socket_manager.send_to_id(coproductionprocess.id, {"event": "coproductionprocess_updated"})
+        #await socket_manager.send_to_id(coproductionprocess.id, {"event": "coproductionprocess_updated"})
 
         return coproductionprocess
 
@@ -248,16 +247,16 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         phases = []
         for id, phase in enumerate(phases_temp):
             if not phase.prerequisites_ids:
-                if not phase.is_disabled:
-                    phases.append(phase)
-                    phases_temp.pop(id)
+               # if not phase.is_disabled:
+                phases.append(phase)
+                phases_temp.pop(id)
 
         while phases_temp:
             for id, phase in enumerate(phases_temp):
                 if str(phase.prerequisites_ids[0]) == str(phases[-1].id):
-                    if not phase.is_disabled:
-                        phases.append(phase)
-                        phases_temp.pop(id)
+                    #if not phase.is_disabled:
+                    phases.append(phase)
+                    phases_temp.pop(id)
 
         #  Create a dict with the old ids and the new ids
         ids_dict = {}
