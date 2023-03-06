@@ -245,17 +245,24 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
         await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": "asset_created", "extra": { "task_id" : jsonable_encoder(db_obj.task_id) }})
         return db_obj
 
-    async def copy(self, db: Session, asset: AssetCreate, creator: models.User, task: models.Task, token) -> Asset:
+    async def copy(self, db: Session, asset: AssetCreate, creator: models.User, task: models.Task, token, justRead =False) -> Asset:
 
         if asset.type == 'internalasset':
             print('Copying internal asset')
-            
+
+            methodCloneCall="/clone"
+
+            if justRead:
+                #Make the copied asset just read type
+                methodCloneCall="/clone_for_catalogue"
+
+            #print(methodCloneCall)
             try:
-                data_from_interlinker = requests.post(asset.internal_link + "/clone", headers={
+                data_from_interlinker = requests.post(asset.internal_link + methodCloneCall, headers={
                 "Authorization": "Bearer " + token
                 }).json()
             except:
-                data_from_interlinker = requests.post(asset.link + "/clone", headers={
+                data_from_interlinker = requests.post(asset.link + methodCloneCall, headers={
                 "Authorization": "Bearer " + token
                 }).json()
             external_asset_id = data_from_interlinker["id"] if "id" in data_from_interlinker else data_from_interlinker["_id"]

@@ -214,7 +214,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         if (label_name==""):
             label_name="Copy of "  
         
-        print(coproductionprocess.logotype)
+        #print(coproductionprocess.logotype)
         new_coproductionprocess = CoproductionProcessCreate(
             schema_used=coproductionprocess.schema_used,
             language=coproductionprocess.language,
@@ -267,11 +267,18 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         print("TREEITEMS COPIED")
         
         print("STARTING ASSET")
+        print(from_view)
         # Copy the assets of the project
         assets = await self.get_assets(db, coproductionprocess, user)
         for asset in assets:
             task = await crud.task.get(db, ids_dict['Task_' + str(asset.task_id)])
-            await crud.asset.copy(db, asset, user, task, token)
+
+            if(from_view=='for_publication'):
+                #In the case of publcation in the catalogue copy of assets as readonly:
+                await crud.asset.copy(db, asset, user, task, token,True)
+            else:
+                await crud.asset.copy(db, asset, user, task, token)
+        
         print("ASSETS COPIED")
         
         print("STARTING PERMISSIONS")
