@@ -10,6 +10,8 @@ class TaskCreate(TreeItemCreate):
     objective_id: Optional[uuid.UUID]
     problemprofiles: Optional[list]
     status: Optional[str]
+    disabler_id: Optional[str]
+    disabled_on: Optional[datetime]
     start_date: Optional[date]
     end_date: Optional[date]
     

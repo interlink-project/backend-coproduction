@@ -151,7 +151,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
         if obj_in.prerequisites_ids:
             for p_id in obj_in.prerequisites_ids:
                 prereqs_ids.append(extra['Task_'+str(p_id)])
-        
+
         new_task = TaskCreate(
                 id=uuid.uuid4(),
                 name=obj_in.name,
@@ -165,6 +165,10 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
                 prerequisites=obj_in.prerequisites,
                 prerequisites_ids=prereqs_ids,
                 #status=obj_in.status,
+                
+                disabler_id= obj_in.disabler_id,
+                disabled_on= obj_in.disabled_on,
+
                 from_item=obj_in.from_item,
                 from_schema=obj_in.from_schema,
                 management=obj_in.management,

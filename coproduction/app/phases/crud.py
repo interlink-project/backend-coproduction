@@ -120,6 +120,8 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
         new_phase = PhaseCreate(
                 progress=obj_in.progress,
                 status=obj_in.status,
+                disabler_id= obj_in.disabler_id,
+                disabled_on= obj_in.disabled_on,
                 id=uuid.uuid4(),
                 from_item=obj_in.from_item,
                 name=obj_in.name,

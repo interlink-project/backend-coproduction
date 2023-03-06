@@ -127,6 +127,8 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
                 prerequisites=obj_in.prerequisites,
                 prerequisites_ids=prereqs_ids,
                 status=obj_in.status,
+                disabler_id= obj_in.disabler_id,
+                disabled_on= obj_in.disabled_on,
                 from_item=obj_in.from_item,
                 from_schema=obj_in.from_schema
             )
