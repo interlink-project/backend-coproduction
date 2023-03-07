@@ -1,7 +1,9 @@
 import jwt
+import os
 from jwt import PyJWKClient
 
-url = "https://aac.platform.smartcommunitylab.it/jwk"
+url = "https://dev-btw6zvhat22wdzmr.us.auth0.com/.well-known/jwks.json"
+
 
 def decode_token(jwtoken):
     jwks_client = PyJWKClient(url)
@@ -10,7 +12,7 @@ def decode_token(jwtoken):
         jwtoken,
         signing_key.key,
         algorithms=["RS256"],
-        audience="c_0e0822df-9df8-48d6-b4d9-c542a4623f1b",
+        audience=os.getenv("AUTH0_CLIENT_ID", ""),
         # options={"verify_nbf": False},
     )
     return data
