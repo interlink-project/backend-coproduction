@@ -2,7 +2,7 @@ import jwt
 import os
 from jwt import PyJWKClient
 
-url = "https://dev-btw6zvhat22wdzmr.us.auth0.com/.well-known/jwks.json"
+url = os.getenv("AUTH0_JWK_URL", "")
 
 
 def decode_token(jwtoken):
