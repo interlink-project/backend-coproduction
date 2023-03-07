@@ -17,6 +17,7 @@ services:
       - ./coproduction:/app
     env_file:
       - .env
+      - .secrets
     environment:
       - PROTOCOL=http://
       - SERVER_NAME=${DOMAIN?Variable not set}
@@ -48,6 +49,7 @@ services:
       - ./coproduction:/app
     env_file:
       - .env
+      - .secrets
     environment:
       - RUN=celery -A app.worker worker -l info -c 1
       - PROTOCOL=http://
