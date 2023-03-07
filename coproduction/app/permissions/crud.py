@@ -165,7 +165,8 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
             _ = send_team_email(team,
                             'add_team_coprod',
                             {"coprod_id": db_obj.coproductionprocess_id,
-                                "coprod_name": coproduction.name})
+                             "coprod_name": coproduction.name,
+                             "team_name": team.name})
 
         await socket_manager.send_to_id(generate_uuid(creator.id), {"event": "permission" + "_created"})
 
