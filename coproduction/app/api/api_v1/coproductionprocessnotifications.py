@@ -82,7 +82,10 @@ async def create_copro_notification(
     newCoproNotification.claim_type=coproductionprocessnotification_in.claim_type
     newCoproNotification.coproductionprocess_id=coproductionprocessnotification_in.coproductionprocess_id
     newCoproNotification.asset_id=coproductionprocessnotification_in.asset_id
-    newCoproNotification.user_id=current_user.id
+    if coproductionprocessnotification_in.user_id:
+        newCoproNotification.user_id=coproductionprocessnotification_in.user_id
+    else:
+        newCoproNotification.user_id=current_user.id
 
     #Add the user to the information
     import json
