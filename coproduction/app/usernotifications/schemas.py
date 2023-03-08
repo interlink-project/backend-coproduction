@@ -11,6 +11,7 @@ class UserNotificationBase(BaseModel):
     notification_id: uuid.UUID
     channel: ChannelTypes
     state: bool
+    coproductionprocess_id: Optional[uuid.UUID]
     parameters: Optional[str]
 
 class UserNotificationState(BaseModel):

@@ -222,6 +222,12 @@ async def delete_coproductionprocess(
         raise HTTPException(status_code=404, detail="CoproductionProcess not found")
     if not crud.coproductionprocess.can_remove(user=current_user, object=coproductionprocess):
         raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    #Delete all user notification related with this coproduction process
+    listUserNotifications=await crud.usernotification.get_user_notifications_by_coproid(db=db,copro_id=id)
+    for usernotification in listUserNotifications:
+        await crud.usernotification.remove(db=db,id=usernotification.id)
+
     await crud.coproductionprocess.remove(db=db, id=id)
     return None
 

@@ -34,6 +34,13 @@ class CRUDUserNotification(CRUDBase[UserNotification, UserNotificationCreate, Us
         print(listofUserNotifications)
         return listofUserNotifications
 
+    #Get user notifications by coproduction process:
+    async def get_user_notifications_by_coproid(self, db: Session, copro_id: str) -> Optional[List[UserNotification]]:
+        listofUserNotifications = db.query(UserNotification).filter(models.UserNotification.coproductionprocess_id==copro_id).order_by(models.UserNotification.created_at.desc()).all()
+        print(listofUserNotifications)
+        return listofUserNotifications
+
+
     
 
     async def create(self, db: Session, obj_in: UserNotificationCreate) -> UserNotification:

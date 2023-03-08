@@ -72,6 +72,7 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
                     newUserNotification.notification_id=notification.id
                     newUserNotification.channel="in_app"
                     newUserNotification.state=False
+                    newUserNotification.coproductionprocess_id=str(db_obj.coproductionprocess_id)
                     newUserNotification.parameters="{'teamName':'"+team.name+"','processName':'"+coproduction.name+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"','org_id':'"+str(team.organization_id)+"'}"
 
                     db.add(newUserNotification)
@@ -142,6 +143,8 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
                     newUserNotification.notification_id=notification.id
                     newUserNotification.channel="in_app"
                     newUserNotification.state=False
+                    newUserNotification.coproductionprocess_id=str(db_obj.coproductionprocess_id)
+                    
                     newUserNotification.parameters="{'teamName':'"+team.name+"','processName':'"+coproduction.name+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"','org_id':'"+str(team.organization_id)+"'}"
 
                     db.add(newUserNotification)

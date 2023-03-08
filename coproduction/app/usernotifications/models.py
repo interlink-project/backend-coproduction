@@ -20,6 +20,8 @@ class UserNotification(BaseModel):
     channel = Column(Enum(ChannelTypes, create_constraint=False, native_enum=False), nullable=False)
     state = Column(Boolean, nullable=False, default=False)
 
+    coproductionprocess_id = Column(UUID(as_uuid=True), nullable=True)
+
     #Json object with information relevant to a notification:
     parameters = Column(JSON, nullable=True)
     

@@ -39,6 +39,14 @@ async def list_unseenusernotifications(
     return await crud.usernotification.get_unseen_user_notifications(db=db,user_id=user_id)
 
 
+@router.get("/{copro_id}/listNotificationsbyCopro", response_model=Optional[List[schemas.UserNotificationOutFull]])
+async def list_usernotifications_bycopro(
+    db: Session = Depends(deps.get_db),
+    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
+    copro_id: str = '',
+) -> Any:
+    return await crud.usernotification.get_user_notifications_by_coproid(db=db,copro_id=copro_id)
+
 
 @router.post("", response_model=Optional[schemas.UserNotificationOutFull])
 async def create_usernotification(
