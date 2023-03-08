@@ -1,0 +1,10 @@
+{
+    "event": "add_phase_copro",
+    "title": "A new phase was added to the schema.",
+    "subtitle": "A phase called '{phaseName}' was added to the coproduction process '{processName}'.",
+    "text": "The phase called '<a href='/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide'>{phaseName}</a>' was added to the coproduction process '<a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a>'.",
+    "html_template": null,
+    "url_link": "/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide",
+    "icon":"tree",
+    "language":"en" 
+  }

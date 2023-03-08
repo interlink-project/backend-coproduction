@@ -1,0 +1,10 @@
+{
+    "event": "remove_objective_copro",
+    "title": "Se eliminó un objetivo del esquema.",
+    "subtitle": "Un objetivo llamado '{objectiveName}' fue eliminado de la fase '{phaseName}' del proceso de coproducción '{processName}'.",
+    "text": "El objetivo '{objectiveName}' fue eliminado de la fase '<a href='/dashboard/coproductionprocesses/{copro_id}/{phase_treeitem_id}/guide'>{phaseName}</a>' del proceso de coproducción '<a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a>'.",
+    "html_template": null,
+    "url_link": "/dashboard/coproductionprocesses/{copro_id}/overview",
+    "icon":"tree",
+    "language":"es" 
+  }

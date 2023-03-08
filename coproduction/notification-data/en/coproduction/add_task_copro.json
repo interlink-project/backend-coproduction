@@ -1,0 +1,10 @@
+{
+    "event": "add_task_copro",
+    "title": "A new task was added to the schema.",
+    "subtitle": "A task called '{taskName}' was added to the coproduction process '{processName}'.",
+    "text": "The task called '<a href='/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide'>{taskName}</a>' was added to the coproduction process '<a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a>'.",
+    "html_template": null,
+    "url_link": "/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide",
+    "icon":"tree",
+    "language":"en" 
+  }

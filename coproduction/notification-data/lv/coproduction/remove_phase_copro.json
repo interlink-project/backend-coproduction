@@ -1,0 +1,10 @@
+{
+    "event": "remove_phase_copro",
+    "title": "No shēmas tika izņemts posms.",
+    "subtitle": "No kopražošanas procesa '{processName}' tika noņemta fāze ar nosaukumu '{phaseName}'.",
+    "text": "No kopražošanas procesa '<a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a>' tika noņemta fāze ar nosaukumu '{phaseName}'.",
+    "html_template": null,
+    "url_link": "/dashboard/coproductionprocesses/{copro_id}/overview",
+    "icon":"tree",
+    "language":"lv" 
+  }

@@ -1,0 +1,11 @@
+{
+    "event": "remove_task_copro",
+    "title": "Un'attività è stata rimossa dallo schema.",
+    "subtitle": "Un compito chiamato '{taskName}' è stato rimosso dall'obiettivo '{objectiveName}' e fase '{phaseName}' del processo di coproduzione '{processName}'.",
+    "text": "Il compito chiamato '{taskName}' è stato rimosso dall'obiettivo '<a href='/dashboard/coproductionprocesses/{copro_id}/{objective_treeitem_id}/guide'>{objectiveName}</a>' e fase '<a href='/dashboard/coproductionprocesses/{copro_id}/{phase_treeitem_id}/guide'>{phaseName}</a>' del processo di coproduzione '<a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a>'.",
+    "html_template": null,
+    "url_link": "/dashboard/coproductionprocesses/{copro_id}/overview",
+    "icon":"tree",
+    "language":"it" 
+  }
+

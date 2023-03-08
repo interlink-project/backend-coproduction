@@ -1,0 +1,10 @@
+{
+    "event": "remove_objective_copro",
+    "title": "A objective was removed from the schema.",
+    "subtitle": "A objective called '{objectiveName}' was removed from the phase '{phaseName}' of the coproduction process '{processName}'.",
+    "text": "The objective called '{objectiveName}' was removed from the phase '<a href='/dashboard/coproductionprocesses/{copro_id}/{phase_treeitem_id}/guide'>{phaseName}</a>' of the coproduction process '<a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a>'.",
+    "html_template": null,
+    "url_link": "/dashboard/coproductionprocesses/{copro_id}/overview",
+    "icon":"tree",
+    "language":"en" 
+  }

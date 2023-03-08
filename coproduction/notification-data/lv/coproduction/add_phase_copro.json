@@ -1,0 +1,10 @@
+{
+    "event": "add_phase_copro",
+    "title": "Shēmai tika pievienots jauns posms.",
+    "subtitle": "Kopražošanas procesam '{processName}' tika pievienots posms ar nosaukumu '{phaseName}'.",
+    "text": "Kopražošanas procesam '<a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a>' tika pievienots posms ar nosaukumu '<a href='/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide'>{phaseName}</a>'.",
+    "html_template": null,
+    "url_link": "/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide",
+    "icon":"tree",
+    "language":"lv" 
+  }

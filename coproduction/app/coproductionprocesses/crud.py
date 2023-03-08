@@ -110,7 +110,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
     async def clear_schema(self, db: Session, coproductionprocess: models.CoproductionProcess):
         schema = coproductionprocess.schema_used
         for phase in coproductionprocess.children:
-            await crud.phase.remove(db=db, id=phase.id, remove_definitely=True)
+            await crud.phase.remove(db=db, id=phase.id, remove_definitely=True,withNotifications=False)
         enriched: dict = self.enrich_log_data(coproductionprocess, {
             "action": "CLEAR_SCHEMA",
             "coproductionprocess_id": coproductionprocess.id,

@@ -6,10 +6,12 @@ from sqlalchemy.orm import Session
 from app import models
 from app.general.utils.CRUDBase import CRUDBase
 from app.messages import log
-from app.models import CoproductionProcess, Phase, User
+from app.models import CoproductionProcess, Phase, User, CoproductionProcessNotification
 from app.schemas import PhaseCreate, PhasePatch
 from app.treeitems.crud import exportCrud as treeitems_crud
 from app.objectives.crud import exportCrud as objectives_crud
+from app.notifications.crud import exportCrud as notification_crud
+from app.coproductionprocesses.crud import exportCrud as coproductionprocesses_crud
 from app.utils import recursive_check
 from fastapi.encoders import jsonable_encoder
 from app.sockets import socket_manager
@@ -22,11 +24,13 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
         data["from_schema"] = schema_id
         data["from_item"] = data.get("id")
         creator = PhaseCreate(**data)
-        return await self.create(db=db, obj_in=creator, commit=False, extra={
+        return await self.create(db=db, obj_in=creator, commit=False,withNotifications=False,withSocketMsn=False, extra={
             "coproductionprocess": coproductionprocess
         })
 
-    async def create(self, db: Session, *, obj_in: PhaseCreate, creator: User = None, extra: dict = {}, commit: bool = True) -> Phase:
+    async def create(self, db: Session, *, obj_in: PhaseCreate, creator: User = None, extra: dict = {}, commit: bool = True, withNotifications : bool = True, withSocketMsn : bool = True) -> Phase:
+        
+        print('Llega a create la Phase!!')
         obj_in_data = jsonable_encoder(obj_in)
         prereqs = obj_in_data.get("prerequisites_ids")
         del obj_in_data["prerequisites_ids"]
@@ -60,7 +64,7 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
             db.refresh(db_obj)
 
 
-         # In case there is another node with pre-requisite equal the one 
+        # In case there is another node with pre-requisite equal the one 
         # of the phase it must change it prerequisite to the new id
         
         # Find other nodes wit the pre-requisite
@@ -81,8 +85,28 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
                         db.add(phase)
                         db.commit()
                         db.refresh(phase)
+        
+        #Save the notifications:
+        if(withNotifications):
+            coproduction = await coproductionprocesses_crud.get(db=db, id=db_obj.coproductionprocess_id)
+            notification = await notification_crud.get_notification_by_event(db=db, event="add_phase_copro",language=coproduction.language)
+            if(notification):
+                
+                treeitem = await treeitems_crud.get(db=db, id=db_obj.id)
+                
+                newCoproNotification=CoproductionProcessNotification()
+                newCoproNotification.notification_id=notification.id
+                newCoproNotification.coproductionprocess_id=coproduction.id
 
-        await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": "phase_created"})
+                newCoproNotification.parameters="{'phaseName':'"+db_obj.name+"','processName':'"+coproduction.name+"','treeitem_id':'"+str(treeitem.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+
+                db.add(newCoproNotification)
+                db.commit()
+                db.refresh(newCoproNotification)
+
+        if(withSocketMsn):
+            await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": "phase_created"})
+        
         return db_obj
             
     async def add_prerequisite(self, db: Session, phase: Phase, prerequisite: Phase, commit: bool = True) -> Phase:
@@ -98,7 +122,7 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
             db.refresh(phase)
         return phase
 
-    async def remove(self, db: Session, *, id: uuid.UUID, user_id: str = None, remove_definitely: bool = False) -> Phase:
+    async def remove(self, db: Session, *, id: uuid.UUID, user_id: str = None, remove_definitely: bool = False, withNotifications : bool = True) -> Phase:
         obj = db.query(self.model).get(id)
         if not obj:
             raise Exception("Object does not exist")
@@ -106,7 +130,32 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
             await self.log_on_remove(obj)
         else:
             await self.log_on_disable(obj)
+        
+        #Save the notifications:
+        if(withNotifications):
+            coproduction = await coproductionprocesses_crud.get(db=db, id=obj.coproductionprocess_id)
+            notification = await notification_crud.get_notification_by_event(db=db, event="remove_phase_copro",language=coproduction.language)
+            if(notification):
+                
+                treeitem = await treeitems_crud.get(db=db, id=obj.id)
+                
+                newCoproNotification=CoproductionProcessNotification()
+                newCoproNotification.notification_id=notification.id
+                newCoproNotification.coproductionprocess_id=coproduction.id
+
+                newCoproNotification.parameters="{'phaseName':'"+obj.name+"','processName':'"+coproduction.name+"','copro_id':'"+str(obj.coproductionprocess_id)+"'}"
+
+                db.add(newCoproNotification)
+                db.commit()
+                db.refresh(newCoproNotification)
+
+        
+        
         await treeitems_crud.remove(db=db, obj=obj, model=self.model, user_id=user_id, remove_definitely=remove_definitely)
+
+        
+
+
 
     async def copy(self, db: Session, *, obj_in: PhaseCreate, coproductionprocess: CoproductionProcess,creator: User = None, extra: dict = {}, commit: bool = True):
         print("copying phase")
@@ -133,7 +182,7 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
                 prerequisites_ids=prereqs_ids
             )
             
-        new_phase = await self.create(db=db, obj_in=new_phase)
+        new_phase = await self.create(db=db, obj_in=new_phase,withNotifications=False)
         
         objectives_temp = obj_in.children.copy()
         objectives = []

@@ -5,12 +5,14 @@ from sqlalchemy.orm import Session
 
 from app import schemas
 from app.general.utils.CRUDBase import CRUDBase
-from app.models import Task, Phase, Objective, User
+from app.models import Task, Phase, Objective, User, CoproductionProcessNotification
 from app.schemas import TaskCreate, TaskPatch
 from fastapi.encoders import jsonable_encoder
 from app.utils import recursive_check, update_status_and_progress
 from app.messages import log
 from app.treeitems.crud import exportCrud as treeitems_crud
+from app.notifications.crud import exportCrud as notification_crud
+from app.coproductionprocesses.crud import exportCrud as coproductionprocesses_crud
 from app.sockets import socket_manager
 from app import models
 
@@ -22,11 +24,11 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
         data["from_schema"] = schema_id
         data["from_item"] = data.get("id")
         creator = TaskCreate(**data)
-        return await self.create(db=db, obj_in=creator, commit=False, extra={
+        return await self.create(db=db, obj_in=creator, commit=False, withNotifications=False,withSocketMsn=False, extra={
             "objective": objective,
         })
 
-    async def create(self, db: Session, *, obj_in: TaskCreate, creator: User = None, extra: dict = {}, commit: bool = True) -> Phase:
+    async def create(self, db: Session, *, obj_in: TaskCreate, creator: User = None, extra: dict = {}, commit: bool = True, withNotifications : bool = True, withSocketMsn : bool = True) -> Phase:
         obj_in_data = jsonable_encoder(obj_in)
         prereqs = obj_in_data.get("prerequisites_ids")
         del obj_in_data["prerequisites_ids"]
@@ -58,6 +60,25 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
             db.commit()
             db.refresh(db_obj)
 
+
+         #Save the notifications:
+        if(withNotifications):
+            coproduction = await coproductionprocesses_crud.get(db=db, id=db_obj.coproductionprocess_id)
+            notification = await notification_crud.get_notification_by_event(db=db, event="add_task_copro",language=coproduction.language)
+            if(notification):
+                
+                treeitem = await treeitems_crud.get(db=db, id=db_obj.id)
+                
+                newCoproNotification=CoproductionProcessNotification()
+                newCoproNotification.notification_id=notification.id
+                newCoproNotification.coproductionprocess_id=coproduction.id
+
+                newCoproNotification.parameters="{'taskName':'"+db_obj.name+"','processName':'"+coproduction.name+"','treeitem_id':'"+str(treeitem.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+
+                db.add(newCoproNotification)
+                db.commit()
+                db.refresh(newCoproNotification)
+
         # In case there is another node with pre-requisite equal the one 
         # of the task it must change it prerequisite to the new id
         
@@ -82,8 +103,8 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
                         
 
         #Update its id to my
-
-        await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": "task_created"})
+        if (withSocketMsn):
+            await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": "task_created"})
         return db_obj
 
     async def add_prerequisite(self, db: Session, task: Task, prerequisite: Task, commit : bool = True) -> Task:
@@ -133,7 +154,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
         await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": "task_updated"})
         return db_obj
 
-    async def remove(self, db: Session, *, id: uuid.UUID, user_id: str = None, remove_definitely: bool = False) -> Phase:
+    async def remove(self, db: Session, *, id: uuid.UUID, user_id: str = None, remove_definitely: bool = False, withNotifications : bool = True) -> Phase:
         obj = db.query(self.model).get(id)
         if not obj:
             raise Exception("Object does not exist")
@@ -141,6 +162,28 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
             await self.log_on_remove(obj)
         else:
             await self.log_on_disable(obj)
+
+
+        #Save the notifications:
+        if(withNotifications):
+            coproduction = await coproductionprocesses_crud.get(db=db, id=obj.coproductionprocess_id)
+            notification = await notification_crud.get_notification_by_event(db=db, event="remove_task_copro",language=coproduction.language)
+            if(notification):
+                
+                treeitem = await treeitems_crud.get(db=db, id=obj.id)
+                
+                newCoproNotification=CoproductionProcessNotification()
+                newCoproNotification.notification_id=notification.id
+                newCoproNotification.coproductionprocess_id=coproduction.id
+
+                newCoproNotification.parameters="{'objective_treeitem_id':'"+str(obj.objective.id)+"','objectiveName':'"+obj.objective.name+"','phase_treeitem_id':'"+str(obj.objective.phase.id)+"','phaseName':'"+obj.objective.phase.name+"','taskName':'"+obj.name+"','processName':'"+coproduction.name+"','copro_id':'"+str(obj.coproductionprocess_id)+"'}"
+
+                db.add(newCoproNotification)
+                db.commit()
+                db.refresh(newCoproNotification)
+
+
+
         await treeitems_crud.remove(db=db, obj=obj, model=self.model, user_id=user_id, remove_definitely=remove_definitely)
 
     async def copy(self, db: Session, *, obj_in: TaskCreate, coproductionprocess, parent: Objective, extra: dict = {}) -> Task:
@@ -176,7 +219,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
                 exploitation=obj_in.exploitation,
             )
 
-        new_task = await self.create(db=db, obj_in=new_task)
+        new_task = await self.create(db=db, obj_in=new_task, withNotifications=False)
 
         return new_task
 

@@ -1,0 +1,10 @@
+{
+    "event": "add_objective_copro",
+    "title": "Un nuevo objectivo fue agregado esquema.",
+    "subtitle": "Un objetivo '{objectiveName}' fué agregado al proceso de coproducción '{processName}'.",
+    "text": "El objetivo '<a href='/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide'>{objectiveName}</a>' fué agregado al proceso de coproducción '<a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a>'.",
+    "html_template": null,
+    "url_link": "/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide",
+    "icon":"tree",
+    "language":"es" 
+  }

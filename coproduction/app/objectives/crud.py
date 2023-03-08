@@ -5,10 +5,12 @@ from sqlalchemy.orm import Session
 
 from app.general.utils.CRUDBase import CRUDBase
 from app.messages import log
-from app.models import Objective, Phase, User
+from app.models import Objective, Phase, User, CoproductionProcessNotification
 from app.schemas import ObjectiveCreate, ObjectivePatch
 from app.treeitems.crud import exportCrud as treeitems_crud
 from app.tasks.crud import exportCrud as tasks_crud
+from app.notifications.crud import exportCrud as notification_crud
+from app.coproductionprocesses.crud import exportCrud as coproductionprocesses_crud
 from app.utils import recursive_check
 from fastapi.encoders import jsonable_encoder
 from app.sockets import socket_manager
@@ -21,11 +23,11 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
         data["from_schema"] = schema_id
         data["from_item"] = data.get("id")
         creator = ObjectiveCreate(**data)
-        return await self.create(db=db, obj_in=creator, commit=False, extra={
+        return await self.create(db=db, obj_in=creator, commit=False, withNotifications=False,withSocketMsn=False, extra={
             "phase": phase
         })
     
-    async def create(self, db: Session, *, obj_in: ObjectiveCreate, creator: User = None, extra: dict = {}, commit: bool = True) -> Objective:
+    async def create(self, db: Session, *, obj_in: ObjectiveCreate, creator: User = None, extra: dict = {}, commit: bool = True, withNotifications : bool = True, withSocketMsn : bool = True) -> Objective:
         obj_in_data = jsonable_encoder(obj_in)
         prereqs = obj_in_data.get("prerequisites_ids")
         del obj_in_data["prerequisites_ids"]
@@ -58,6 +60,25 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
             db.commit()
             db.refresh(db_obj)
 
+
+         #Save the notifications:
+        if(withNotifications):
+            coproduction = await coproductionprocesses_crud.get(db=db, id=db_obj.coproductionprocess_id)
+            notification = await notification_crud.get_notification_by_event(db=db, event="add_objective_copro",language=coproduction.language)
+            if(notification):
+                
+                treeitem = await treeitems_crud.get(db=db, id=db_obj.id)
+                
+                newCoproNotification=CoproductionProcessNotification()
+                newCoproNotification.notification_id=notification.id
+                newCoproNotification.coproductionprocess_id=coproduction.id
+
+                newCoproNotification.parameters="{'objectiveName':'"+db_obj.name+"','processName':'"+coproduction.name+"','treeitem_id':'"+str(treeitem.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+
+                db.add(newCoproNotification)
+                db.commit()
+                db.refresh(newCoproNotification)
+
         
         # In case there is another node with pre-requisite equal the one 
         # of the objective it must change it prerequisite to the new id
@@ -81,7 +102,9 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
                         db.commit()
                         db.refresh(objective)
 
-        await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": "phase_created"})
+        if(withSocketMsn):
+            await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": "objective_created"})
+        
         return db_obj
 
     async def add_prerequisite(self, db: Session, objective: Objective, prerequisite: Objective, commit: bool = True) -> Objective:
@@ -98,7 +121,7 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
             db.refresh(objective)
         return objective
 
-    async def remove(self, db: Session, *, id: uuid.UUID, user_id: str = None, remove_definitely: bool = False) -> Objective:
+    async def remove(self, db: Session, *, id: uuid.UUID, user_id: str = None, remove_definitely: bool = False, withNotifications : bool = True) -> Objective:
         obj = db.query(self.model).get(id)
         if not obj:
             raise Exception("Object does not exist")
@@ -106,6 +129,29 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
             await self.log_on_remove(obj)
         else:
             await self.log_on_disable(obj)
+
+        #Save the notifications:
+        if(withNotifications):
+            coproduction = await coproductionprocesses_crud.get(db=db, id=obj.coproductionprocess_id)
+            notification = await notification_crud.get_notification_by_event(db=db, event="remove_objective_copro",language=coproduction.language)
+            if(notification):
+                
+                treeitem = await treeitems_crud.get(db=db, id=obj.id)
+                
+                newCoproNotification=CoproductionProcessNotification()
+                newCoproNotification.notification_id=notification.id
+                newCoproNotification.coproductionprocess_id=coproduction.id
+
+
+                #phase_treeitem_id   and  phaseName
+                newCoproNotification.parameters="{'phase_treeitem_id':'"+str(obj.phase.id)+"','phaseName':'"+obj.phase.name+"','objectiveName':'"+obj.name+"','processName':'"+coproduction.name+"','copro_id':'"+str(obj.coproductionprocess_id)+"'}"
+
+                db.add(newCoproNotification)
+                db.commit()
+                db.refresh(newCoproNotification)
+
+
+
         await treeitems_crud.remove(db=db, obj=obj, model=self.model, user_id=user_id, remove_definitely=remove_definitely)
 
     async def copy(self, db: Session, *, obj_in: ObjectiveCreate, coproductionprocess, parent: Phase, extra: dict = {}):
@@ -133,7 +179,7 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
                 from_schema=obj_in.from_schema
             )
 
-        new_objective = await self.create(db=db, obj_in=new_objective)
+        new_objective = await self.create(db=db, obj_in=new_objective, withNotifications=False)
         
         tasks_temp = obj_in.children.copy()
         tasks = []

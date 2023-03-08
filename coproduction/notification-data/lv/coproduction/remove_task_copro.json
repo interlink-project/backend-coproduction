@@ -1,0 +1,11 @@
+{
+    "event": "remove_task_copro",
+    "title": "No shēmas tika noņemts uzdevums.",
+    "subtitle": "No kopražošanas procesa '{processName}' mērķa '{objectiveName}' un fāzes '{phaseName}' tika izņemts uzdevums ar nosaukumu '{taskName}'.",
+    "text": "No kopražošanas procesa '<a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a>' mērķa '<a href='/dashboard/coproductionprocesses/{copro_id}/{objective_treeitem_id}/guide'>{objectiveName}</a>' un fāzes '<a href='/dashboard/coproductionprocesses/{copro_id}/{phase_treeitem_id}/guide'>{phaseName}</a>' tika izņemts uzdevums ar nosaukumu '{taskName}'.",
+    "html_template": null,
+    "url_link": "/dashboard/coproductionprocesses/{copro_id}/overview",
+    "icon":"tree",
+    "language":"lv" 
+  }
+

@@ -1,0 +1,10 @@
+{
+    "event": "add_task_copro",
+    "title": "Shēmai tika pievienots jauns uzdevums.",
+    "subtitle": "Kopražošanas procesam '{processName}' tika pievienots uzdevums ar nosaukumu '{taskName}'.",
+    "text": "Kopražošanas procesam '<a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a>' tika pievienots uzdevums ar nosaukumu '<a href='/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide'>{taskName}</a>'.",
+    "html_template": null,
+    "url_link": "/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide",
+    "icon":"tree",
+    "language":"lv" 
+  }

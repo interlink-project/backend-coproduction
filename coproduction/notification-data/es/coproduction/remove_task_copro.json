@@ -1,0 +1,11 @@
+{
+    "event": "remove_task_copro",
+    "title": "Se eliminó una tarea del esquema.",
+    "subtitle": "Una tarea llamada '{taskName}' fue eliminado del objetivo '{objectiveName}' y fase '{phaseName}' del proceso de coproducción '{processName}'.",
+    "text": "La tarea llamada '{taskName}' fue eliminado del objetivo '<a href='/dashboard/coproductionprocesses/{copro_id}/{objective_treeitem_id}/guide'>{objectiveName}</a>' y la fase '<a href='/dashboard/coproductionprocesses/{copro_id}/{phase_treeitem_id}/guide'>{phaseName}</a>' del proceso de coproducción '<a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a>'.",
+    "html_template": null,
+    "url_link": "/dashboard/coproductionprocesses/{copro_id}/overview",
+    "icon":"tree",
+    "language":"es" 
+  }
+

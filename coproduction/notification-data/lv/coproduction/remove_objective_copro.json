@@ -1,0 +1,10 @@
+{
+    "event": "remove_objective_copro",
+    "title": "No shēmas tika izņemts mērķis.",
+    "subtitle": "No kopražošanas procesa '{processName}' fāzes '{phaseName}' tika izņemts mērķis ar nosaukumu '{objectiveName}'.",
+    "text": "No kopražošanas procesa '<a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a>' fāzes '<a href='/dashboard/coproductionprocesses/{copro_id}/{phase_treeitem_id}/guide'>{phaseName}</a>' tika izņemts mērķis ar nosaukumu '{objectiveName}'.",
+    "html_template": null,
+    "url_link": "/dashboard/coproductionprocesses/{copro_id}/overview",
+    "icon":"tree",
+    "language":"lv" 
+  }

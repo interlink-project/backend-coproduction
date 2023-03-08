@@ -1,0 +1,10 @@
+{
+    "event": "remove_phase_copro",
+    "title": "Una fase è stata rimossa dallo schema.",
+    "subtitle": "Una fase chiamata '{phaseName}' è stato rimosso dal processo di coproduzione '{processName}'.",
+    "text": "La fase chiamata '{phaseName}' è stato rimosso dal processo di coproduzione '<a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a>'.",
+    "html_template": null,
+    "url_link": "/dashboard/coproductionprocesses/{copro_id}/overview",
+    "icon":"tree",
+    "language":"it" 
+  }

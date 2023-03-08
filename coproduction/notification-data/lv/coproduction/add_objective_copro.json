@@ -1,0 +1,10 @@
+{
+    "event": "add_objective_copro",
+    "title": "Shēmai tika pievienots jauns mērķis.",
+    "subtitle": "Kopražošanas procesam '{processName}' tika pievienots mērķis ar nosaukumu '{objectiveName}'.",
+    "text": "Kopražošanas procesam '<a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a>'  tika pievienots mērķis ar nosaukumu '<a href='/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide'>{objectiveName}</a>'.",
+    "html_template": null,
+    "url_link": "/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide",
+    "icon":"tree",
+    "language":"lv" 
+  }
