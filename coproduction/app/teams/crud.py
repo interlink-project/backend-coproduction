@@ -65,7 +65,7 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
         newUserNotification = UserNotification()
         newUserNotification.user_id = user.id
         notification = await notification_crud.get_notification_by_event(
-            db=db, event="add_user_team",language=get_language()
+            db=db, event="add_user_team", language=get_language()
         )
         if notification:
             newUserNotification.notification_id = notification.id
@@ -111,7 +111,7 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
         newUserNotification = UserNotification()
         newUserNotification.user_id = user.id
         notification = await notification_crud.get_notification_by_event(
-            db=db, event="remove_user_team",language=get_language()
+            db=db, event="remove_user_team", language=get_language()
         )
         if notification:
             newUserNotification.notification_id = notification.id
@@ -174,15 +174,15 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
             # Create a notification for every user
             newUserNotification = UserNotification()
             newUserNotification.user_id = user_id
-            
+
             notification = await notification_crud.get_notification_by_event(
-                db=db, event="add_user_team",language=get_language()
+                db=db, event="add_user_team", language=get_language()
             )
             print("La notification es:::::")
             print(notification)
             if notification:
                 print("Entra a crear notificacion"+str(notification.id))
-                
+
                 newUserNotification.notification_id = notification.id
                 newUserNotification.channel = "in_app"
                 newUserNotification.state = False
@@ -218,22 +218,28 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
                 raise HTTPException(
                     status_code=400,
                     detail="The user already applied to the team",
-                )   
+                )
         else:
             raise HTTPException(
                 status_code=400,
                 detail="The user is part of the team",
             )
-        
-        #Send mail to administrators to know there is an application to the team
-        # _ = send_email(user.email,
-        #            'add_admin_coprod',
-        #            {"coprod_id": db_obj.id,
-        #             "coprod_name": db_obj.name,})
+        print(db_obj.organization_id)
+        print(db_obj.id)
+        # Send mail to administrators to know there is an application to the team
+        for admin in db_obj.administrators:
+            _ = send_email(
+                admin.email,
+                'user_apply_team',
+                {"org_id": db_obj.organization_id,
+                 "team_id": db_obj.id,
+                 "team_name": db_obj.name,
+                 "user_id": user.id,
+                 "user_name": user.full_name})
 
         await self.log_on_create(db_obj)
         return db_obj.applies
-    
+
     # Override log methods
     def enrich_log_data(self, obj, logData):
         logData["model"] = "TEAM"

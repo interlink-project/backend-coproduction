@@ -16,7 +16,8 @@ def send_email(
     environment: Dict[str, Any] = {},
 ) -> None:
     assert settings.EMAILS_ENABLED, "no provided configuration for email variables"
-
+    
+    environment["server"] = settings.SERVER_NAME
     if type == 'add_member_team':
         subject = 'Interlink: You have been added to a new team'
         environment["link"] = 'https://{server}/dashboard/organizations/{org_id}/{team_id}'.format(
@@ -28,6 +29,13 @@ def send_email(
         environment["link"] = 'https://{server}/dashboard/coproductionprocesses/{id}/overview'.format(
             server=settings.SERVER_NAME,
             id=environment['coprod_id'])
+    elif type == 'user_apply_team':
+        subject = 'Interlink: A new user has applied to join your team'
+        environment["link"] = 'https://{server}/dashboard/organizations/{org_id}/{team_id}?user={user_id}'.format(
+            server=settings.SERVER_NAME,
+            org_id=environment['org_id'],
+            team_id=environment['team_id'],
+            user_id=environment['user_id'])
 
     with open(Path(settings.EMAIL_TEMPLATES_DIR) / "{type}.html".format(type=type)) as f:
         template_str = f.read()
@@ -57,7 +65,8 @@ def send_team_email(
     environment: Dict[str, Any] = {},
 ) -> None:
     assert settings.EMAILS_ENABLED, "no provided configuration for email variables"
-
+    
+    environment["server"] = settings.SERVER_NAME
     if type == 'add_team_coprod':
         subject = 'Interlink: Your team has been added to a coproduction process'
         environment["link"] = 'https://{server}/dashboard/coproductionprocesses/{id}/overview'.format(
