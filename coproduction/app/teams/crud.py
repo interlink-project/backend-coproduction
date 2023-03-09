@@ -17,6 +17,7 @@ from app.sockets import socket_manager
 from uuid_by_string import generate_uuid
 from app.general.emails import send_email, send_team_email
 from app.locales import get_language
+from fastapi import HTTPException
 
 
 class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
@@ -206,6 +207,33 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
         await self.log_on_create(db_obj)
         return db_obj
 
+    async def add_application(self, db: Session, db_obj: Team, user: models.User):
+        if user not in db_obj.users:
+            if user.id not in db_obj.appliers_ids:
+                db_obj.applies.append(user)
+                db.add(db_obj)
+                db.commit()
+                db.refresh(db_obj)
+            else:
+                raise HTTPException(
+                    status_code=400,
+                    detail="The user already applied to the team",
+                )   
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail="The user is part of the team",
+            )
+        
+        #Send mail to administrators to know there is an application to the team
+        # _ = send_email(user.email,
+        #            'add_admin_coprod',
+        #            {"coprod_id": db_obj.id,
+        #             "coprod_name": db_obj.name,})
+
+        await self.log_on_create(db_obj)
+        return db_obj.applies
+    
     # Override log methods
     def enrich_log_data(self, obj, logData):
         logData["model"] = "TEAM"

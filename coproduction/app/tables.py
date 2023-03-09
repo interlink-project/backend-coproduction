@@ -19,3 +19,7 @@ organization_administrators_association_table = Table('organization_administrato
 user_team_association_table = Table('association_user_team', BaseModel.metadata,
                                     Column('user_id', ForeignKey('user.id', ondelete="CASCADE"), primary_key=True),
                                     Column('team_id', ForeignKey('team.id', ondelete="CASCADE"), primary_key=True))
+
+team_applies_association_table = Table('team_applies', BaseModel.metadata,
+                                       Column('team_id', ForeignKey('team.id', ondelete="CASCADE"), primary_key=True),
+                                       Column('user_id', ForeignKey('user.id', ondelete="CASCADE"), primary_key=True))

@@ -9,6 +9,7 @@ from app.config import settings
 from sqlalchemy.ext.associationproxy import association_proxy
 from app.tables import user_team_association_table
 from app.tables import team_administrators_association_table
+from app.tables import team_applies_association_table
 from sqlalchemy_utils import aggregated
 from sqlalchemy.orm import Session
 from app.utils import RoleTypes
@@ -37,7 +38,7 @@ class Team(BaseModel):
         secondary=user_team_association_table,
         backref="teams")
     user_ids = association_proxy('users', 'id')
-    
+
     @aggregated('users', Column(Integer))
     def users_count(self):
         return func.count('1')
@@ -48,11 +49,17 @@ class Team(BaseModel):
         backref="administered_teams")
     administrators_ids = association_proxy('administrators', 'id')
 
+    applies = relationship(
+        "User",
+        secondary=team_applies_association_table,
+        backref="applied_teams")
+    appliers_ids = association_proxy('applies', 'id')
+
 
     @property
     def logotype_link(self):
         return settings.COMPLETE_SERVER_NAME + self.logotype if self.logotype else ""
-    
+
     @property
     def current_user_participation(self):
         from app.general.deps import get_current_user_from_context

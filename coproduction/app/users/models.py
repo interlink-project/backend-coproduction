@@ -25,5 +25,7 @@ class User(BaseModel):
     )
     notifications = association_proxy("user_notification_associations", "notification")
 
+    applied_teams_ids = association_proxy("applied_teams", "id")
+
     def __repr__(self) -> str:
         return f"<User {self.id}>"

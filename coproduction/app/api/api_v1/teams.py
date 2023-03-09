@@ -206,3 +206,14 @@ async def delete_administrator(
                 status_code=403, detail="You are not allowed to update this team")
         raise HTTPException(status_code=404, detail="Team not found")
     raise HTTPException(status_code=404, detail="User not found")
+
+@router.post("/{id}/apply")
+async def add_application(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: uuid.UUID,
+    current_user: models.User = Depends(deps.get_current_user),
+) -> Any:
+    if (team := await crud.team.get(db=db, id=id)):
+        return await crud.team.add_application(db=db, db_obj=team, user=current_user)
+    raise HTTPException(status_code=404, detail="User not found")

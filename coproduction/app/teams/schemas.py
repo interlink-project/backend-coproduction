@@ -39,7 +39,13 @@ class TeamOut(Team):
     administrators_ids: List[str]
     users_count: Optional[int] = 0
     current_user_participation: list
+    appliers_ids: List[str]
+    #TODO: add appliers_ids to the output
     
     @validator('administrators_ids', pre=True)
     def administrators_ids_to_list(cls, v):
+        return list(v)
+    
+    @validator('appliers_ids', pre=True)
+    def appliers_ids_to_list(cls, v):
         return list(v)
