@@ -234,7 +234,7 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
                 {"org_id": db_obj.organization_id,
                  "team_id": db_obj.id,
                  "team_name": db_obj.name,
-                 "user_id": user.id,
+                 "user_email": user.email,
                  "user_name": user.full_name})
 
         await self.log_on_create(db_obj)

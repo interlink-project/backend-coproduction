@@ -31,11 +31,11 @@ def send_email(
             id=environment['coprod_id'])
     elif type == 'user_apply_team':
         subject = 'Interlink: A new user has applied to join your team'
-        environment["link"] = 'https://{server}/dashboard/organizations/{org_id}/{team_id}?user={user_id}'.format(
+        environment["link"] = 'https://{server}/dashboard/organizations/{org_id}/{team_id}?user={user_email}'.format(
             server=settings.SERVER_NAME,
             org_id=environment['org_id'],
             team_id=environment['team_id'],
-            user_id=environment['user_id'])
+            user_email=environment['user_email'])
 
     with open(Path(settings.EMAIL_TEMPLATES_DIR) / "{type}.html".format(type=type)) as f:
         template_str = f.read()
