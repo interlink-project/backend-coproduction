@@ -51,7 +51,9 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                 
                 datosAsset = response.json()
                 asset.internalData=datosAsset
-               
+            if asset.type == "externalasset":
+                asset.internalData={'icon':asset.icon,'name':asset.name,'link':asset.uri}
+                
 
         return listAssets
 

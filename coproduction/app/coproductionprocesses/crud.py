@@ -66,6 +66,15 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
                     datosAsset = response.json()
                     asset.internalData=datosAsset
+
+                if asset.type == "externalasset":
+
+                    queries = []
+                    queries.append(Asset.id == asset.id)
+                    datosAsset=db.query(Asset).filter(*queries).first()
+
+                    asset.internalData={'icon':datosAsset.icon,'name':datosAsset.name,'link':datosAsset.uri}
+                    
             return listOfAssets
 
         
