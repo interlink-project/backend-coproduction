@@ -148,6 +148,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
 
     async def create(self, db: Session, asset: AssetCreate, creator: models.User, task: models.Task) -> Asset:
         data = jsonable_encoder(asset)
+        icon_path= None
         if type(asset) == ExternalAssetCreate:
            
             data["type"] = "externalasset"
@@ -207,8 +208,15 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                 nameInterlinker='external'
                 assetLink=asset.uri
 
+               
+                if(icon_path):
+                    pass
+                else:
+                    icon_path='/coproduction/static/assets/external_link.svg'
+                
 
-                newCoproNotification.parameters="{'showLink':'hidden','showIcon':'','treeitem_id':'"+str(task.id)+"','treeItemName':'"+str(task.name)+"','assetId':'"+str(db_obj.id)+"','assetName':'"+asset.name+"','assetLink':'"+str(assetLink)+"','interlinkerName':'"+nameInterlinker+"','processName':'"+coproduction.name+"','userName':'"+self.shortName(db_obj.creator.full_name)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+
+                newCoproNotification.parameters="{'showLink':'hidden','showIcon':'','treeitem_id':'"+str(task.id)+"','treeItemName':'"+str(task.name)+"','assetId':'"+str(db_obj.id)+"','assetIcon':'"+icon_path+"','assetName':'"+asset.name+"','assetLink':'"+str(assetLink)+"','interlinkerName':'"+nameInterlinker+"','processName':'"+coproduction.name+"','userName':'"+self.shortName(db_obj.creator.full_name)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
                 db.add(newCoproNotification)
         if type(asset) == InternalAssetCreate:
             
