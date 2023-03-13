@@ -10,6 +10,8 @@ mkdir -p /app/static/teams || true
 mkdir -p /app/static/assets || true
 mkdir -p /app/static/organizations || true
 mkdir -p /app/static/notifications || true
+mkdir -p /app/static/stories || true
+
 
 # Let the DB start
 python /app/app/pre_start.py
