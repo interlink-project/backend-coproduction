@@ -56,7 +56,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
             for asset in listOfAssets:
                 if asset.type == "internalasset":
-                    
+
                     serviceName=os.path.split(asset.link)[0].split('/')[3]
                     response = requests.get(f"http://{serviceName}/assets/{asset.external_asset_id}")
                     """ , headers={
@@ -77,7 +77,8 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                     
             return listOfAssets
 
-        
+        #En el caso que seas un administrador del proceso (muestro todo):
+
         if user in coproductionprocess.administrators: #or self.can_read(db, user, coproductionprocess):
 
             listOfAssets=db.query(
@@ -90,7 +91,29 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
             listOfAssets=obtainpublicData(listOfAssets)
 
             return listOfAssets
-                
+
+
+        # En el caso que tengas permisos sobre todo el proceso:
+        # Pregunto si tienes permisos
+        listPermissionsAllProcess=await crud.permission.get_permission_user_coproduction(db=db, user=user, coproductionprocess_id=coproductionprocess.id)
+        if(len(listPermissionsAllProcess)>0):
+
+            # Si es asi muestro todos los assets igual que el admin
+
+            listOfAssets=db.query(
+                Asset
+                ).filter(
+                    Asset.task_id.in_(coproductionprocess.task_ids())
+                ).order_by(models.Asset.created_at.desc()).all()
+
+            #Agrego informacion del asset interno
+            listOfAssets=obtainpublicData(listOfAssets)
+            
+            return listOfAssets
+
+            
+
+        #En el caso que tengas permisos sobre treeitems Individuales:
         ids = [treeitem.id for treeitem in await treeitemsCrud.get_for_user_and_coproductionprocess(db=db, user=user, coproductionprocess_id=coproductionprocess.id) if not treeitem.disabled_on]
         
         listOfAssets= db.query(

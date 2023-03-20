@@ -187,6 +187,17 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
             Permission.treeitem_id.in_(treeitem.path_ids)
         ).order_by(Permission.created_at.asc()).offset(skip).limit(limit).all()
 
+
+    async def get_permission_user_coproduction(
+        self, db: Session, user: models.User, *, coproductionprocess_id: uuid.UUID
+    ) -> List[Permission]:
+        return db.query(Permission).filter(
+            Permission.coproductionprocess_id==coproductionprocess_id
+        ).order_by(Permission.created_at.asc()).filter(
+            Permission.team_id.in_(user.teams_ids)
+            ).all()
+
+
     def get_for_user_and_treeitem(
         self, db: Session, user: models.User, treeitem: models.TreeItem
     ):
