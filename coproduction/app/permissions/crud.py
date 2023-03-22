@@ -44,7 +44,7 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
             newCoproNotification.notification_id=notification.id
             newCoproNotification.coproductionprocess_id=coproduction.id
 
-            newCoproNotification.parameters="{'teamName':'"+team.name+"','processName':'"+coproduction.name+"','team_id':'"+str(team.id)+"','treeItemName':'"+str(treeitem.name)+"','treeitem_id':'"+str(treeitem.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+            newCoproNotification.parameters="{'teamName':'"+team.name.replace('\'', '')+"','processName':'"+coproduction.name.replace('\'', '')+"','team_id':'"+str(team.id)+"','treeItemName':'"+str(treeitem.name.replace('\'', ''))+"','treeitem_id':'"+str(treeitem.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
 
             db.add(newCoproNotification)
         else:
@@ -57,7 +57,7 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
                 newCoproNotification.notification_id=notification.id
                 newCoproNotification.coproductionprocess_id=coproduction.id
                 # newCoproNotification.asset_id=null
-                newCoproNotification.parameters="{'teamName':'"+team.name+"','processName':'"+coproduction.name+"','team_id':'"+str(team.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+                newCoproNotification.parameters="{'teamName':'"+team.name.replace('\'', '')+"','processName':'"+coproduction.name.replace('\'', '')+"','team_id':'"+str(team.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
                 db.add(newCoproNotification)
 
 
@@ -73,7 +73,7 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
                     newUserNotification.channel="in_app"
                     newUserNotification.state=False
                     newUserNotification.coproductionprocess_id=str(db_obj.coproductionprocess_id)
-                    newUserNotification.parameters="{'teamName':'"+team.name+"','processName':'"+coproduction.name+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"','org_id':'"+str(team.organization_id)+"'}"
+                    newUserNotification.parameters="{'teamName':'"+team.name.replace('\'', '')+"','processName':'"+coproduction.name.replace('\'', '')+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"','org_id':'"+str(team.organization_id)+"'}"
 
                     db.add(newUserNotification)
 
@@ -114,8 +114,7 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
             newCoproNotification.notification_id=notification.id
             newCoproNotification.coproductionprocess_id=coproduction.id
 
-            newCoproNotification.parameters="{'teamName':'"+team.name+"','processName':'"+coproduction.name+"','team_id':'"+str(team.id)+"','treeItemName':'"+str(treeitem.name)+"','treeitem_id':'"+str(treeitem.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
-
+            newCoproNotification.parameters="{'teamName':'"+team.name.replace('\'', '')+"','processName':'"+coproduction.name.replace('\'', '')+"','team_id':'"+str(team.id)+"','treeItemName':'"+str(treeitem.name.replace('\'', ''))+"','treeitem_id':'"+str(treeitem.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
             db.add(newCoproNotification)
         else:
             
@@ -130,7 +129,7 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
                 newCoproNotification.notification_id=notification.id
                 newCoproNotification.coproductionprocess_id=coproduction.id
 
-                newCoproNotification.parameters="{'teamName':'"+team.name+"','processName':'"+coproduction.name+"','team_id':'"+str(team.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+                newCoproNotification.parameters="{'teamName':'"+team.name.replace('\'', '')+"','processName':'"+coproduction.name.replace('\'', '')+"','team_id':'"+str(team.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
 
                 db.add(newCoproNotification)
 
@@ -145,7 +144,7 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
                     newUserNotification.state=False
                     newUserNotification.coproductionprocess_id=str(db_obj.coproductionprocess_id)
                     
-                    newUserNotification.parameters="{'teamName':'"+team.name+"','processName':'"+coproduction.name+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"','org_id':'"+str(team.organization_id)+"'}"
+                    newUserNotification.parameters="{'teamName':'"+team.name.replace('\'', '')+"','processName':'"+coproduction.name.replace('\'', '')+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"','org_id':'"+str(team.organization_id)+"'}"
 
                     db.add(newUserNotification)
 

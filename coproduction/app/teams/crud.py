@@ -73,7 +73,7 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
             newUserNotification.state = False
             newUserNotification.parameters = (
                 "{'teamName':'"
-                + team.name
+                + team.name.replace('\'', '')
                 + "','team_id':'"
                 + str(team.id)
                 + "','org_id':'"
@@ -119,7 +119,7 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
             newUserNotification.state = False
             newUserNotification.parameters = (
                 "{'teamName':'"
-                + team.name
+                + team.name.replace('\'', '')
                 + "','team_id':'"
                 + str(team.id)
                 + "','org_id':'"
@@ -188,7 +188,7 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
                 newUserNotification.state = False
                 newUserNotification.parameters = (
                     "{'teamName':'"
-                    + db_obj.name
+                    + db_obj.name.replace('\'', '')
                     + "','team_id':'"
                     + str(db_obj.id)
                     + "','org_id':'"

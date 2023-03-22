@@ -73,7 +73,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
                 newCoproNotification.notification_id=notification.id
                 newCoproNotification.coproductionprocess_id=coproduction.id
 
-                newCoproNotification.parameters="{'taskName':'"+db_obj.name+"','processName':'"+coproduction.name+"','treeitem_id':'"+str(treeitem.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+                newCoproNotification.parameters="{'taskName':'"+db_obj.name.replace('\'', '')+"','processName':'"+coproduction.name.replace('\'', '')+"','treeitem_id':'"+str(treeitem.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
 
                 db.add(newCoproNotification)
                 db.commit()
@@ -176,7 +176,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
                 newCoproNotification.notification_id=notification.id
                 newCoproNotification.coproductionprocess_id=coproduction.id
 
-                newCoproNotification.parameters="{'objective_treeitem_id':'"+str(obj.objective.id)+"','objectiveName':'"+obj.objective.name+"','phase_treeitem_id':'"+str(obj.objective.phase.id)+"','phaseName':'"+obj.objective.phase.name+"','taskName':'"+obj.name+"','processName':'"+coproduction.name+"','copro_id':'"+str(obj.coproductionprocess_id)+"'}"
+                newCoproNotification.parameters="{'objective_treeitem_id':'"+str(obj.objective.id)+"','objectiveName':'"+obj.objective.name.replace('\'', '')+"','phase_treeitem_id':'"+str(obj.objective.phase.id)+"','phaseName':'"+obj.objective.phase.name.replace('\'', '')+"','taskName':'"+obj.name.replace('\'', '')+"','processName':'"+coproduction.name.replace('\'', '')+"','copro_id':'"+str(obj.coproductionprocess_id)+"'}"
 
                 db.add(newCoproNotification)
                 db.commit()

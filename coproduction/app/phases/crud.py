@@ -98,7 +98,7 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
                 newCoproNotification.notification_id=notification.id
                 newCoproNotification.coproductionprocess_id=coproduction.id
 
-                newCoproNotification.parameters="{'phaseName':'"+db_obj.name+"','processName':'"+coproduction.name+"','treeitem_id':'"+str(treeitem.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+                newCoproNotification.parameters="{'phaseName':'"+db_obj.name.replace('\'', '')+"','processName':'"+coproduction.name.replace('\'', '')+"','treeitem_id':'"+str(treeitem.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
 
                 db.add(newCoproNotification)
                 db.commit()
@@ -143,7 +143,7 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
                 newCoproNotification.notification_id=notification.id
                 newCoproNotification.coproductionprocess_id=coproduction.id
 
-                newCoproNotification.parameters="{'phaseName':'"+obj.name+"','processName':'"+coproduction.name+"','copro_id':'"+str(obj.coproductionprocess_id)+"'}"
+                newCoproNotification.parameters="{'phaseName':'"+obj.name+"','processName':'"+coproduction.name.replace('\'', '')+"','copro_id':'"+str(obj.coproductionprocess_id)+"'}"
 
                 db.add(newCoproNotification)
                 db.commit()
