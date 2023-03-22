@@ -48,12 +48,14 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                 print(asset)
                 print(asset.link)
 
-                import json
-                json_str = json.dumps(asset, indent=4)
-                print(json_str)
-
+                
+                
                 requestlink=''
                 if('servicepedia' in asset.link):
+                    
+                    response = requests.get(asset.internal_link)
+                    print(response)
+                    
                     """ print('Es servicepedia')
                     asset_uri=asset.link+'/view'
                     asset.internalData={'icon':asset.icon,'name':'servicepedia_name','link':asset_uri} """

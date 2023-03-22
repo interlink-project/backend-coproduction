@@ -60,13 +60,13 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                     print(asset)
                     print(asset.link)
 
-                    import json
-                    json_str = json.dumps(asset, indent=4)
-                    print(json_str)
-
+                    
                     requestlink=''
 
                     if('servicepedia' in asset.link):
+
+                        response = requests.get(asset.internal_link)
+                        print(response)
 
                         queries = []
                         queries.append(Asset.id == asset.id)
