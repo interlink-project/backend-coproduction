@@ -56,16 +56,27 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
             for asset in listOfAssets:
                 if asset.type == "internalasset":
-                    print(asset.type)
-                    print(asset.id)
+                    
+                    print(asset)
                     print(asset.link)
-                    print(asset.task_id)
 
+                    requestlink=''
+                    if('servicepedia' in asset.link):
+                        requestlink=asset.link
+                        print('Es servicepedia')
+                    else:
+                        serviceName=os.path.split(asset.link)[0].split('/')[3]
+                        requestlink=f"http://{serviceName}/assets/{asset.external_asset_id}"
 
+                    print('El recurso que llama es:')
+                    print(requestlink)
 
+                    response = requests.get(requestlink)
+
+"""
                     serviceName=os.path.split(asset.link)[0].split('/')[3]
                     response = requests.get(f"http://{serviceName}/assets/{asset.external_asset_id}")
-                    """ , headers={
+                     , headers={
                         "Authorization": "Bearer " + token,
                         "Accept-Language": asset_in.language
                     }) """

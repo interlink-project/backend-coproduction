@@ -44,18 +44,20 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
 
         for asset in listAssets:
             if asset.type == "internalasset":
+                
                 print(asset)
-
                 print(asset.link)
 
                 requestlink=''
                 if('servicepedia' in asset.link):
                     requestlink=asset.link
+                    print('Es servicepedia')
                 else:
                     serviceName=os.path.split(asset.link)[0].split('/')[3]
-                    print('El recurso que llama es:')
-                    print(f"http://{serviceName}/assets/{asset.external_asset_id}")
                     requestlink=f"http://{serviceName}/assets/{asset.external_asset_id}"
+
+                print('El recurso que llama es:')
+                print(requestlink)
 
                 response = requests.get(requestlink)
                 """ , headers={
