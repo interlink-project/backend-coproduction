@@ -61,20 +61,29 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                     print(asset.link)
 
                     requestlink=''
+
                     if('servicepedia' in asset.link):
+
+                        queries = []
+                        queries.append(Asset.id == asset.id)
+                        datosAsset=db.query(Asset).filter(*queries).first()
+
+
                         print('Es servicepedia')
-                        requestlink=asset.link
+                        #asset_uri=asset.link+'/view'
+                        asset.internalData={'icon':datosAsset.icon,'name':datosAsset.name,'link':datosAsset.uri}
+
                     else:
                         serviceName=os.path.split(asset.link)[0].split('/')[3]
                         requestlink=f"http://{serviceName}/assets/{asset.external_asset_id}"
                     
-                    print(requestlink)
+                        print(requestlink)
 
-                    response = requests.get(requestlink)
-                    print(response)
+                        response = requests.get(requestlink)
+                        print(response)
 
-                    datosAsset = response.json()
-                    asset.internalData=datosAsset
+                        datosAsset = response.json()
+                        asset.internalData=datosAsset
 
                 if asset.type == "externalasset":
 
