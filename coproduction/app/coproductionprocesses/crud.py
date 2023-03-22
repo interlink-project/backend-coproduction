@@ -65,18 +65,6 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
                     if('servicepedia' in asset.link):
 
-                        print(asset.internal_link)
-                        response = requests.get(asset.internal_link, headers={
-                            "Authorization": "Bearer " + token,
-                            "Accept-Language": asset_in.language
-                        })
-                        print(response.json())
-
-                        queries = []
-                        queries.append(Asset.id == asset.id)
-                        datosAsset=db.query(Asset).filter(*queries).first()
-
-
                         print('Es servicepedia')
                         asset_uri=asset.link+'/view'
                         asset.internalData={'icon':'https://dev.interlink-project.eu/catalogue/static/augmenter/logotype.png','name':'servicepedia file','link':asset_uri}

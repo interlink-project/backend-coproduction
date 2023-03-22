@@ -48,37 +48,8 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                 print(asset)
                 print(asset.link)
 
-                
-                
-                requestlink=''
                 if('servicepedia' in asset.link):
-
-                    """ serviceName=os.path.split(asset.link)[0].split('/')[3]
-                    response = requests.get(f"http://{serviceName}/assets/{asset.external_asset_id}")
-                    """ , headers={
-                        "Authorization": "Bearer " + token,
-                        "Accept-Language": asset_in.language
-                    }) """
-
-                    datosAsset = response.json()
-                    asset.internalData=datosAsset
- """
                     
-                    print(asset.internal_link)
-                    response = requests.get(asset.internal_link, headers={
-                        "Authorization": "Bearer " + token,
-                        "Accept-Language": asset_in.language
-                    })
-                    print(response.json())
-                    
-                    """ print('Es servicepedia')
-                    asset_uri=asset.link+'/view'
-                    asset.internalData={'icon':asset.icon,'name':'servicepedia_name','link':asset_uri} """
-                    queries = []
-                    queries.append(Asset.id == asset.id)
-                    datosAsset=db.query(Asset).filter(*queries).first()
-
-
                     print('Es servicepedia')
                     asset_uri=asset.link+'/view'
                     asset.internalData={'icon':'https://dev.interlink-project.eu/catalogue/static/augmenter/logotype.png','name':'servicepedia_name','link':asset_uri}
