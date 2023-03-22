@@ -49,7 +49,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                 print(asset.link)
 
                 requestlink=''
-                if(servicepedia in asset.link ):
+                if('servicepedia' in asset.link):
                     requestlink=asset.link
                 else:
                     serviceName=os.path.split(asset.link)[0].split('/')[3]
