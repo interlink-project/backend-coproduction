@@ -52,7 +52,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                 if('servicepedia' in asset.link):
                     """ print('Es servicepedia')
                     asset_uri=asset.link+'/view'
-                    asset.internalData={'icon':asset.icon,'name':asset.name,'link':asset_uri} """
+                    asset.internalData={'icon':asset.icon,'name':'servicepedia_name','link':asset_uri} """
                     queries = []
                     queries.append(Asset.id == asset.id)
                     datosAsset=db.query(Asset).filter(*queries).first()
