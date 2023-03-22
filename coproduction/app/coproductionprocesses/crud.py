@@ -72,15 +72,8 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                     print(requestlink)
 
                     response = requests.get(requestlink)
-
-"""
-                    serviceName=os.path.split(asset.link)[0].split('/')[3]
-                    response = requests.get(f"http://{serviceName}/assets/{asset.external_asset_id}")
-                     , headers={
-                        "Authorization": "Bearer " + token,
-                        "Accept-Language": asset_in.language
-                    }) """
-
+                    print(response)
+                    
                     datosAsset = response.json()
                     asset.internalData=datosAsset
 

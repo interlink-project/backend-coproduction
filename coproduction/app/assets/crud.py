@@ -60,10 +60,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                 print(requestlink)
 
                 response = requests.get(requestlink)
-                """ , headers={
-                    "Authorization": "Bearer " + token,
-                    "Accept-Language": asset_in.language
-                }) """
+
                 print(response)
                 datosAsset = response.json()
                 asset.internalData=datosAsset
