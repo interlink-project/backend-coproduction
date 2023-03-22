@@ -45,22 +45,27 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
         for asset in listAssets:
             if asset.type == "internalasset":
                 
-                serviceName=asset['software_response']['path']
-
-                if(serviceName == 'servicepedia'):
+                if('servicepedia' in asset.link):
+                    
+                    #print('Es servicepedia')
 
                     requestlink=f"http://augmenterservice/assets/{asset.external_asset_id}"
                     response = requests.get(requestlink)
                     datosAsset = response.json()
                     print(datosAsset)
-                    
+
+
                     asset_uri=asset.link+'/view'
                     asset.internalData={'icon':'https://dev.interlink-project.eu/catalogue/static/augmenter/logotype.png','name':datosAsset['name'],'link':asset_uri}
 
                 else:
                     serviceName=os.path.split(asset.link)[0].split('/')[3]
                     requestlink=f"http://{serviceName}/assets/{asset.external_asset_id}"
+                
+                    print(requestlink)
                     response = requests.get(requestlink)
+
+                    print(response)
                     datosAsset = response.json()
                     asset.internalData=datosAsset
             

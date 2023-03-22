@@ -57,9 +57,10 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
             for asset in listOfAssets:
                 if asset.type == "internalasset":
                     
-                    serviceName=asset['software_response']['path']
-                    
-                    if(serviceName == 'servicepedia'):
+                    if('servicepedia' in asset.link):
+
+                        #print('Es servicepedia')
+                        
                         requestlink=f"http://augmenterservice/assets/{asset.external_asset_id}"
                         response = requests.get(requestlink)
                         datosAsset = response.json()
@@ -69,7 +70,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                         asset.internalData={'icon':'https://dev.interlink-project.eu/catalogue/static/augmenter/logotype.png','name':datosAsset['name'],'link':asset_uri}
 
                     else:
-                        
+                        serviceName=os.path.split(asset.link)[0].split('/')[3]
                         requestlink=f"http://{serviceName}/assets/{asset.external_asset_id}"
                         response = requests.get(requestlink)
                         datosAsset = response.json()
