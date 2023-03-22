@@ -56,6 +56,12 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
             for asset in listOfAssets:
                 if asset.type == "internalasset":
+                    print(asset.type)
+                    print(asset.id)
+                    print(asset.link)
+                    print(asset.task_id)
+
+
 
                     serviceName=os.path.split(asset.link)[0].split('/')[3]
                     response = requests.get(f"http://{serviceName}/assets/{asset.external_asset_id}")
@@ -80,7 +86,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         #En el caso que seas un administrador del proceso (muestro todo):
 
         if user in coproductionprocess.administrators: #or self.can_read(db, user, coproductionprocess):
-
+            print('Es administrador!!')
             listOfAssets=db.query(
                 Asset
                 ).filter(
@@ -97,7 +103,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         # Pregunto si tienes permisos
         listPermissionsAllProcess=await crud.permission.get_permission_user_coproduction(db=db, user=user, coproductionprocess_id=coproductionprocess.id)
         if(len(listPermissionsAllProcess)>0):
-
+            print('Tiene permisos para todo el proceso!!')
             # Si es asi muestro todos los assets igual que el admin
 
             listOfAssets=db.query(
@@ -106,13 +112,16 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                     Asset.task_id.in_(coproductionprocess.task_ids())
                 ).order_by(models.Asset.created_at.desc()).all()
 
+            print('La lista de assets tiene:')
+            print(len(listOfAssets))
+
             #Agrego informacion del asset interno
             listOfAssets=obtainpublicData(listOfAssets)
             
             return listOfAssets
 
             
-
+        print('No es admin ni permisos generales, busco por treeitem')
         #En el caso que tengas permisos sobre treeitems Individuales:
         ids = [treeitem.id for treeitem in await treeitemsCrud.get_for_user_and_coproductionprocess(db=db, user=user, coproductionprocess_id=coproductionprocess.id) if not treeitem.disabled_on]
         

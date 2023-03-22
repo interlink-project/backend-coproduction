@@ -43,6 +43,8 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
         for asset in listAssets:
             if asset.type == "internalasset":
                 serviceName=os.path.split(asset.link)[0].split('/')[3]
+                print('El recurso que llama es:')
+                print(f"http://{serviceName}/assets/{asset.external_asset_id}")
                 response = requests.get(f"http://{serviceName}/assets/{asset.external_asset_id}")
                 """ , headers={
                     "Authorization": "Bearer " + token,
