@@ -70,8 +70,8 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
 
                         print('Es servicepedia')
-                        #asset_uri=asset.link+'/view'
-                        asset.internalData={'icon':datosAsset.icon,'name':datosAsset.name,'link':datosAsset.uri}
+                        asset_uri=asset.link+'/view'
+                        asset.internalData={'icon':'','name':datosAsset.name,'link':asset_uri}
 
                     else:
                         serviceName=os.path.split(asset.link)[0].split('/')[3]
