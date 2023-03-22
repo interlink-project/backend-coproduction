@@ -60,7 +60,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
 
                     print('Es servicepedia')
                     asset_uri=asset.link+'/view'
-                    asset.internalData={'icon':'','name':datosAsset.name,'link':asset_uri}
+                    asset.internalData={'icon':'','name':'servicepedia_name','link':asset_uri}
 
                 else:
                     serviceName=os.path.split(asset.link)[0].split('/')[3]
