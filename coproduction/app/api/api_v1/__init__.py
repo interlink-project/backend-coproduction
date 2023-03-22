@@ -14,7 +14,8 @@ from app.api.api_v1 import (
     usernotifications,
     coproductionprocessnotifications,
     stories,
-    utils
+    utils,
+    games
 )
 
 api_router = APIRouter()
@@ -46,7 +47,7 @@ api_router.include_router(coproductionprocessnotifications.router,
 api_router.include_router(stories.router,
                           prefix="/stories", tags=["Stories"])                 
 api_router.include_router(utils.router, prefix="/utils", tags=["utils"])
-
+api_router.include_router(games.router, prefix="/games", tags=["games"])
 
 @api_router.get("/")
 async def main():
