@@ -65,8 +65,12 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
                     if('servicepedia' in asset.link):
 
-                        response = requests.get(asset.internal_link)
-                        print(response)
+                        print(asset.internal_link)
+                        response = requests.get(asset.internal_link, headers={
+                            "Authorization": "Bearer " + token,
+                            "Accept-Language": asset_in.language
+                        })
+                        print(response.json())
 
                         queries = []
                         queries.append(Asset.id == asset.id)

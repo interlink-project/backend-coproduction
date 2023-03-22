@@ -52,9 +52,24 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                 
                 requestlink=''
                 if('servicepedia' in asset.link):
+
+                    """ serviceName=os.path.split(asset.link)[0].split('/')[3]
+                    response = requests.get(f"http://{serviceName}/assets/{asset.external_asset_id}")
+                    """ , headers={
+                        "Authorization": "Bearer " + token,
+                        "Accept-Language": asset_in.language
+                    }) """
+
+                    datosAsset = response.json()
+                    asset.internalData=datosAsset
+ """
                     
-                    response = requests.get(asset.internal_link)
-                    print(response)
+                    print(asset.internal_link)
+                    response = requests.get(asset.internal_link, headers={
+                        "Authorization": "Bearer " + token,
+                        "Accept-Language": asset_in.language
+                    })
+                    print(response.json())
                     
                     """ print('Es servicepedia')
                     asset_uri=asset.link+'/view'
