@@ -64,6 +64,9 @@ class CRUDCoproductionProcessNotification(CRUDBase[CoproductionProcessNotificati
 
 
     async def create(self, db: Session, obj_in: CoproductionProcessNotificationCreate) -> CoproductionProcessNotification:
+        
+        obj_in.parameters=obj_in.parameters.replace('\'', '')
+        
         obj_in_data = jsonable_encoder(obj_in)
         
         db_obj = CoproductionProcessNotification(**obj_in_data)
