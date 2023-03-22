@@ -44,18 +44,25 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
 
         for asset in listAssets:
             if asset.type == "internalasset":
-                
-                print(asset.link)
-                serviceName=os.path.split(asset.link)[0].split('/')[3]
-                print('El recurso que llama es:')
-                print(f"http://{serviceName}/assets/{asset.external_asset_id}")
+                print(asset)
 
-                response = requests.get(f"http://{serviceName}/assets/{asset.external_asset_id}")
+                print(asset.link)
+
+                requestlink=''
+                if(servicepedia in asset.link ):
+                    requestlink=asset.link
+                else:
+                    serviceName=os.path.split(asset.link)[0].split('/')[3]
+                    print('El recurso que llama es:')
+                    print(f"http://{serviceName}/assets/{asset.external_asset_id}")
+                    requestlink=f"http://{serviceName}/assets/{asset.external_asset_id}"
+
+                response = requests.get(requestlink)
                 """ , headers={
                     "Authorization": "Bearer " + token,
                     "Accept-Language": asset_in.language
                 }) """
-                
+                print(response)
                 datosAsset = response.json()
                 asset.internalData=datosAsset
             
