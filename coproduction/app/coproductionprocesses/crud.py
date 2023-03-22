@@ -60,13 +60,14 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                     print(asset)
                     print(asset.link)
 
+                    requestlink=''
                     if('servicepedia' in asset.link):
                         print('Es servicepedia')
-                        serviceName='augmenterservice'
+                        requestlink=asset.link
                     else:
                         serviceName=os.path.split(asset.link)[0].split('/')[3]
+                        requestlink=f"http://{serviceName}/assets/{asset.external_asset_id}"
                     
-                    requestlink=f"http://{serviceName}/assets/{asset.external_asset_id}"
                     print(requestlink)
 
                     response = requests.get(requestlink)

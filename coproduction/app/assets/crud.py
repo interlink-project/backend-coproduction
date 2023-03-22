@@ -50,12 +50,13 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
 
                 requestlink=''
                 if('servicepedia' in asset.link):
-                    serviceName='augmenterservice'
+                    print('Es servicepedia')
+                    requestlink=asset.link
                 else:
                     serviceName=os.path.split(asset.link)[0].split('/')[3]
+                    requestlink=f"http://{serviceName}/assets/{asset.external_asset_id}"
                 
-                requestlink=f"http://{serviceName}/assets/{asset.external_asset_id}"
-
+                print(requestlink)
                 response = requests.get(requestlink)
 
                 print(response)
