@@ -15,6 +15,7 @@ from app.utils import recursive_check
 from fastapi.encoders import jsonable_encoder
 from app.sockets import socket_manager
 from app import models
+import html
 
 class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
     async def create_from_metadata(self, db: Session, objectivemetadata: dict, phase: Phase, schema_id: uuid.UUID) -> Optional[Objective]:
@@ -73,7 +74,7 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
                 newCoproNotification.notification_id=notification.id
                 newCoproNotification.coproductionprocess_id=coproduction.id
 
-                newCoproNotification.parameters="{'objectiveName':'"+db_obj.name.replace('\'', '')+"','processName':'"+coproduction.name.replace('\'', '')+"','treeitem_id':'"+str(treeitem.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+                newCoproNotification.parameters="{'objectiveName':'"+html.escape(db_obj.name)+"','processName':'"+html.escape(coproduction.name)+"','treeitem_id':'"+str(treeitem.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
 
                 db.add(newCoproNotification)
                 db.commit()
@@ -144,7 +145,7 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
 
 
                 #phase_treeitem_id   and  phaseName
-                newCoproNotification.parameters="{'phase_treeitem_id':'"+str(obj.phase.id)+"','phaseName':'"+obj.phase.name.replace('\'', '')+"','objectiveName':'"+obj.name.replace('\'', '')+"','processName':'"+coproduction.name.replace('\'', '')+"','copro_id':'"+str(obj.coproductionprocess_id)+"'}"
+                newCoproNotification.parameters="{'phase_treeitem_id':'"+str(obj.phase.id)+"','phaseName':'"+html.escape(obj.phase.name)+"','objectiveName':'"+html.escape(obj.name)+"','processName':'"+html.escape(coproduction.name)+"','copro_id':'"+str(obj.coproductionprocess_id)+"'}"
 
                 db.add(newCoproNotification)
                 db.commit()

@@ -18,6 +18,7 @@ from uuid_by_string import generate_uuid
 from app.general.emails import send_email, send_team_email
 from app.locales import get_language
 from fastapi import HTTPException
+import html
 
 
 class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
@@ -73,7 +74,7 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
             newUserNotification.state = False
             newUserNotification.parameters = (
                 "{'teamName':'"
-                + team.name.replace('\'', '')
+                + html.escape(team.name)
                 + "','team_id':'"
                 + str(team.id)
                 + "','org_id':'"
@@ -119,7 +120,7 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
             newUserNotification.state = False
             newUserNotification.parameters = (
                 "{'teamName':'"
-                + team.name.replace('\'', '')
+                + html.escape(team.name)
                 + "','team_id':'"
                 + str(team.id)
                 + "','org_id':'"
@@ -188,7 +189,7 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
                 newUserNotification.state = False
                 newUserNotification.parameters = (
                     "{'teamName':'"
-                    + db_obj.name.replace('\'', '')
+                    + html.escape(db_obj.name.replace)
                     + "','team_id':'"
                     + str(db_obj.id)
                     + "','org_id':'"

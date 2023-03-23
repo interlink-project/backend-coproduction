@@ -17,6 +17,7 @@ from app.sockets import socket_manager
 from uuid_by_string import generate_uuid
 from app import crud, models,schemas
 import json
+import html
 
 
 class CRUDCoproductionProcessNotification(CRUDBase[CoproductionProcessNotification, CoproductionProcessNotificationCreate, CoproductionProcessNotificationPatch]):
@@ -64,8 +65,6 @@ class CRUDCoproductionProcessNotification(CRUDBase[CoproductionProcessNotificati
 
 
     async def create(self, db: Session, obj_in: CoproductionProcessNotificationCreate) -> CoproductionProcessNotification:
-        
-        obj_in.parameters=obj_in.parameters.replace('\'', '')
         
         obj_in_data = jsonable_encoder(obj_in)
         
@@ -120,7 +119,7 @@ class CRUDCoproductionProcessNotification(CRUDBase[CoproductionProcessNotificati
 
             if( 'assetName' in json.dumps(parametersJson)):
 
-                parametersJson['assetName']=parametersJson['assetName'].replace('{assetid:'+asset_id+'}', name)
+                parametersJson['assetName']=parametersJson['assetName'].replace('{assetid:'+asset_id+'}', html.escape(name))
                 parametersJson['assetLink']=''
                 parametersJson['showIcon']='hidden'
                 parametersJson['showLink']=''

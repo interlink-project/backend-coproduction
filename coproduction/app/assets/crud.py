@@ -21,6 +21,7 @@ from app.notifications.crud import exportCrud as notification_crud
 from app.coproductionprocesses.crud import exportCrud as coproductionprocesses_crud
 from fastapi import Depends
 from app.general import deps
+import html
 
 class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
     async def get_multi(
@@ -121,7 +122,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                 assetLink=asset.uri
 
 
-                newCoproNotification.parameters="{'showLink':'hidden','showIcon':'','treeitem_id':'"+str(task.id)+"','treeItemName':'"+str(task.name)+"','assetId':'"+str(db_obj.id)+"','assetName':'"+asset.name+"','assetLink':'"+str(assetLink)+"','interlinkerName':'"+nameInterlinker+"','processName':'"+coproduction.name+"','userName':'"+self.shortName(db_obj.creator.full_name)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+                newCoproNotification.parameters="{'showLink':'hidden','showIcon':'','treeitem_id':'"+str(task.id)+"','treeItemName':'"+str(html.escape(task.name))+"','assetId':'"+str(db_obj.id)+"','assetName':'"+html.escape(asset.name)+"','assetLink':'"+str(assetLink)+"','interlinkerName':'"+html.escape(nameInterlinker)+"','processName':'"+html.escape(coproduction.name)+"','userName':'"+html.escape(self.shortName(db_obj.creator.full_name))+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
                 db.add(newCoproNotification)
         if db_obj_Aseet.type == 'internalasset':
             db_obj=db_obj_Aseet
@@ -154,7 +155,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
 
                 #Obtengo la info del Asset:
 
-                newCoproNotification.parameters="{'showLink':'hidden','showIcon':'','treeitem_id':'"+str(task.id)+"','treeItemName':'"+str(task.name)+"','assetId':'"+str(db_obj.id)+"','assetName':'{assetid:"+str(db_obj.id)+"}','assetLink':'"+str(assetLink)+"','interlinkerName':'"+nameInterlinker+"','processName':'"+coproduction.name+"','userName':'"+self.shortName(db_obj.creator.full_name)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+                newCoproNotification.parameters="{'showLink':'hidden','showIcon':'','treeitem_id':'"+str(task.id)+"','treeItemName':'"+str(html.escape(task.name))+"','assetId':'"+str(db_obj.id)+"','assetName':'{assetid:"+str(db_obj.id)+"}','assetLink':'"+str(assetLink)+"','interlinkerName':'"+html.escape(nameInterlinker)+"','processName':'"+html.escape(coproduction.name)+"','userName':'"+html.escape(self.shortName(db_obj.creator.full_name))+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
                 db.add(newCoproNotification)
         
         
@@ -234,7 +235,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                 
 
 
-                newCoproNotification.parameters="{'showLink':'hidden','showIcon':'','treeitem_id':'"+str(task.id)+"','treeItemName':'"+str(task.name)+"','assetId':'"+str(db_obj.id)+"','assetIcon':'"+icon_path+"','assetName':'"+asset.name+"','assetLink':'"+str(assetLink)+"','interlinkerName':'"+nameInterlinker+"','processName':'"+coproduction.name+"','userName':'"+self.shortName(db_obj.creator.full_name)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+                newCoproNotification.parameters="{'showLink':'hidden','showIcon':'','treeitem_id':'"+str(task.id)+"','treeItemName':'"+html.escape(str(task.name))+"','assetId':'"+str(db_obj.id)+"','assetIcon':'"+icon_path+"','assetName':'"+html.escape(asset.name)+"','assetLink':'"+str(assetLink)+"','interlinkerName':'"+html.escape(nameInterlinker)+"','processName':'"+html.escape(coproduction.name)+"','userName':'"+html.escape(self.shortName(db_obj.creator.full_name))+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
                 db.add(newCoproNotification)
         if type(asset) == InternalAssetCreate:
             
@@ -264,7 +265,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                         nameInterlinker=db_obj.knowledgeinterlinker['name']
 
                 
-                newCoproNotification.parameters="{'showLink':'hidden','showIcon':'','treeitem_id':'"+str(task.id)+"','treeItemName':'"+str(task.name)+"','assetId':'"+str(db_obj.id)+"','assetName':'{assetid:"+str(db_obj.id)+"}','assetLink':'"+str(assetLink)+"','interlinkerName':'"+nameInterlinker+"','processName':'"+coproduction.name+"','userName':'"+self.shortName(db_obj.creator.full_name)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+                newCoproNotification.parameters="{'showLink':'hidden','showIcon':'','treeitem_id':'"+str(task.id)+"','treeItemName':'"+html.escape(str(task.name))+"','assetId':'"+str(db_obj.id)+"','assetName':'{assetid:"+str(db_obj.id)+"}','assetLink':'"+str(assetLink)+"','interlinkerName':'"+html.escape(nameInterlinker)+"','processName':'"+html.escape(coproduction.name)+"','userName':'"+html.escape(self.shortName(db_obj.creator.full_name))+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
                 db.add(newCoproNotification)
         
         db.commit()

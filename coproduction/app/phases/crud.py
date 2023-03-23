@@ -16,6 +16,7 @@ from app.utils import recursive_check
 from fastapi.encoders import jsonable_encoder
 from app.sockets import socket_manager
 from app import models
+import html
 
 class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
     async def create_from_metadata(self, db: Session, phasemetadata: dict, coproductionprocess: CoproductionProcess, schema_id: uuid.UUID) -> Optional[Phase]:
@@ -98,7 +99,7 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
                 newCoproNotification.notification_id=notification.id
                 newCoproNotification.coproductionprocess_id=coproduction.id
 
-                newCoproNotification.parameters="{'phaseName':'"+db_obj.name.replace('\'', '')+"','processName':'"+coproduction.name.replace('\'', '')+"','treeitem_id':'"+str(treeitem.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+                newCoproNotification.parameters="{'phaseName':'"+html.escape(db_obj.name)+"','processName':'"+html.escape(oproduction.name)+"','treeitem_id':'"+str(treeitem.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
 
                 db.add(newCoproNotification)
                 db.commit()
@@ -143,7 +144,7 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
                 newCoproNotification.notification_id=notification.id
                 newCoproNotification.coproductionprocess_id=coproduction.id
 
-                newCoproNotification.parameters="{'phaseName':'"+obj.name+"','processName':'"+coproduction.name.replace('\'', '')+"','copro_id':'"+str(obj.coproductionprocess_id)+"'}"
+                newCoproNotification.parameters="{'phaseName':'"+obj.name+"','processName':'"+html.escape(coproduction.name)+"','copro_id':'"+str(obj.coproductionprocess_id)+"'}"
 
                 db.add(newCoproNotification)
                 db.commit()

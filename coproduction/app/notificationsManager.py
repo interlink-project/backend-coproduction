@@ -8,6 +8,7 @@ import json
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from app import crud, models, schemas
+import html
 
 class NotificationsManager:
     def __init__(self):
@@ -46,7 +47,7 @@ class NotificationsManager:
                 assetLink=asset.uri
 
 
-                newCoproNotification.parameters="{'treeitem_id':'"+str(task.id)+"','treeItemName':'"+str(task.name)+"','assetId':'"+str(db_obj.id)+"','assetName':'"+asset.name+"','assetLink':'"+str(assetLink)+"','interlinkerName':'"+nameInterlinker+"','processName':'"+coproduction.name+"','userName':'"+shortName(db_obj.creator.full_name)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+                newCoproNotification.parameters="{'treeitem_id':'"+str(task.id)+"','treeItemName':'"+str(html.escape(task.name))+"','assetId':'"+str(db_obj.id)+"','assetName':'"+html.escape(asset.name)+"','assetLink':'"+str(assetLink)+"','interlinkerName':'"+html.escape(nameInterlinker)+"','processName':'"+html.escape(coproduction.name)+"','userName':'"+html.escape(shortName(db_obj.creator.full_name))+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
                 db.add(newCoproNotification)
         if type(db_obj) == InternalAssetCreate:
             
@@ -79,7 +80,7 @@ class NotificationsManager:
                         nameInterlinker=db_obj.knowledgeinterlinker['name']
 
                 
-                newCoproNotification.parameters="{'treeitem_id':'"+str(task.id)+"','treeItemName':'"+str(task.name)+"','assetId':'"+str(db_obj.id)+"','assetName':'{assetid:"+str(db_obj.id)+"}','assetLink':'"+str(assetLink)+"','interlinkerName':'"+nameInterlinker+"','processName':'"+coproduction.name+"','userName':'"+shortName(db_obj.creator.full_name)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+                newCoproNotification.parameters="{'treeitem_id':'"+str(task.id)+"','treeItemName':'"+str(html.escape(task.name))+"','assetId':'"+str(db_obj.id)+"','assetName':'{assetid:"+str(db_obj.id)+"}','assetLink':'"+str(assetLink)+"','interlinkerName':'"+html.escape(nameInterlinker)+"','processName':'"+html.escape(coproduction.name)+"','userName':'"+html.escape(shortName(db_obj.creator.full_name))+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
                 db.add(newCoproNotification)
 
         return None

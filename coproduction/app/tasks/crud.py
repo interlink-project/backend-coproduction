@@ -15,6 +15,7 @@ from app.notifications.crud import exportCrud as notification_crud
 from app.coproductionprocesses.crud import exportCrud as coproductionprocesses_crud
 from app.sockets import socket_manager
 from app import models
+import html
 
 class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
     async def create_from_metadata(self, db: Session, taskmetadata: dict, objective: Objective = None, schema_id = uuid.UUID) -> Optional[Task]:
@@ -73,7 +74,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
                 newCoproNotification.notification_id=notification.id
                 newCoproNotification.coproductionprocess_id=coproduction.id
 
-                newCoproNotification.parameters="{'taskName':'"+db_obj.name.replace('\'', '')+"','processName':'"+coproduction.name.replace('\'', '')+"','treeitem_id':'"+str(treeitem.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+                newCoproNotification.parameters="{'taskName':'"+html.escape(db_obj.name)+"','processName':'"+html.escape(coproduction.name)+"','treeitem_id':'"+str(treeitem.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
 
                 db.add(newCoproNotification)
                 db.commit()
@@ -176,7 +177,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
                 newCoproNotification.notification_id=notification.id
                 newCoproNotification.coproductionprocess_id=coproduction.id
 
-                newCoproNotification.parameters="{'objective_treeitem_id':'"+str(obj.objective.id)+"','objectiveName':'"+obj.objective.name.replace('\'', '')+"','phase_treeitem_id':'"+str(obj.objective.phase.id)+"','phaseName':'"+obj.objective.phase.name.replace('\'', '')+"','taskName':'"+obj.name.replace('\'', '')+"','processName':'"+coproduction.name.replace('\'', '')+"','copro_id':'"+str(obj.coproductionprocess_id)+"'}"
+                newCoproNotification.parameters="{'objective_treeitem_id':'"+str(obj.objective.id)+"','objectiveName':'"+html.escape(obj.objective.name)+"','phase_treeitem_id':'"+str(obj.objective.phase.id)+"','phaseName':'"+html.escape(obj.objective.phase.name)+"','taskName':'"+html.escape(obj.name)+"','processName':'"+html.escape(coproduction.name)+"','copro_id':'"+str(obj.coproductionprocess_id)+"'}"
 
                 db.add(newCoproNotification)
                 db.commit()

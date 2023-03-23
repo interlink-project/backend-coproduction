@@ -45,7 +45,6 @@ class CRUDUserNotification(CRUDBase[UserNotification, UserNotificationCreate, Us
 
     async def create(self, db: Session, obj_in: UserNotificationCreate) -> UserNotification:
         
-        obj_in.parameters=obj_in.parameters.replace('\'', '')
         
         obj_in_data = jsonable_encoder(obj_in)
         
