@@ -322,7 +322,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                 await crud.asset.copy(db, asset, user, task, token, True)
             else:
                 await crud.asset.copy(db, asset, user, task, token)
-            print('termino el copiado de '+asset.id)
+            print('termino el copiado de '+str(asset.id))
             print('')
         
         print("ASSETS COPIED")
