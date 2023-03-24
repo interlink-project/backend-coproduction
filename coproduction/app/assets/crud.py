@@ -301,13 +301,14 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                 data_from_interlinker = requests.post(asset.link + methodCloneCall, headers={
                 "Authorization": "Bearer " + token
                 }).json()
-            external_asset_id = data_from_interlinker["id"] if "id" in data_from_interlinker else data_from_interlinker["_id"]
+            if(data_from_interlinker):    
+                external_asset_id = data_from_interlinker["id"] if "id" in data_from_interlinker else data_from_interlinker["_id"]
 
-            new_asset = InternalAssetCreate(task_id=task.id,
-                                        softwareinterlinker_id=asset.softwareinterlinker_id,
-                                        knowledgeinterlinker_id=asset.knowledgeinterlinker_id,
-                                        external_asset_id=external_asset_id)
-            await self.create(db=db, asset=new_asset, creator=creator, task=task)
+                new_asset = InternalAssetCreate(task_id=task.id,
+                                            softwareinterlinker_id=asset.softwareinterlinker_id,
+                                            knowledgeinterlinker_id=asset.knowledgeinterlinker_id,
+                                            external_asset_id=external_asset_id)
+                await self.create(db=db, asset=new_asset, creator=creator, task=task)
         
         elif asset.type == 'externalasset':
             print('Copying external asset')
