@@ -12,3 +12,4 @@ from app.notifications.crud import exportCrud as notification
 from app.usernotifications.crud import exportCrud as usernotification
 from app.coproductionprocessnotifications.crud import exportCrud as coproductionprocessnotification
 from app.stories.crud import exportCrud as story
+from app.tags.crud import exportCrud as tag

@@ -13,6 +13,7 @@ from app.notifications.schemas import *
 from app.usernotifications.schemas import *
 from app.coproductionprocessnotifications.schemas import *
 from app.stories.schemas import *
+from app.tags.schemas import *
 
 # out
 
@@ -80,6 +81,10 @@ class CoproductionProcessOutFull(CoproductionProcessOut):
     def enabled_teams_to_list(cls, v):
         # set instead of list to avoid repeated teams
         return set(v)
+
+
+class TagOutFull(TagOut):
+    pass
 
 # in
 

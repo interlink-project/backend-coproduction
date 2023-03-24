@@ -23,3 +23,7 @@ user_team_association_table = Table('association_user_team', BaseModel.metadata,
 team_applies_association_table = Table('team_applies', BaseModel.metadata,
                                        Column('team_id', ForeignKey('team.id', ondelete="CASCADE"), primary_key=True),
                                        Column('user_id', ForeignKey('user.id', ondelete="CASCADE"), primary_key=True))
+
+coproductionprocess_tags_association_table = Table('coproductionprocess_tags', BaseModel.metadata,
+                                                   Column('coproductionprocess_id', ForeignKey('coproductionprocess.id', ondelete="CASCADE"), primary_key=True),
+                                                   Column('tag_id', ForeignKey('tag.id', ondelete="CASCADE"), primary_key=True))

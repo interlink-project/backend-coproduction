@@ -12,3 +12,4 @@ from app.notifications.models import *
 from app.usernotifications.models import *
 from app.coproductionprocessnotifications.models import *
 from app.stories.models import *
+from app.tags.models import *
