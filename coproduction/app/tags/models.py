@@ -21,8 +21,6 @@ class Tag(BaseModel):
     name = translation_hybrid(name_translations)
     description = translation_hybrid(description_translations)
 
-    
-    
 
     def __repr__(self) -> str:
         return f"<Tag {self.name}>"
