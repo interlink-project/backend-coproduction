@@ -78,12 +78,12 @@ class CoproductionProcess(BaseModel):
     game_id = Column(String, nullable=True)
     
     # Tags
-    tags = relationship(
-        "Tag",
-        secondary=coproductionprocess_tags_association_table,
-        back_populates="coproductionprocesses",
-    )
-    tags_ids = association_proxy('tags', 'id')
+    # tags = relationship(
+    #     "Tag",
+    #     secondary=coproductionprocess_tags_association_table,
+    #     back_populates="coproductionprocesses",
+    # )
+    # tags_ids = association_proxy('tags', 'id')
     
     
     stories = association_proxy("coproductionprocess_story_associations", "story")
