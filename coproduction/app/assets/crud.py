@@ -289,6 +289,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                 methodCloneCall="/clone_for_catalogue"
 
             #print(methodCloneCall)
+            data_from_interlinker=None
             try:
                 print('The request is:')
                 print(asset.internal_link + methodCloneCall)
@@ -296,11 +297,14 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                 "Authorization": "Bearer " + token
                 }).json()
             except:
-                print('The request try again with:')
-                print(asset.link + methodCloneCall)
-                data_from_interlinker = requests.post(asset.link + methodCloneCall, headers={
-                "Authorization": "Bearer " + token
-                }).json()
+                try:
+                    print('The request try again with:')
+                    print(asset.link + methodCloneCall)
+                    data_from_interlinker = requests.post(asset.link + methodCloneCall, headers={
+                    "Authorization": "Bearer " + token
+                    }).json()
+                except:
+                    pass
             if(data_from_interlinker):    
                 external_asset_id = data_from_interlinker["id"] if "id" in data_from_interlinker else data_from_interlinker["_id"]
 
