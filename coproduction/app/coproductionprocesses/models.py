@@ -18,7 +18,7 @@ from app.general.db.base_class import Base as BaseModel
 from app.config import settings
 from app.phases.models import Phase
 from sqlalchemy.ext.associationproxy import association_proxy
-from app.tables import coproductionprocess_administrators_association_table
+from app.tables import coproductionprocess_administrators_association_table, coproductionprocess_tags_association_table
 from sqlalchemy.orm import Session
 from app.utils import Status
 
@@ -76,6 +76,15 @@ class CoproductionProcess(BaseModel):
     
     # Gamification
     game_id = Column(String, nullable=True)
+    
+    # Tags
+    tags = relationship(
+        "Tag",
+        secondary=coproductionprocess_tags_association_table,
+        back_populates="coproductionprocesses",
+    )
+    tags_ids = association_proxy('tags', 'id')
+    
     
     stories = association_proxy("coproductionprocess_story_associations", "story")
 

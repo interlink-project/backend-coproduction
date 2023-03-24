@@ -314,7 +314,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
             if(from_view=='for_publication'):
                 #In the case of publcation in the catalogue copy of assets as readonly:
-                await crud.asset.copy(db, asset, user, task, token,True)
+                await crud.asset.copy(db, asset, user, task, token, True)
             else:
                 await crud.asset.copy(db, asset, user, task, token)
         
