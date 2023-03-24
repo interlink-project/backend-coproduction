@@ -277,6 +277,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
     async def copy(self, db: Session, asset: AssetCreate, creator: models.User, task: models.Task, token, justRead =False) -> Asset:
         print('Start to copy the assets')
         print(asset.id)
+        print(asset.type)
         print('')
         if asset.type == 'internalasset':
             print('Copying internal asset')
