@@ -194,7 +194,11 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
         return db.query(Permission).filter(
             Permission.coproductionprocess_id==coproductionprocess_id
         ).order_by(Permission.created_at.asc()).filter(
-            Permission.team_id.in_(user.teams_ids)
+            and_(
+                Permission.team_id.in_(user.teams_ids)
+                ,
+                Permission.treeitem_id==None
+            )
             ).all()
 
 

@@ -275,7 +275,9 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
         return db_obj
 
     async def copy(self, db: Session, asset: AssetCreate, creator: models.User, task: models.Task, token, justRead =False) -> Asset:
-
+        print('Start to copy the assets')
+        print(asset.id)
+        print('')
         if asset.type == 'internalasset':
             print('Copying internal asset')
 
@@ -287,10 +289,14 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
 
             #print(methodCloneCall)
             try:
+                print('The request is:')
+                print(asset.internal_link + methodCloneCall)
                 data_from_interlinker = requests.post(asset.internal_link + methodCloneCall, headers={
                 "Authorization": "Bearer " + token
                 }).json()
             except:
+                print('The request try again with:')
+                print(asset.link + methodCloneCall)
                 data_from_interlinker = requests.post(asset.link + methodCloneCall, headers={
                 "Authorization": "Bearer " + token
                 }).json()

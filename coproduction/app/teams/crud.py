@@ -189,7 +189,7 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
                 newUserNotification.state = False
                 newUserNotification.parameters = (
                     "{'teamName':'"
-                    + html.escape(db_obj.name.replace)
+                    + html.escape(db_obj.name)
                     + "','team_id':'"
                     + str(db_obj.id)
                     + "','org_id':'"
