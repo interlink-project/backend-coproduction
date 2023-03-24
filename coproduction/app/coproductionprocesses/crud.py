@@ -120,7 +120,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
             return listOfAssets
 
             
-        #print('No es admin ni permisos generales, busco por treeitem')
+        print('No es admin ni permisos generales, busco por treeitem')
         #En el caso que tengas permisos sobre treeitems Individuales:
         ids = [treeitem.id for treeitem in await treeitemsCrud.get_for_user_and_coproductionprocess(db=db, user=user, coproductionprocess_id=coproductionprocess.id) if not treeitem.disabled_on]
         
