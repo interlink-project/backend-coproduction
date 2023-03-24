@@ -1,8 +1,8 @@
 {
     "event": "add_contribution_asset",
     "title": "A new contribution was performed over a resource.",
-    "subtitle": "<span style='color:green;font-weight:bold;'>{userName}</span> contributed with the action: '{commentTitle}' to a resource in the topic <a href='/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide'>'{treeItemName}'</a>.",
-    "text": "<span style='color:green;font-weight:bold;'>{userName}</span> contributed with the action: '{commentTitle}' to the resource <img class='im_{assetId}' src='{assetIcon}' style='width: 15px;' {showIcon}> <a class='lk_{assetId}' href='{assetLink}'  target='_blank' {showIcon}> {assetName}</a> <span {showLink}>'{assetName}'</span> in the topic <a href='/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide'>'{treeItemName}'</a>.",
+    "subtitle": "<span style='color:green;font-weight:bold;'>{userName}</span> contributed with the action: '{commentTitle}' to a resource <span  class='lk_{assetId}'>{assetName}</span> in the topic <a href='/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide'>'{treeItemName}'</a>.",
+    "text": "<span style='color:green;font-weight:bold;'>{userName}</span> contributed with the action: '{commentTitle}' to the resource <img class='im_{assetId}' src='{assetIcon}' style='width: 15px;' > <a class='lk_{assetId}' href='{assetLink}'  target='_blank'> {assetName}</a> in the topic <a href='/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide'>'{treeItemName}'</a>.",
     "html_template": null,
     "url_link": "{assetLink}",
     "icon":"changeresource",
