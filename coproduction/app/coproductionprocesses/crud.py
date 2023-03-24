@@ -309,7 +309,12 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         print(from_view)
         # Copy the assets of the project
         assets = await self.get_assets(db, coproductionprocess, user)
+        contador_assets=0
         for asset in assets:
+            print('El numero de assets es:')
+            contador_assets=contador_assets+1
+            print(str(contador_assets)+'/'+str(len(assets)))
+
             task = await crud.task.get(db, ids_dict['Task_' + str(asset.task_id)])
 
             if(from_view=='for_publication'):
@@ -317,6 +322,8 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                 await crud.asset.copy(db, asset, user, task, token, True)
             else:
                 await crud.asset.copy(db, asset, user, task, token)
+            print('termino el copiado de '+asset.id)
+            print('')
         
         print("ASSETS COPIED")
         
