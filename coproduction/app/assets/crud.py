@@ -305,7 +305,8 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                     }).json()
                 except:
                     pass
-            if(data_from_interlinker):    
+            if(data_from_interlinker):  
+                print(data_from_interlinker)  
                 external_asset_id = data_from_interlinker["id"] if "id" in data_from_interlinker else data_from_interlinker["_id"]
 
                 new_asset = InternalAssetCreate(task_id=task.id,
