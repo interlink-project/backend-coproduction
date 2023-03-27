@@ -52,12 +52,12 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                 print(serverName)
 
                 if('loomio' in asset.link):
-                    
+                    print("ServerName")
                     asset.internalData={'icon':asset.icon,'name':asset.name,'link':asset.uri}
                 else:
                 
                     if('servicepedia' in asset.link):
-                        
+                        print("Servicepedia")
                         #print('Es servicepedia')
 
                         requestlink=f"http://augmenterservice/assets/{asset.external_asset_id}"
@@ -70,6 +70,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                         asset.internalData={'icon':'https://'+serverName+'/catalogue/static/augmenter/logotype.png','name':datosAsset['name'],'link':asset_uri}
 
                     else:
+                        print("Internal Asset")
                         serviceName=os.path.split(asset.link)[0].split('/')[3]
                         requestlink=f"http://{serviceName}/assets/{asset.external_asset_id}"
                     
@@ -81,6 +82,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                         asset.internalData=datosAsset
             
             if asset.type == "externalasset":
+                print("External Asset")
                 asset.internalData={'icon':asset.icon,'name':asset.name,'link':asset.uri}
                 
 
