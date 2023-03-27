@@ -15,6 +15,7 @@ from app.messages import log
 from app.treeitems.crud import exportCrud as treeitemsCrud
 from app.sockets import socket_manager
 from app.utils import check_prerequistes
+from app.config import settings
 
 
 class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessCreate, CoproductionProcessPatch]):
