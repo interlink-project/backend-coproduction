@@ -53,7 +53,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
 
                 if('loomio' in asset.link):
                     print("loomio")
-                    asset.internalData={'icon':'','name':'loomio File','link':asset.link}
+                    asset.internalData={'icon':'https://'+serverName+'/catalogue/static/loomio/logotype.png','name':'loomio File','link':asset.link}
                 else:
                 
                     if('servicepedia' in asset.link):

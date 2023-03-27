@@ -69,7 +69,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                         #print(asset.name)
                         #print(asset.uri)
 
-                        asset.internalData={'icon':'','name':'Loomio File','link':asset.link}
+                        asset.internalData={'icon':'https://'+serverName+'/catalogue/static/loomio/logotype.png','name':'Loomio File','link':asset.link}
                     else:
 
                         if ('servicepedia' in asset.link):
