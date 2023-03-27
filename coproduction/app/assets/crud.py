@@ -52,7 +52,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                 print(serverName)
 
                 if('loomio' in asset.link):
-                    print("ServerName")
+                    print("loomio")
                     asset.internalData={'icon':asset.icon,'name':asset.name,'link':asset.uri}
                 else:
                 
