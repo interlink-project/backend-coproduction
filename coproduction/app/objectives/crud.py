@@ -15,6 +15,7 @@ from app.utils import recursive_check
 from fastapi.encoders import jsonable_encoder
 from app.sockets import socket_manager
 from app import models
+from utils import check_prerequistes
 import html
 
 
@@ -186,19 +187,11 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
         indexes = []
 
         for id, task in enumerate(tasks_temp):
-            print('TASK', task)
-            print(task.prerequisites_ids)
             if not len(task.prerequisites_ids):
                 # if not task.is_disabled:
                 tasks.append(task)
                 indexes.append(str(task.id))
                 tasks_temp.pop(id)
-
-        def check_prerequistes(prereqs, list_indexes):
-            for prereq in prereqs:
-                if not str(prereq) in list_indexes:
-                    return False
-            return True
 
         while tasks_temp:
             for id, task in enumerate(tasks_temp):

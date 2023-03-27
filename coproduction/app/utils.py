@@ -11,6 +11,12 @@ def recursive_check(id, obj):
 
 # https://stackoverflow.com/questions/34057756/how-to-combine-sqlalchemys-hybrid-property-decorator-with-werkzeugs-cached-pr
 
+def check_prerequistes(prereqs, list_indexes):
+            for prereq in prereqs:
+                if not str(prereq) in list_indexes:
+                    return False
+            return True
+
 _missing = object()   # sentinel object for missing values
 
 class cached_hybrid_property(hybrid_property):
