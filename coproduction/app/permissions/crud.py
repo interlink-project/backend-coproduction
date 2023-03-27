@@ -87,7 +87,7 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
 
         return None
 
-    async def create(self, db: Session, obj_in: PermissionCreate, creator: models.User) -> Permission:
+    async def create(self, db: Session, obj_in: PermissionCreate, creator: models.User, notifyAfterAdded = True) -> Permission:
         print("LlAMA AL METODO CREATE DE PERMISSIONS:")
         
         obj_in_data = jsonable_encoder(obj_in)
@@ -102,27 +102,12 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
         #verify if the permission is of a (team or coproductionprocess)
         
         coproduction = await coproductionprocesses_crud.get(db=db, id=db_obj.coproductionprocess_id)
-        
-        #Se ha seleccionado un equipo para trabajar sonbre un treeitem.
-        if(db_obj.team_id and db_obj.treeitem_id):
+        if notifyAfterAdded:
+            #Se ha seleccionado un equipo para trabajar sonbre un treeitem.
+            if(db_obj.team_id and db_obj.treeitem_id):
 
-            notification = await notifications_crud.get_notification_by_event(db=db, event="add_team_treeitem",language=coproduction.language)
-            treeitem = await treeitems_crud.get(db=db, id=db_obj.treeitem_id)
-            #Create a notification for coproduction:
-            team = await teams_crud.get(db=db, id=db_obj.team_id)
-            
-            newCoproNotification=CoproductionProcessNotification()
-            newCoproNotification.notification_id=notification.id
-            newCoproNotification.coproductionprocess_id=coproduction.id
-
-            newCoproNotification.parameters="{'teamName':'"+html.escape(team.name)+"','processName':'"+html.escape(coproduction.name)+"','team_id':'"+str(team.id)+"','treeItemName':'"+html.escape(treeitem.name)+"','treeitem_id':'"+str(treeitem.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
-            db.add(newCoproNotification)
-        else:
-            
-            #Se ha seleccionado un equipo para trabajar sonbre todo un proceso de coproduction.
-            notification = await notifications_crud.get_notification_by_event(db=db, event="add_team_copro",language=coproduction.language)
-
-            if(notification and db_obj.team_id):
+                notification = await notifications_crud.get_notification_by_event(db=db, event="add_team_treeitem",language=coproduction.language)
+                treeitem = await treeitems_crud.get(db=db, id=db_obj.treeitem_id)
                 #Create a notification for coproduction:
                 team = await teams_crud.get(db=db, id=db_obj.team_id)
                 
@@ -130,46 +115,61 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
                 newCoproNotification.notification_id=notification.id
                 newCoproNotification.coproductionprocess_id=coproduction.id
 
-                newCoproNotification.parameters="{'teamName':'"+html.escape(team.name)+"','processName':'"+html.escape(coproduction.name)+"','team_id':'"+str(team.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
-
+                newCoproNotification.parameters="{'teamName':'"+html.escape(team.name)+"','processName':'"+html.escape(coproduction.name)+"','team_id':'"+str(team.id)+"','treeItemName':'"+html.escape(treeitem.name)+"','treeitem_id':'"+str(treeitem.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
                 db.add(newCoproNotification)
+            else:
+                
+                #Se ha seleccionado un equipo para trabajar sonbre todo un proceso de coproduction.
+                notification = await notifications_crud.get_notification_by_event(db=db, event="add_team_copro",language=coproduction.language)
 
-                #Create a notification for every user:
-                user_ids = team.user_ids
-                for user_id in user_ids:
-                    newUserNotification=UserNotification()
-                    newUserNotification.user_id=user_id
-
-                    newUserNotification.notification_id=notification.id
-                    newUserNotification.channel="in_app"
-                    newUserNotification.state=False
-                    newUserNotification.coproductionprocess_id=str(db_obj.coproductionprocess_id)
+                if(notification and db_obj.team_id):
+                    #Create a notification for coproduction:
+                    team = await teams_crud.get(db=db, id=db_obj.team_id)
                     
-                    newUserNotification.parameters="{'teamName':'"+html.escape(team.name)+"','processName':'"+html.escape(coproduction.name)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"','org_id':'"+str(team.organization_id)+"'}"
+                    newCoproNotification=CoproductionProcessNotification()
+                    newCoproNotification.notification_id=notification.id
+                    newCoproNotification.coproductionprocess_id=coproduction.id
 
-                    db.add(newUserNotification)
+                    newCoproNotification.parameters="{'teamName':'"+html.escape(team.name)+"','processName':'"+html.escape(coproduction.name)+"','team_id':'"+str(team.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
 
-                    await socket_manager.send_to_id(generate_uuid(user_id), {"event": self.modelName.lower() + "_created"})
+                    db.add(newCoproNotification)
 
-        db.commit()
-        db.refresh(newCoproNotification)
+                    #Create a notification for every user:
+                    user_ids = team.user_ids
+                    for user_id in user_ids:
+                        newUserNotification=UserNotification()
+                        newUserNotification.user_id=user_id
 
-        #Send mail to a team to know they are added to a coprod or treeitem
-        if db_obj.treeitem_id and db_obj.team_id:
-            treeitem = await treeitems_crud.get(db=db, id=db_obj.treeitem_id)
-            _ = send_team_email(team,
-                            'add_team_treeitem',
-                            {"coprod_id": db_obj.coproductionprocess_id,
+                        newUserNotification.notification_id=notification.id
+                        newUserNotification.channel="in_app"
+                        newUserNotification.state=False
+                        newUserNotification.coproductionprocess_id=str(db_obj.coproductionprocess_id)
+                        
+                        newUserNotification.parameters="{'teamName':'"+html.escape(team.name)+"','processName':'"+html.escape(coproduction.name)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"','org_id':'"+str(team.organization_id)+"'}"
+
+                        db.add(newUserNotification)
+
+                        await socket_manager.send_to_id(generate_uuid(user_id), {"event": self.modelName.lower() + "_created"})
+
+            db.commit()
+            db.refresh(newCoproNotification)
+
+            #Send mail to a team to know they are added to a coprod or treeitem
+            if db_obj.treeitem_id and db_obj.team_id:
+                treeitem = await treeitems_crud.get(db=db, id=db_obj.treeitem_id)
+                _ = send_team_email(team,
+                                'add_team_treeitem',
+                                {"coprod_id": db_obj.coproductionprocess_id,
+                                    "coprod_name": coproduction.name,
+                                    "treeitem_id": db_obj.treeitem_id,
+                                    "treeitem_name": treeitem.name,
+                                    "team_name": team.name})
+            else:
+                _ = send_team_email(team,
+                                'add_team_coprod',
+                                {"coprod_id": db_obj.coproductionprocess_id,
                                 "coprod_name": coproduction.name,
-                                "treeitem_id": db_obj.treeitem_id,
-                                "treeitem_name": treeitem.name,
                                 "team_name": team.name})
-        else:
-            _ = send_team_email(team,
-                            'add_team_coprod',
-                            {"coprod_id": db_obj.coproductionprocess_id,
-                             "coprod_name": coproduction.name,
-                             "team_name": team.name})
 
         await socket_manager.send_to_id(generate_uuid(creator.id), {"event": "permission" + "_created"})
 

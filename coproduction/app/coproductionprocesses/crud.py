@@ -256,7 +256,6 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         if (label_name == ""):
             label_name = "Copy of "
 
-        # print(coproductionprocess.logotype)
         new_coproductionprocess = CoproductionProcessCreate(
             schema_used=coproductionprocess.schema_used,
             language=coproductionprocess.language,
@@ -357,7 +356,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                     create_assets_permission=permission.create_assets_permission,
                     delete_assets_permission=permission.delete_assets_permission)
 
-                await crud.permission.create(db=db, obj_in=new_permission, creator=user)
+                await crud.permission.create(db=db, obj_in=new_permission, creator=user, notifyAfterAdded=False)
 
         return db_obj
 
