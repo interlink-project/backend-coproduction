@@ -64,11 +64,11 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
                     if('loomio' in asset.link):
                         print("Es un loomio")
-                        print(asset.icon)
+                        #No hay icon print(asset.icon)
                         print(asset.name)
                         print(asset.uri)
 
-                        asset.internalData={'icon':asset.icon,'name':asset.name,'link':asset.uri}
+                        asset.internalData={'icon':'','name':asset.name,'link':asset.link}
                     else:
 
                         if ('servicepedia' in asset.link):
