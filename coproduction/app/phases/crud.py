@@ -102,7 +102,7 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
                 newCoproNotification.coproductionprocess_id = coproduction.id
 
                 newCoproNotification.parameters = "{'phaseName':'"+html.escape(db_obj.name)+"','processName':'"+html.escape(
-                    oproduction.name)+"','treeitem_id':'"+str(treeitem.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+                    coproduction.name)+"','treeitem_id':'"+str(treeitem.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
 
                 db.add(newCoproNotification)
                 db.commit()
