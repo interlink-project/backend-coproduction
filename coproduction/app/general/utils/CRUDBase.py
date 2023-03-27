@@ -107,33 +107,37 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
             
         return db_obj
 
-    async def add_administrator(self, db: Session, *, db_obj: ModelType, user: User = None) -> ModelType:
+    async def add_administrator(self, db: Session, *, db_obj: ModelType, user: User = None,notifyAfterAdded:bool=True) -> ModelType:
         from app.worker import sync_asset_users
         db_obj.administrators.append(user)
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)        
-        sync_asset_users([user.id])
-        enriched: dict = self.enrich_log_data(db_obj, {
-            "action": "ADD_ADMINISTRATOR",
-            "added_user_id": user.id
-        })
-        await log(enriched)
-        
 
-        if self.modelName == "COPRODUCTIONPROCESS":
-            await socket_manager.send_to_id(db_obj.id, {"event": self.modelName.lower() + "_administrator_added"})
-        if hasattr(db_obj, "coproductionprocess_id"):
-            await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName.lower() + "_administrator_added"})
-        
-        # Send info to private socket to update workspace page
-        await socket_manager.send_to_id(generate_uuid(user.id), {"event": self.modelName.lower() + "_administrator_added"})
-        
-        #Send mail to user to know is added to a team
-        _ = send_email(user.email,
-                   'add_admin_coprod',
-                   {"coprod_id": db_obj.id,
-                    "coprod_name": db_obj.name,})
+
+        #Sincroniza los usuarios administradores con cada uno de los assets:
+        if notifyAfterAdded:
+            sync_asset_users([user.id])
+            enriched: dict = self.enrich_log_data(db_obj, {
+                "action": "ADD_ADMINISTRATOR",
+                "added_user_id": user.id
+            })
+            await log(enriched)
+            
+
+            if self.modelName == "COPRODUCTIONPROCESS":
+                await socket_manager.send_to_id(db_obj.id, {"event": self.modelName.lower() + "_administrator_added"})
+            if hasattr(db_obj, "coproductionprocess_id"):
+                await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName.lower() + "_administrator_added"})
+            
+            # Send info to private socket to update workspace page
+            await socket_manager.send_to_id(generate_uuid(user.id), {"event": self.modelName.lower() + "_administrator_added"})
+            
+            #Send mail to user to know is added to a team
+            _ = send_email(user.email,
+                    'add_admin_coprod',
+                    {"coprod_id": db_obj.id,
+                        "coprod_name": db_obj.name,})
         
         return db_obj
 

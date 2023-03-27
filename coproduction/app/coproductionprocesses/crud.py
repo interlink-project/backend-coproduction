@@ -278,7 +278,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
             #In case is made from settings the administrators are the same as the process
             administrators = coproductionprocess.administrators
             for admin in administrators:
-                await self.add_administrator(db=db, db_obj=db_obj, user=admin)
+                await self.add_administrator(db=db, db_obj=db_obj, user=admin, notifyAfterAdded=False)
 
 
         print("STARTING TREEITEMS")
