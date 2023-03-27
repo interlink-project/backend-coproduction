@@ -283,24 +283,21 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
             print('Copying internal asset')
 
             methodCloneCall="/clone"
-
-            if justRead:
-                #Make the copied asset just read type
-                methodCloneCall="/clone_for_catalogue"
+            params = {'justRead': justRead}
 
             #print(methodCloneCall)
             data_from_interlinker=None
             try:
                 print('The request is:')
                 print(asset.internal_link + methodCloneCall)
-                data_from_interlinker = requests.post(asset.internal_link + methodCloneCall, headers={
+                data_from_interlinker = requests.post(asset.internal_link + methodCloneCall, params=params, headers={
                 "Authorization": "Bearer " + token
                 }).json()
             except:
                 try:
                     print('The request try again with:')
                     print(asset.link + methodCloneCall)
-                    data_from_interlinker = requests.post(asset.link + methodCloneCall, headers={
+                    data_from_interlinker = requests.post(asset.link + methodCloneCall, params=params, headers={
                     "Authorization": "Bearer " + token
                     }).json()
                 except:
