@@ -48,11 +48,12 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
             if asset.type == "internalasset":
 
                 serverName=settings.SERVER_NAME
-
+                print("ServerName")
+                print(serverName)
 
                 if('loomio' in asset.link):
                     
-                    asset.internalData={'icon':'https://'+serverName+'/catalogue/static/loomio/logotype.png','name':asset.name,'link':asset.uri}
+                    asset.internalData={'icon':asset.icon,'name':asset.name,'link':asset.uri}
                 else:
                 
                     if('servicepedia' in asset.link):
