@@ -22,6 +22,7 @@ from app.coproductionprocesses.crud import exportCrud as coproductionprocesses_c
 from fastapi import Depends
 from app.general import deps
 import html
+from app.config import settings
 
 class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
     async def get_multi(
@@ -45,30 +46,38 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
 
         for asset in listAssets:
             if asset.type == "internalasset":
-                
-                if('servicepedia' in asset.link):
+
+                serverName=settings.SERVER_NAME
+
+
+                if('loomio' in asset.link):
                     
-                    #print('Es servicepedia')
-
-                    requestlink=f"http://augmenterservice/assets/{asset.external_asset_id}"
-                    response = requests.get(requestlink)
-                    datosAsset = response.json()
-                    print(datosAsset)
-
-
-                    asset_uri=asset.link+'/view'
-                    asset.internalData={'icon':'https://dev.interlink-project.eu/catalogue/static/augmenter/logotype.png','name':datosAsset['name'],'link':asset_uri}
-
+                    asset.internalData={'icon':'https://'+serverName+'/catalogue/static/loomio/logotype.png','name':asset.name,'link':asset.uri}
                 else:
-                    serviceName=os.path.split(asset.link)[0].split('/')[3]
-                    requestlink=f"http://{serviceName}/assets/{asset.external_asset_id}"
                 
-                    print(requestlink)
-                    response = requests.get(requestlink)
+                    if('servicepedia' in asset.link):
+                        
+                        #print('Es servicepedia')
 
-                    print(response)
-                    datosAsset = response.json()
-                    asset.internalData=datosAsset
+                        requestlink=f"http://augmenterservice/assets/{asset.external_asset_id}"
+                        response = requests.get(requestlink)
+                        datosAsset = response.json()
+                        print(datosAsset)
+
+
+                        asset_uri=asset.link+'/view'
+                        asset.internalData={'icon':'https://'+serverName+'/catalogue/static/augmenter/logotype.png','name':datosAsset['name'],'link':asset_uri}
+
+                    else:
+                        serviceName=os.path.split(asset.link)[0].split('/')[3]
+                        requestlink=f"http://{serviceName}/assets/{asset.external_asset_id}"
+                    
+                        print(requestlink)
+                        response = requests.get(requestlink)
+
+                        print(response)
+                        datosAsset = response.json()
+                        asset.internalData=datosAsset
             
             if asset.type == "externalasset":
                 asset.internalData={'icon':asset.icon,'name':asset.name,'link':asset.uri}
