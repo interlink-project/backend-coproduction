@@ -15,7 +15,7 @@ from app.utils import recursive_check
 from fastapi.encoders import jsonable_encoder
 from app.sockets import socket_manager
 from app import models
-from utils import check_prerequistes
+from app.utils import check_prerequistes
 import html
 
 

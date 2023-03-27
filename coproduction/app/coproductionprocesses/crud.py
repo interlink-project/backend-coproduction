@@ -14,6 +14,8 @@ from fastapi.encoders import jsonable_encoder
 from app.messages import log
 from app.treeitems.crud import exportCrud as treeitemsCrud
 from app.sockets import socket_manager
+from app.utils import check_prerequistes
+
 
 class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessCreate, CoproductionProcessPatch]):
     async def get_multi_by_user(self, db: Session, user: User, search: str = None) -> Optional[List[CoproductionProcess]]:
@@ -48,108 +50,109 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
         return query.order_by(CoproductionProcess.created_at.asc()).all()
 
-
     async def get_assets(self, db: Session, coproductionprocess: CoproductionProcess, user: models.User):
 
-        #Query and add public info to the asset
+        # Query and add public info to the asset
         def obtainpublicData(listOfAssets):
 
             for asset in listOfAssets:
                 if asset.type == "internalasset":
-                    
-                    if('servicepedia' in asset.link):
 
-                        #print('Es servicepedia')
-                        
-                        requestlink=f"http://augmenterservice/assets/{asset.external_asset_id}"
+                    if ('servicepedia' in asset.link):
+
+                        # print('Es servicepedia')
+
+                        requestlink = f"http://augmenterservice/assets/{asset.external_asset_id}"
                         response = requests.get(requestlink)
                         datosAsset = response.json()
                         print(datosAsset)
 
-                        asset_uri=asset.link+'/view'
-                        asset.internalData={'icon':'https://dev.interlink-project.eu/catalogue/static/augmenter/logotype.png','name':datosAsset['name'],'link':asset_uri}
+                        asset_uri = asset.link+'/view'
+                        asset.internalData = {
+                            'icon': 'https://dev.interlink-project.eu/catalogue/static/augmenter/logotype.png', 'name': datosAsset['name'], 'link': asset_uri}
 
                     else:
-                        serviceName=os.path.split(asset.link)[0].split('/')[3]
-                        requestlink=f"http://{serviceName}/assets/{asset.external_asset_id}"
+                        serviceName = os.path.split(asset.link)[0].split('/')[3]
+                        requestlink = f"http://{serviceName}/assets/{asset.external_asset_id}"
                         response = requests.get(requestlink)
                         datosAsset = response.json()
-                        asset.internalData=datosAsset
+                        asset.internalData = datosAsset
 
                 if asset.type == "externalasset":
 
                     queries = []
                     queries.append(Asset.id == asset.id)
-                    datosAsset=db.query(Asset).filter(*queries).first()
-                    asset.internalData={'icon':datosAsset.icon,'name':datosAsset.name,'link':datosAsset.uri}
-                    
+                    datosAsset = db.query(Asset).filter(*queries).first()
+                    asset.internalData = {'icon': datosAsset.icon,
+                                          'name': datosAsset.name, 'link': datosAsset.uri}
+
             return listOfAssets
 
-        #En el caso que seas un administrador del proceso (muestro todo):
+        # En el caso que seas un administrador del proceso (muestro todo):
 
-        if user in coproductionprocess.administrators: #or self.can_read(db, user, coproductionprocess):
-            #print('Es administrador!!')
-            listOfAssets=db.query(
+        # or self.can_read(db, user, coproductionprocess):
+        if user in coproductionprocess.administrators:
+            # print('Es administrador!!')
+            listOfAssets = db.query(
                 Asset
-                ).filter(
-                    Asset.task_id.in_(coproductionprocess.task_ids())
-                ).order_by(models.Asset.created_at.desc()).all()
+            ).filter(
+                Asset.task_id.in_(coproductionprocess.task_ids())
+            ).order_by(models.Asset.created_at.desc()).all()
 
-            #Agrego informacion del asset interno
-            listOfAssets=obtainpublicData(listOfAssets)
+            # Agrego informacion del asset interno
+            listOfAssets = obtainpublicData(listOfAssets)
 
             return listOfAssets
-
 
         # En el caso que tengas permisos sobre todo el proceso:
         # Pregunto si tienes permisos
-        listPermissionsAllProcess=await crud.permission.get_permission_user_coproduction(db=db, user=user, coproductionprocess_id=coproductionprocess.id)
-        if(len(listPermissionsAllProcess)>0):
-            #print('Tiene permisos para todo el proceso!!')
+        listPermissionsAllProcess = await crud.permission.get_permission_user_coproduction(db=db, user=user, coproductionprocess_id=coproductionprocess.id)
+        if (len(listPermissionsAllProcess) > 0):
+            # print('Tiene permisos para todo el proceso!!')
             # Si es asi muestro todos los assets igual que el admin
 
-            listOfAssets=db.query(
+            listOfAssets = db.query(
                 Asset
-                ).filter(
-                    Asset.task_id.in_(coproductionprocess.task_ids())
-                ).order_by(models.Asset.created_at.desc()).all()
+            ).filter(
+                Asset.task_id.in_(coproductionprocess.task_ids())
+            ).order_by(models.Asset.created_at.desc()).all()
 
-            #Agrego informacion del asset interno
-            listOfAssets=obtainpublicData(listOfAssets)
-            
+            # Agrego informacion del asset interno
+            listOfAssets = obtainpublicData(listOfAssets)
+
             return listOfAssets
 
-            
         print('No es admin ni permisos generales, busco por treeitem')
-        #En el caso que tengas permisos sobre treeitems Individuales:
+        # En el caso que tengas permisos sobre treeitems Individuales:
         ids = [treeitem.id for treeitem in await treeitemsCrud.get_for_user_and_coproductionprocess(db=db, user=user, coproductionprocess_id=coproductionprocess.id) if not treeitem.disabled_on]
-        
-        listOfAssets= db.query(
-                models.Asset
-            ).filter(
-                or_(
-                    models.Asset.phase_id.in_(ids),
-                    models.Asset.objective_id.in_(ids),
-                    models.Asset.task_id.in_(ids),
-                )
-            ).order_by(models.Asset.created_at.desc()).all()
-        
-        #Check if the user has the permissions to see the asset.
+
+        listOfAssets = db.query(
+            models.Asset
+        ).filter(
+            or_(
+                models.Asset.phase_id.in_(ids),
+                models.Asset.objective_id.in_(ids),
+                models.Asset.task_id.in_(ids),
+            )
+        ).order_by(models.Asset.created_at.desc()).all()
+
+        # Check if the user has the permissions to see the asset.
         for asset in listOfAssets:
             print(asset)
-            tienePermisosListado=crud.asset.can_list(db=db,user=user,task=asset.task)
+            tienePermisosListado = crud.asset.can_list(
+                db=db, user=user, task=asset.task)
             if not tienePermisosListado:
                 listOfAssets.remove(asset)
 
-        #Agrego informacion del asset interno
-        listOfAssets=obtainpublicData(listOfAssets)
-        
+        # Agrego informacion del asset interno
+        listOfAssets = obtainpublicData(listOfAssets)
+
         return listOfAssets
 
     async def clear_schema(self, db: Session, coproductionprocess: models.CoproductionProcess):
         schema = coproductionprocess.schema_used
         for phase in coproductionprocess.children:
-            await crud.phase.remove(db=db, id=phase.id, remove_definitely=True,withNotifications=False)
+            await crud.phase.remove(db=db, id=phase.id, remove_definitely=True, withNotifications=False)
         enriched: dict = self.enrich_log_data(coproductionprocess, {
             "action": "CLEAR_SCHEMA",
             "coproductionprocess_id": coproductionprocess.id,
@@ -160,14 +163,14 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         await socket_manager.send_to_id(coproductionprocess.id, {"event": "schema_cleared"})
         return coproductionprocess
 
-    async def set_logotype(self, db: Session, coproductionprocess: models.CoproductionProcess, logotype_path:str):
+    async def set_logotype(self, db: Session, coproductionprocess: models.CoproductionProcess, logotype_path: str):
 
-        coproductionprocess.logotype=logotype_path
+        coproductionprocess.logotype = logotype_path
         db.add(coproductionprocess)
         db.commit()
         db.refresh(coproductionprocess)
 
-        #await socket_manager.send_to_id(coproductionprocess.id, {"event": "coproductionprocess_updated"})
+        # await socket_manager.send_to_id(coproductionprocess.id, {"event": "coproductionprocess_updated"})
 
         return coproductionprocess
 
@@ -247,13 +250,13 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
         db.refresh(coproductionprocess)
         await socket_manager.send_to_id(coproductionprocess.id, {"event": "schema_set"})
         return coproductionprocess
-    
-    async def copy(self, db: Session, coproductionprocess: CoproductionProcessCreate, user: models.User, token, label_name,from_view):
-        
-        if (label_name==""):
-            label_name="Copy of "  
-        
-        #print(coproductionprocess.logotype)
+
+    async def copy(self, db: Session, coproductionprocess: CoproductionProcessCreate, user: models.User, token, label_name, from_view):
+
+        if (label_name == ""):
+            label_name = "Copy of "
+
+        # print(coproductionprocess.logotype)
         new_coproductionprocess = CoproductionProcessCreate(
             schema_used=coproductionprocess.schema_used,
             language=coproductionprocess.language,
@@ -266,35 +269,38 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
             challenges=coproductionprocess.challenges,
             status=coproductionprocess.status,
         )
-        
+
         db_obj = await self.create(db=db, obj_in=new_coproductionprocess, creator=user, set_creator_admin=True)
 
-        if(from_view=='story'):
-            #In case the clone is made from story the only administrator is the user.
-            #The current user is set as admin of the process in the previous line.
+        if (from_view == 'story'):
+            # In case the clone is made from story the only administrator is the user.
+            # The current user is set as admin of the process in the previous line.
             pass
 
         else:
-            #In case is made from settings the administrators are the same as the process
+            # In case is made from settings the administrators are the same as the process
             administrators = coproductionprocess.administrators
             for admin in administrators:
                 await self.add_administrator(db=db, db_obj=db_obj, user=admin, notifyAfterAdded=False)
 
-
         print("STARTING TREEITEMS")
         phases_temp = coproductionprocess.children.copy()
         phases = []
+        indexes = []
+
         for id, phase in enumerate(phases_temp):
-            if not phase.prerequisites_ids:
+            if not len(phase.prerequisites_ids):
                # if not phase.is_disabled:
                 phases.append(phase)
+                indexes.append(str(phase.id))
                 phases_temp.pop(id)
 
         while phases_temp:
             for id, phase in enumerate(phases_temp):
-                if str(phase.prerequisites_ids[0]) == str(phases[-1].id):
-                    #if not phase.is_disabled:
+                if check_prerequistes(phase.prerequisites_ids, indexes):
+                    # if not phase.is_disabled:
                     phases.append(phase)
+                    indexes.append(str(phase.id))
                     phases_temp.pop(id)
 
         #  Create a dict with the old ids and the new ids
@@ -304,33 +310,33 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
             ids_dict['Phase_'+str(phase.id)] = tmp_phase.id
             ids_dict.update(phase_id_updates)
         print("TREEITEMS COPIED")
-        
+
         print("STARTING ASSET")
         print(from_view)
         # Copy the assets of the project
         assets = await self.get_assets(db, coproductionprocess, user)
-        contador_assets=0
+        contador_assets = 0
         for asset in assets:
             print('El numero de assets es:')
-            contador_assets=contador_assets+1
+            contador_assets = contador_assets+1
             print(str(contador_assets)+'/'+str(len(assets)))
 
             task = await crud.task.get(db, ids_dict['Task_' + str(asset.task_id)])
 
-            if(from_view=='for_publication'):
-                #In the case of publcation in the catalogue copy of assets as readonly:
+            if (from_view == 'for_publication'):
+                # In the case of publcation in the catalogue copy of assets as readonly:
                 await crud.asset.copy(db, asset, user, task, token, True)
             else:
                 await crud.asset.copy(db, asset, user, task, token)
             print('termino el copiado de '+str(asset.id))
             print('')
-        
+
         print("ASSETS COPIED")
-        
+
         print("STARTING PERMISSIONS")
         # Copy the permissions of the project (THE NEW CREATOR IS THE CREATOR OF THE COPY)
-        if(from_view=='story'):
-            #If the copy is made from the story then the dont need to create permissions
+        if (from_view == 'story'):
+            # If the copy is made from the story then the dont need to create permissions
             pass
         else:
             for permission in coproductionprocess.permissions:
@@ -355,8 +361,8 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
         return db_obj
 
-
     # Override log methods
+
     def enrich_log_data(self, coproductionprocess, logData):
         logData["model"] = "COPRODUCTIONPROCESS"
         logData["object_id"] = coproductionprocess.id
