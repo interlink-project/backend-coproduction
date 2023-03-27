@@ -192,10 +192,11 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
         
         while tasks_temp:
             for id, task in enumerate(tasks_temp):
-                if str(task.prerequisites_ids[0]) == str(tasks[-1].id):
-                #    if not task.is_disabled:
-                    tasks.append(task)
-                    tasks_temp.pop(id)
+                if isinstance(task.prerequisites_ids, list):
+                    if str(task.prerequisites_ids[0]) == str(tasks[-1].id):
+                    #    if not task.is_disabled:
+                        tasks.append(task)
+                        tasks_temp.pop(id)
 
         ids_dict = {}
         for child in tasks:
