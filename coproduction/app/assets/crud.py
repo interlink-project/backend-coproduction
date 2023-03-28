@@ -52,8 +52,18 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                 print(serverName)
 
                 if('loomio' in asset.link):
+
+                    # requestlink=f"http://loomio/api/v1/assets/d-RnZOB6Aj"
+                    # response = requests.get(requestlink)
+                    # datosAsset = response.json()
+                    # print(datosAsset)
+
+                    asset_name='Loomio File'
+                    # if(!datosAsset['name']):
+                    #     asset_name=datosAsset['name']
+
                     print("loomio")
-                    asset.internalData={'icon':'https://'+serverName+'/catalogue/static/loomio/logotype.png','name':'loomio File','link':asset.link}
+                    asset.internalData={'icon':'https://'+serverName+'/catalogue/static/loomio/logotype.png','name':asset_name,'link':asset.link}
                 else:
                 
                     if('servicepedia' in asset.link):
@@ -266,10 +276,17 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
 
                 nameInterlinker=''
                 assetLink=''
+                serverName=settings.SERVER_NAME
+                optionalAssetIconText=''
 
                 assetLink=db_obj.link+'/view'
                 if(db_obj.softwareinterlinker):
                     nameInterlinker=db_obj.softwareinterlinker['name']
+
+                    if(service_name=='loomio'):
+                        assetIcon='https://'+serverName+'/catalogue/static/loomio/logotype.png'
+                        optionalAssetIconText=",'assetIcon':'"+assetIcon+"'"
+                    
                     
 
                 else:
@@ -277,7 +294,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                         nameInterlinker=db_obj.knowledgeinterlinker['name']
 
                 
-                newCoproNotification.parameters="{'showLink':'hidden','showIcon':'','treeitem_id':'"+str(task.id)+"','treeItemName':'"+html.escape(str(task.name))+"','assetId':'"+str(db_obj.id)+"','assetName':'{assetid:"+str(db_obj.id)+"}','assetLink':'"+str(assetLink)+"','interlinkerName':'"+html.escape(nameInterlinker)+"','processName':'"+html.escape(coproduction.name)+"','userName':'"+html.escape(self.shortName(db_obj.creator.full_name))+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+                newCoproNotification.parameters="{'showLink':'hidden','showIcon':'','treeitem_id':'"+str(task.id)+"','treeItemName':'"+html.escape(str(task.name))+"','assetId':'"+str(db_obj.id)+"'"+optionalAssetIconText+",'assetName':'{assetid:"+str(db_obj.id)+"}','assetLink':'"+str(assetLink)+"','interlinkerName':'"+html.escape(nameInterlinker)+"','processName':'"+html.escape(coproduction.name)+"','userName':'"+html.escape(self.shortName(db_obj.creator.full_name))+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
                 db.add(newCoproNotification)
         
         db.commit()
