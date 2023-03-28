@@ -283,7 +283,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                 if(db_obj.softwareinterlinker):
                     nameInterlinker=db_obj.softwareinterlinker['name']
 
-                    if(service_name=='loomio'):
+                    if(nameInterlinker=='loomio'):
                         assetIcon='https://'+serverName+'/catalogue/static/loomio/logotype.png'
                         optionalAssetIconText=",'assetIcon':'"+assetIcon+"'"
                     
