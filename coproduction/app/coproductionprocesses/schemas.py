@@ -59,7 +59,13 @@ class CoproductionProcessOut(CoproductionProcess):
     language: Any
     administrators_ids: List[str]
     current_user_participation: list
+    
+    tags_ids: List[str]
 
     @validator('administrators_ids', pre=True)
     def administrators_ids_to_list(cls, v):
+        return list(v)
+    
+    @validator('tags_ids', pre=True)
+    def tags_ids_to_list(cls, v):
         return list(v)
