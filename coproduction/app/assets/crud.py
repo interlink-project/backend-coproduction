@@ -34,7 +34,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
         return db.query(Asset).filter(*queries).offset(skip).limit(limit).all()
 
     async def get_multi_withIntData(
-        self, db: Session, task: models.Task, skip: int = 0, limit: int = 100
+        self, db: Session, task: models.Task, skip: int = 0, limit: int = 100, token:str
     ) -> List[Asset]:
         queries = []
         if task:
@@ -61,6 +61,21 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                     asset_name='Loomio File'
                     # if(!datosAsset['name']):
                     #     asset_name=datosAsset['name']
+
+                    try:
+                        cookies = {'auth_token': token}
+                        print('Asset id is:'+str(asset.external_asset_id))
+                        print('The request is:')
+                        print(f"https://loomio/api/v1/assets/{str(asset.id)}")
+                        response = requests.get(f"https://loomio/api/v1/assets/{str(asset.external_asset_id)}", cookies=cookies)
+                        data=response.json()
+                        asset_name=data.name
+                        print(asset_name)
+                    else:
+                        pass
+
+
+
 
                     print("loomio")
                     asset.internalData={'icon':'https://'+serverName+'/catalogue/static/loomio/logotype.png','name':asset_name,'link':asset.link}

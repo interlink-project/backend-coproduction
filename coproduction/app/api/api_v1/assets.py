@@ -43,6 +43,7 @@ async def list_assets_with_internaldata(
     task_id: uuid.UUID,
     db: Session = Depends(deps.get_db),
     current_user: Optional[models.User] = Depends(deps.get_current_active_user),
+    token: str = Depends(deps.get_current_active_token)
 ) -> Any:
     """
     Retrieve assets with public info.
@@ -54,7 +55,7 @@ async def list_assets_with_internaldata(
     if not crud.asset.can_list(db=db, user=current_user, task=task):
         raise HTTPException(status_code=403, detail="Not enough permissions")
     
-    return await crud.asset.get_multi_withIntData(db, task=task)
+    return await crud.asset.get_multi_withIntData(db, task=task,token=token)
 
 
 

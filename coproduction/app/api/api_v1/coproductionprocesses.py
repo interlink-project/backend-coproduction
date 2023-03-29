@@ -292,6 +292,7 @@ async def read_coproductionprocess_assets(
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
     current_user: Optional[models.User] = Depends(deps.get_current_active_user),
+    token: str = Depends(deps.get_current_active_token)
 ) -> Any:
     """
     Get coproductionprocess by ID.
@@ -304,7 +305,7 @@ async def read_coproductionprocess_assets(
     if not crud.coproductionprocess.can_read(db=db, user=current_user, object=coproductionprocess):
         raise HTTPException(status_code=403, detail="Not enough permissions")
         
-    return await crud.coproductionprocess.get_assets(db=db, user=current_user, coproductionprocess=coproductionprocess)
+    return await crud.coproductionprocess.get_assets(db=db, user=current_user, coproductionprocess=coproductionprocess,token=token)
 
 
 @router.post("/{id}/administrators")

@@ -51,7 +51,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
         return query.order_by(CoproductionProcess.created_at.asc()).all()
 
-    async def get_assets(self, db: Session, coproductionprocess: CoproductionProcess, user: models.User):
+    async def get_assets(self, db: Session, coproductionprocess: CoproductionProcess, user: models.User,token:str):
 
         # Query and add public info to the asset
         def obtainpublicData(listOfAssets):
@@ -68,8 +68,23 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                         #No hay icon print(asset.icon)
                         #print(asset.name)
                         #print(asset.uri)
+                        asset_name="Loomio File"
 
-                        asset.internalData={'icon':'https://'+serverName+'/catalogue/static/loomio/logotype.png','name':'Loomio File','link':asset.link}
+                        try:
+                            cookies = {'auth_token': token}
+                            print('Asset id is:'+str(asset.external_asset_id))
+                            print('The request is:')
+                            print(f"https://loomio/api/v1/assets/{str(asset.id)}")
+                            response = requests.get(f"https://loomio/api/v1/assets/{str(asset.external_asset_id)}", cookies=cookies)
+                            data=response.json()
+                            asset_name=data.name
+                            print(asset_name)
+                        else:
+                            pass
+
+
+
+                        asset.internalData={'icon':'https://'+serverName+'/catalogue/static/loomio/logotype.png','name':asset_name,'link':asset.link}
                     else:
 
                         if ('servicepedia' in asset.link):
