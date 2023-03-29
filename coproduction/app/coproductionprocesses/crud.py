@@ -79,7 +79,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                             data=response.json()
                             asset_name=data.name
                             print(asset_name)
-                        else:
+                        except:
                             pass
 
 

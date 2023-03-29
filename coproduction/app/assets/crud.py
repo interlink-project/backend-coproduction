@@ -34,7 +34,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
         return db.query(Asset).filter(*queries).offset(skip).limit(limit).all()
 
     async def get_multi_withIntData(
-        self, db: Session, task: models.Task, skip: int = 0, limit: int = 100, token:str
+        self, db: Session, task: models.Task, skip: int = 0, limit: int = 100, token:str=''
     ) -> List[Asset]:
         queries = []
         if task:
@@ -71,7 +71,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                         data=response.json()
                         asset_name=data.name
                         print(asset_name)
-                    else:
+                    except:
                         pass
 
 
