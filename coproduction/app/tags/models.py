@@ -8,6 +8,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from app.general.db.base_class import Base as BaseModel
 from app.tables import coproductionprocess_tags_association_table
 from app.locales import translation_hybrid
+from sqlalchemy.ext.associationproxy import association_proxy
 
 
 class Tag(BaseModel):
@@ -20,6 +21,8 @@ class Tag(BaseModel):
 
     name = translation_hybrid(name_translations)
     description = translation_hybrid(description_translations)
+
+    coproductionprocesses_ids = association_proxy('coproductionprocesses', 'id')
 
 
     def __repr__(self) -> str:
