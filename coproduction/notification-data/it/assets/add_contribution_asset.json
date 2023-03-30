@@ -2,7 +2,7 @@
     "event": "add_contribution_asset",
     "title": "È stato eseguito un nuovo contributo su una risorsa.",
     "subtitle": "{commentDescription}",
-    "text": "<span style='color:green;font-weight:bold;'>{userName}</span>  ha contribuito con l'azione:  '{commentTitle}' alla risorsa  <img class='im_{assetId}' src='{assetIcon}' style='width: 15px;' {showIcon}> <a class='lk_{assetId}' href='{assetLink}'  target='_blank' {showIcon}> {assetName}</a> <span {showLink}>'{assetName}'</span> appartenente all'attività  <a href='/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide'>'{treeItemName}'</a>.",
+    "text": "<span style='color:green;font-weight:bold;'>{userName}</span>  ha contribuito con l'azione:  '{commentTitle}' alla risorsa  <img class='im_{assetId}' src='{assetIcon}' style='width: 15px;' {showIcon}> <a class='lk_{assetId}' href='{assetLink}'  target='_blank' {showIcon}> {assetName}</a> <span {showLink}>'{assetName}'</span> appartenente all'attività  <a href='/dashboard/coproductionprocesses/{copro_id}/{treeitem_id}/guide'>'{treeItemName}'</a>. (<a href='#' onclick='openDialog(event)' dialogId='myDialog_{notificationId}' >dettagli</a>)  <div id='myDialog_{notificationId}' style='display: none;position: fixed;z-index: 9999;top: 50%;left: 50%;transform: translate(-50%, -50%);background-color: #fff;padding: 20px;border: 1px solid #ccc;box-shadow: 0 0 10px #ccc;'><h4>{commentTitle}</h4><p>{commentDescription}</p><button onclick='closeDialog(event)' dialogId='myDialog_{notificationId}'>Chiudere</button></div>",
     "html_template": null,
     "url_link": "{assetLink}",
     "icon":"changeresource",

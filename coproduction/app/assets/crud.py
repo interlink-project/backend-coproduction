@@ -61,6 +61,8 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                     asset_name='Loomio File'
                     # if(!datosAsset['name']):
                     #     asset_name=datosAsset['name']
+                    
+                    import traceback
 
                     try:
                         cookies = {'auth_token': token}
@@ -71,7 +73,8 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                         data=response.json()
                         asset_name=data.name
                         print(asset_name)
-                    except:
+                    except Exception:
+                        traceback.print_exc()
                         pass
 
 

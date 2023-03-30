@@ -70,6 +70,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                         #print(asset.uri)
                         asset_name="Loomio File"
 
+                        import traceback
                         try:
                             cookies = {'auth_token': token}
                             print('Asset id is:'+str(asset.external_asset_id))
@@ -79,7 +80,8 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                             data=response.json()
                             asset_name=data.name
                             print(asset_name)
-                        except:
+                        except  Exception:
+                            traceback.print_exc()
                             pass
 
 
