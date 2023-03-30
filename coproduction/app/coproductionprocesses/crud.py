@@ -75,10 +75,10 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                             cookies = {'auth_token': token}
                             print('Asset id is:'+str(asset.external_asset_id))
                             print('The request is:')
-                            print(f"https://loomio/api/v1/assets/{str(asset.id)}")
+                            print(f"http://loomio/api/v1/assets/{str(asset.id)}")
+                            print(token)
 
-
-                            response1 = requests.get(f"https://loomio/api/v1/assets/{str(asset.id)}", headers={
+                            response1 = requests.get(f"http://loomio/api/v1/assets/{str(asset.id)}", headers={
                             "Authorization": "Bearer " + token
                             })
                             conBearer=response1.json()
@@ -92,7 +92,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
 
 
-                            response = requests.get(f"https://loomio/api/v1/assets/{str(asset.external_asset_id)}", cookies=cookies)
+                            response = requests.get(f"http://loomio/api/v1/assets/{str(asset.external_asset_id)}", cookies=cookies)
                             data=response.json()
                             asset_name=data.name
                             print(asset_name)
