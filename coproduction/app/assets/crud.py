@@ -68,7 +68,20 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                         cookies = {'auth_token': token}
                         print('Asset id is:'+str(asset.external_asset_id))
                         print('The request is:')
-                        print(f"https://loomio/api/v1/assets/{str(asset.id)}")
+                        print(f"https://loomio/api/v1/assetsloomio/api/v1/assets/{str(asset.id)}")
+
+                        response1 = requests.get(f"https://loomio/api/v1/assets/{str(asset.id)}", headers={
+                            "Authorization": "Bearer " + token
+                        })
+                        conBearer=response1.json()
+                        
+                        print('Con Bearer respuesta:')
+                        print(conBearer)
+                        print('--------')
+                        print('Con Cookies respuesta:')
+                        print(cookies)
+                        print('--------')
+
                         response = requests.get(f"https://loomio/api/v1/assets/{str(asset.external_asset_id)}", cookies=cookies)
                         data=response.json()
                         asset_name=data.name
