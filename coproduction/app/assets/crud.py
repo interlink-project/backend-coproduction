@@ -53,39 +53,29 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
 
                 if('loomio' in asset.link):
 
-                    # requestlink=f"http://loomio/api/v1/assets/d-RnZOB6Aj"
-                    # response = requests.get(requestlink)
-                    # datosAsset = response.json()
-                    # print(datosAsset)
-
                     asset_name='Loomio File'
-                    # if(!datosAsset['name']):
-                    #     asset_name=datosAsset['name']
                     
                     import traceback
 
                     try:
-                        cookies = {'auth_token': token}
+
                         print('Asset id is:'+str(asset.external_asset_id))
+
                         print('The request is:')
-                        print(f"https://loomio/api/v1/assetsloomio/api/v1/assets/{str(asset.external_asset_id)}")
-                        print(token)
-                        response1 = requests.get(f"https://loomio/api/v1/assets/{str(asset.external_asset_id)}", headers={
-                            "Authorization": "Bearer " + token
-                        })
-                        conBearer=response1.json()
+                        requestUrl=f"http://loomio/api/v1/assets/{str(asset.external_asset_id)}"
+                        print(requestUrl)
                         
-                        print('Con Bearer respuesta:')
-                        print(conBearer)
-                        print('--------')
-                        print('Con Cookies respuesta:')
-                        print(cookies)
+                        response = requests.get(requestUrl)
+                        responsoJson=response.json()
+                        
+                        print('La respuesta:')
+                        print(responsoJson)
+                        asset_name=responsoJson.name
+                        print(asset_name)
+                        
                         print('--------')
 
-                        response = requests.get(f"https://loomio/api/v1/assets/{str(asset.external_asset_id)}", cookies=cookies)
-                        data=response.json()
-                        asset_name=data.name
-                        print(asset_name)
+                       
                     except Exception:
                         traceback.print_exc()
                         pass

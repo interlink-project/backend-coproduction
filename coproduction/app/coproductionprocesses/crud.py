@@ -72,30 +72,24 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
                         import traceback
                         try:
-                            cookies = {'auth_token': token}
-                            print('Asset id is:'+str(asset.external_asset_id))
-                            print('The request is:')
-                            print(f"http://loomio/api/v1/assets/{str(asset.external_asset_id)}")
-                            print(token)
-
-                            response1 = requests.get(f"http://loomio/api/v1/assets/{str(asset.external_asset_id)}", headers={
-                            "Authorization": "Bearer " + token
-                            })
-                            conBearer=response1.json()
                             
-                            print('Con Bearer respuesta:')
-                            print(conBearer)
-                            print('--------')
-                            print('Con Cookies respuesta:')
-                            print(cookies)
-                            print('--------')
+                            print('Asset id is:'+str(asset.external_asset_id))
 
-
-
-                            response = requests.get(f"http://loomio/api/v1/assets/{str(asset.external_asset_id)}", cookies=cookies)
-                            data=response.json()
-                            asset_name=data.name
+                            print('The request is:')
+                            requestUrl=f"http://loomio/api/v1/assets/{str(asset.external_asset_id)}"
+                            print(requestUrl)
+                            
+                            response = requests.get(requestUrl)
+                            responsoJson=response.json()
+                            
+                            print('La respuesta:')
+                            print(responsoJson)
+                            asset_name=responsoJson.name
                             print(asset_name)
+                            
+                            print('--------')
+                            
+                            
                         except  Exception:
                             traceback.print_exc()
                             pass
