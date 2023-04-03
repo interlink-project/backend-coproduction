@@ -65,31 +65,30 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
                     if('loomio' in asset.link):
                         print("Es un loomio")
-                        #No hay icon print(asset.icon)
-                        #print(asset.name)
-                        #print(asset.uri)
                         asset_name="Loomio File"
-
                         import traceback
+
                         try:
                             
                             print('Asset id is:'+str(asset.external_asset_id))
-
                             print('The request is:')
-                            requestUrl=f"http://loomio/api/v1/assets/{str(asset.external_asset_id)}"
+
+                            cookies = {'auth_token': token}
+                            requestUrl=f"https://loomio/api/v1/assets/{str(asset.external_asset_id)}"
                             print(requestUrl)
                             
-                            response = requests.get(requestUrl)
-                            responsoJson=response.json()
-                            
-                            print('La respuesta:')
-                            print(responsoJson)
-                            asset_name=responsoJson.name
-                            print(asset_name)
-                            
+                            response = requests.get(requestUrl, headers={
+                            "Authorization": "Bearer " + token
+                            }, cookies=cookies)
+
+                            responseDataJson=response.json()
+
+                            print('Response:')                            
+                            print(responseDataJson)
                             print('--------')
-                            
-                            
+
+                            asset_name=responseDataJson.name
+                            print(asset_name)
                         except  Exception:
                             traceback.print_exc()
                             pass
