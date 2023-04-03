@@ -37,6 +37,13 @@ class CoproductionProcess(BaseModel):
 
     #Active Optional Modules
     incentive_and_rewards_state =Column(Boolean,nullable=True)
+
+    #Optional field defined just by the user:
+    #-------------
+    hasAddAnOrganization =Column(Boolean,nullable=True)
+    skipResourcesStep =Column(Boolean,nullable=True)
+    #-------------
+
     is_part_of_publication = Column(Boolean,nullable=True)
 
     status = Column(Enum(Status, create_constraint=False,

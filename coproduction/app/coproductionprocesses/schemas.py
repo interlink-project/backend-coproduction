@@ -22,6 +22,11 @@ class CoproductionProcessBase(BaseModel):
     challenges: Optional[str]
     status: Optional[Status]
     incentive_and_rewards_state: Optional[bool]
+
+    #Optional field defined just by the user:
+    hasAddAnOrganization : Optional[bool]
+    skipResourcesStep : Optional[bool]
+
     is_part_of_publication: Optional[bool]
     game_id: Optional[str]
 
@@ -40,6 +45,10 @@ class CoproductionProcessPatch(CoproductionProcessCreate):
     is_part_of_publication: Optional[bool]
     language: Optional[Languages]
     game_id: Optional[str]
+
+    #Optional field defined just by the user:
+    hasAddAnOrganization : Optional[bool]
+    skipResourcesStep : Optional[bool]
 
 
 class CoproductionProcess(CoproductionProcessBase):
