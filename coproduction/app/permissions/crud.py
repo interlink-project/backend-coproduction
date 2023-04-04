@@ -22,74 +22,74 @@ import html
 
 
 class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.PermissionPatch]):
-    
+
     async def remove(self, db: Session, *, id: uuid.UUID) -> Permission:
         db_obj = db.query(self.model).get(id)
         await self.log_on_remove(db_obj)
 
         db.delete(db_obj)
-        #db.commit()
+        # db.commit()
 
-
-        #Save the event as a notification of coproduction
+        # Save the event as a notification of coproduction
         coproduction = await coproductionprocesses_crud.get(db=db, id=db_obj.coproductionprocess_id)
 
-        if(db_obj.team_id and db_obj.treeitem_id):
-        ###Se ha seleccionado un equipo para trabajar sonbre un treeitem. 
-            notification = await notifications_crud.get_notification_by_event(db=db, event="remove_team_treeitem",language=coproduction.language)
+        if (db_obj.team_id and db_obj.treeitem_id):
+            # Se ha seleccionado un equipo para trabajar sonbre un treeitem.
+            notification = await notifications_crud.get_notification_by_event(db=db, event="remove_team_treeitem", language=coproduction.language)
             treeitem = await treeitems_crud.get(db=db, id=db_obj.treeitem_id)
-            #Create a notification for coproduction:
+            # Create a notification for coproduction:
             team = await teams_crud.get(db=db, id=db_obj.team_id)
-            
-            newCoproNotification=CoproductionProcessNotification()
-            newCoproNotification.notification_id=notification.id
-            newCoproNotification.coproductionprocess_id=coproduction.id
 
-            newCoproNotification.parameters="{'teamName':'"+html.escape(team.name)+"','processName':'"+html.escape(coproduction.name)+"','team_id':'"+str(team.id)+"','treeItemName':'"+html.escape(treeitem.name)+"','treeitem_id':'"+str(treeitem.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+            newCoproNotification = CoproductionProcessNotification()
+            newCoproNotification.notification_id = notification.id
+            newCoproNotification.coproductionprocess_id = coproduction.id
+
+            newCoproNotification.parameters = "{'teamName':'"+html.escape(team.name)+"','processName':'"+html.escape(coproduction.name)+"','team_id':'"+str(
+                team.id)+"','treeItemName':'"+html.escape(treeitem.name)+"','treeitem_id':'"+str(treeitem.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
 
             db.add(newCoproNotification)
         else:
 
-            notification = await notifications_crud.get_notification_by_event(db=db, event="remove_team_copro",language=coproduction.language)
+            notification = await notifications_crud.get_notification_by_event(db=db, event="remove_team_copro", language=coproduction.language)
 
-            if(notification and db_obj.team_id):
+            if (notification and db_obj.team_id):
                 team = await teams_crud.get(db=db, id=db_obj.team_id)
-                newCoproNotification=CoproductionProcessNotification()
-                newCoproNotification.notification_id=notification.id
-                newCoproNotification.coproductionprocess_id=coproduction.id
+                newCoproNotification = CoproductionProcessNotification()
+                newCoproNotification.notification_id = notification.id
+                newCoproNotification.coproductionprocess_id = coproduction.id
                 # newCoproNotification.asset_id=null
-                newCoproNotification.parameters="{'teamName':'"+html.escape(team.name)+"','processName':'"+html.escape(coproduction.name)+"','team_id':'"+str(team.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+                newCoproNotification.parameters = "{'teamName':'"+html.escape(team.name)+"','processName':'"+html.escape(
+                    coproduction.name)+"','team_id':'"+str(team.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
                 db.add(newCoproNotification)
 
-
                 db.add(newCoproNotification)
 
-                #Create a notification for every user:
+                # Create a notification for every user:
                 user_ids = team.user_ids
                 for user_id in user_ids:
-                    newUserNotification=UserNotification()
-                    newUserNotification.user_id=user_id
+                    newUserNotification = UserNotification()
+                    newUserNotification.user_id = user_id
 
-                    newUserNotification.notification_id=notification.id
-                    newUserNotification.channel="in_app"
-                    newUserNotification.state=False
-                    newUserNotification.coproductionprocess_id=str(db_obj.coproductionprocess_id)
-                    newUserNotification.parameters="{'teamName':'"+html.escape(team.name)+"','processName':'"+html.escape(coproduction.name)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"','org_id':'"+str(team.organization_id)+"'}"
+                    newUserNotification.notification_id = notification.id
+                    newUserNotification.channel = "in_app"
+                    newUserNotification.state = False
+                    newUserNotification.coproductionprocess_id = str(
+                        db_obj.coproductionprocess_id)
+                    newUserNotification.parameters = "{'teamName':'"+html.escape(team.name)+"','processName':'"+html.escape(
+                        coproduction.name)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"','org_id':'"+str(team.organization_id)+"'}"
 
                     db.add(newUserNotification)
 
                     await socket_manager.send_to_id(generate_uuid(user_id), {"event": self.modelName.lower() + "_created"})
 
-        
         db.commit()
         db.refresh(newCoproNotification)
 
-
         return None
 
-    async def create(self, db: Session, obj_in: PermissionCreate, creator: models.User, notifyAfterAdded = True) -> Permission:
+    async def create(self, db: Session, obj_in: PermissionCreate, creator: models.User, notifyAfterAdded=True) -> Permission:
         print("LlAMA AL METODO CREATE DE PERMISSIONS:")
-        
+
         obj_in_data = jsonable_encoder(obj_in)
         db_obj = Permission(**obj_in_data)
 
@@ -99,53 +99,57 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
         db.commit()
         db.refresh(db_obj)
 
-        #verify if the permission is of a (team or coproductionprocess)
-        
+        # verify if the permission is of a (team or coproductionprocess)
+
         coproduction = await coproductionprocesses_crud.get(db=db, id=db_obj.coproductionprocess_id)
         if notifyAfterAdded:
-            #Se ha seleccionado un equipo para trabajar sonbre un treeitem.
-            if(db_obj.team_id and db_obj.treeitem_id):
+            # Se ha seleccionado un equipo para trabajar sonbre un treeitem.
+            if (db_obj.team_id and db_obj.treeitem_id):
 
-                notification = await notifications_crud.get_notification_by_event(db=db, event="add_team_treeitem",language=coproduction.language)
+                notification = await notifications_crud.get_notification_by_event(db=db, event="add_team_treeitem", language=coproduction.language)
                 treeitem = await treeitems_crud.get(db=db, id=db_obj.treeitem_id)
-                #Create a notification for coproduction:
+                # Create a notification for coproduction:
                 team = await teams_crud.get(db=db, id=db_obj.team_id)
-                
-                newCoproNotification=CoproductionProcessNotification()
-                newCoproNotification.notification_id=notification.id
-                newCoproNotification.coproductionprocess_id=coproduction.id
 
-                newCoproNotification.parameters="{'teamName':'"+html.escape(team.name)+"','processName':'"+html.escape(coproduction.name)+"','team_id':'"+str(team.id)+"','treeItemName':'"+html.escape(treeitem.name)+"','treeitem_id':'"+str(treeitem.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+                newCoproNotification = CoproductionProcessNotification()
+                newCoproNotification.notification_id = notification.id
+                newCoproNotification.coproductionprocess_id = coproduction.id
+
+                newCoproNotification.parameters = "{'teamName':'"+html.escape(team.name)+"','processName':'"+html.escape(coproduction.name)+"','team_id':'"+str(
+                    team.id)+"','treeItemName':'"+html.escape(treeitem.name)+"','treeitem_id':'"+str(treeitem.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
                 db.add(newCoproNotification)
             else:
-                
-                #Se ha seleccionado un equipo para trabajar sonbre todo un proceso de coproduction.
-                notification = await notifications_crud.get_notification_by_event(db=db, event="add_team_copro",language=coproduction.language)
 
-                if(notification and db_obj.team_id):
-                    #Create a notification for coproduction:
+                # Se ha seleccionado un equipo para trabajar sonbre todo un proceso de coproduction.
+                notification = await notifications_crud.get_notification_by_event(db=db, event="add_team_copro", language=coproduction.language)
+
+                if (notification and db_obj.team_id):
+                    # Create a notification for coproduction:
                     team = await teams_crud.get(db=db, id=db_obj.team_id)
-                    
-                    newCoproNotification=CoproductionProcessNotification()
-                    newCoproNotification.notification_id=notification.id
-                    newCoproNotification.coproductionprocess_id=coproduction.id
 
-                    newCoproNotification.parameters="{'teamName':'"+html.escape(team.name)+"','processName':'"+html.escape(coproduction.name)+"','team_id':'"+str(team.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
+                    newCoproNotification = CoproductionProcessNotification()
+                    newCoproNotification.notification_id = notification.id
+                    newCoproNotification.coproductionprocess_id = coproduction.id
+
+                    newCoproNotification.parameters = "{'teamName':'"+html.escape(team.name)+"','processName':'"+html.escape(
+                        coproduction.name)+"','team_id':'"+str(team.id)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"'}"
 
                     db.add(newCoproNotification)
 
-                    #Create a notification for every user:
+                    # Create a notification for every user:
                     user_ids = team.user_ids
                     for user_id in user_ids:
-                        newUserNotification=UserNotification()
-                        newUserNotification.user_id=user_id
+                        newUserNotification = UserNotification()
+                        newUserNotification.user_id = user_id
 
-                        newUserNotification.notification_id=notification.id
-                        newUserNotification.channel="in_app"
-                        newUserNotification.state=False
-                        newUserNotification.coproductionprocess_id=str(db_obj.coproductionprocess_id)
-                        
-                        newUserNotification.parameters="{'teamName':'"+html.escape(team.name)+"','processName':'"+html.escape(coproduction.name)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"','org_id':'"+str(team.organization_id)+"'}"
+                        newUserNotification.notification_id = notification.id
+                        newUserNotification.channel = "in_app"
+                        newUserNotification.state = False
+                        newUserNotification.coproductionprocess_id = str(
+                            db_obj.coproductionprocess_id)
+
+                        newUserNotification.parameters = "{'teamName':'"+html.escape(team.name)+"','processName':'"+html.escape(
+                            coproduction.name)+"','copro_id':'"+str(db_obj.coproductionprocess_id)+"','org_id':'"+str(team.organization_id)+"'}"
 
                         db.add(newUserNotification)
 
@@ -154,31 +158,30 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
             db.commit()
             db.refresh(newCoproNotification)
 
-            #Send mail to a team to know they are added to a coprod or treeitem
+            # Send mail to a team to know they are added to a coprod or treeitem
             if db_obj.treeitem_id and db_obj.team_id:
                 treeitem = await treeitems_crud.get(db=db, id=db_obj.treeitem_id)
                 _ = send_team_email(team,
-                                'add_team_treeitem',
-                                {"coprod_id": db_obj.coproductionprocess_id,
-                                    "coprod_name": coproduction.name,
-                                    "treeitem_id": db_obj.treeitem_id,
-                                    "treeitem_name": treeitem.name,
-                                    "team_name": team.name})
+                                    'add_team_treeitem',
+                                    {"coprod_id": db_obj.coproductionprocess_id,
+                                     "coprod_name": coproduction.name,
+                                     "treeitem_id": db_obj.treeitem_id,
+                                     "treeitem_name": treeitem.name,
+                                     "team_name": team.name})
             else:
                 _ = send_team_email(team,
-                                'add_team_coprod',
-                                {"coprod_id": db_obj.coproductionprocess_id,
-                                "coprod_name": coproduction.name,
-                                "team_name": team.name})
+                                    'add_team_coprod',
+                                    {"coprod_id": db_obj.coproductionprocess_id,
+                                     "coprod_name": coproduction.name,
+                                     "team_name": team.name,
+                                     "org_id": team.organization_id,
+                                     "team_id": team.id
+                                     })
 
         await socket_manager.send_to_id(generate_uuid(creator.id), {"event": "permission" + "_created"})
 
-
         await self.log_on_create(db_obj)
         return db_obj
-
-
-
 
     async def get_multi(
         self, db: Session, *, skip: int = 0, limit: int = 100, treeitem: TreeItem
@@ -187,20 +190,17 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
             Permission.treeitem_id.in_(treeitem.path_ids)
         ).order_by(Permission.created_at.asc()).offset(skip).limit(limit).all()
 
-
     async def get_permission_user_coproduction(
         self, db: Session, user: models.User, *, coproductionprocess_id: uuid.UUID
     ) -> List[Permission]:
         return db.query(Permission).filter(
-            Permission.coproductionprocess_id==coproductionprocess_id
+            Permission.coproductionprocess_id == coproductionprocess_id
         ).order_by(Permission.created_at.asc()).filter(
             and_(
-                Permission.team_id.in_(user.teams_ids)
-                ,
-                Permission.treeitem_id==None
+                Permission.team_id.in_(user.teams_ids),
+                Permission.treeitem_id == None
             )
-            ).all()
-
+        ).all()
 
     def get_for_user_and_treeitem(
         self, db: Session, user: models.User, treeitem: models.TreeItem
@@ -235,23 +235,25 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
     def get_dict_for_user_and_treeitem(self, db: Session, treeitem: models.TreeItem, user: models.User):
         if user in treeitem.coproductionprocess.administrators:
             return GRANT_ALL
-        permissions = self.get_for_user_and_treeitem(db=db, user=user, treeitem=treeitem)
+        permissions = self.get_for_user_and_treeitem(
+            db=db, user=user, treeitem=treeitem)
 
         final_permissions_dict = copy.deepcopy(DENY_ALL)
         indexes_dict = copy.deepcopy(INDEXES)
-        
+
         path = treeitem.path_ids
-        
+
         for permission in permissions:
             path_con = permission.treeitem_id or permission.coproductionprocess_id
             index = path.index(path_con)
-            
+
             for permission_key in PERMS:
                 if index > indexes_dict[permission_key]:
-                    final_permissions_dict[permission_key] = getattr(permission, permission_key)
+                    final_permissions_dict[permission_key] = getattr(
+                        permission, permission_key)
                     indexes_dict[permission_key] = index
                 elif index == indexes_dict[permission_key] and not final_permissions_dict[permission_key] and getattr(permission, permission_key):
-                    final_permissions_dict[permission_key]  = True
+                    final_permissions_dict[permission_key] = True
 
         return final_permissions_dict
 
@@ -267,7 +269,8 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
         if user in task.coproductionprocess.administrators:
             return True
         if permission in PERMS:
-            perms : dict = self.get_dict_for_user_and_treeitem(db=db, treeitem=task, user=user)
+            perms: dict = self.get_dict_for_user_and_treeitem(
+                db=db, treeitem=task, user=user)
             return perms[permission]
         raise Exception(permission + " is not a valid permission")
 

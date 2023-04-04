@@ -69,6 +69,10 @@ def send_team_email(
     environment["server"] = settings.SERVER_NAME
     if type == 'add_team_coprod':
         subject = 'Interlink: Your team has been added to a coproduction process'
+        environment["team_url"] = 'https://{server}/dashboard/organizations/{org_id}/{team_id}'.format(
+            server=settings.SERVER_NAME,
+            org_id=environment['org_id'],
+            team_id=environment['team_id'])
         environment["link"] = 'https://{server}/dashboard/coproductionprocesses/{id}/overview'.format(
             server=settings.SERVER_NAME,
             id=environment['coprod_id'])

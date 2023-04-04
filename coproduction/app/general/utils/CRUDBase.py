@@ -64,10 +64,14 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
     async def get_by_name_translations(self, db: Session, name_translations: str) -> Optional[ModelType]:
         return db.query(self.model).filter(
             or_(
-                and_(self.model.name_translations["en"] != None, self.model.name_translations["en"] == name_translations["en"]),
-                and_(self.model.name_translations["es"] != None, self.model.name_translations["es"] == name_translations["es"]),
-                and_(self.model.name_translations["it"] != None, self.model.name_translations["it"] == name_translations["it"]),
-                and_(self.model.name_translations["lv"] != None, self.model.name_translations["lv"] == name_translations["lv"]),
+                and_(self.model.name_translations["en"] != None,
+                     self.model.name_translations["en"] == name_translations["en"]),
+                and_(self.model.name_translations["es"] != None,
+                     self.model.name_translations["es"] == name_translations["es"]),
+                and_(self.model.name_translations["it"] != None,
+                     self.model.name_translations["it"] == name_translations["it"]),
+                and_(self.model.name_translations["lv"] != None,
+                     self.model.name_translations["lv"] == name_translations["lv"]),
             ),
         ).first()
 
@@ -94,28 +98,27 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
         if self.modelName == "COPRODUCTIONPROCESS":
             await socket_manager.send_to_id(db_obj.id, {"event": self.modelName.lower() + "_created"})
         elif hasattr(db_obj, "coproductionprocess_id"):
-            
+
             await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName.lower() + "_created"})
-        
+
         # Send info to private socket to update workspace page
         if hasattr(db_obj, "team") and self.modelName == "PERMISSION":
             for user in db_obj.team.users:
                 await socket_manager.send_to_id(generate_uuid(user.id), {"event": self.modelName.lower() + "_created"})
-        #Send info when you create an organization
+        # Send info when you create an organization
         if self.modelName == "ORGANIZATION":
             await socket_manager.broadcast({"event": self.modelName.lower() + "_created"})
-            
+
         return db_obj
 
-    async def add_administrator(self, db: Session, *, db_obj: ModelType, user: User = None,notifyAfterAdded:bool=True) -> ModelType:
+    async def add_administrator(self, db: Session, *, db_obj: ModelType, user: User = None, notifyAfterAdded: bool = True) -> ModelType:
         from app.worker import sync_asset_users
         db_obj.administrators.append(user)
         db.add(db_obj)
         db.commit()
-        db.refresh(db_obj)        
+        db.refresh(db_obj)
 
-
-        #Sincroniza los usuarios administradores con cada uno de los assets:
+        # Sincroniza los usuarios administradores con cada uno de los assets:
         if notifyAfterAdded:
             sync_asset_users([user.id])
             enriched: dict = self.enrich_log_data(db_obj, {
@@ -123,28 +126,28 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
                 "added_user_id": user.id
             })
             await log(enriched)
-            
 
             if self.modelName == "COPRODUCTIONPROCESS":
                 await socket_manager.send_to_id(db_obj.id, {"event": self.modelName.lower() + "_administrator_added"})
             if hasattr(db_obj, "coproductionprocess_id"):
                 await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName.lower() + "_administrator_added"})
-            
+
             # Send info to private socket to update workspace page
             await socket_manager.send_to_id(generate_uuid(user.id), {"event": self.modelName.lower() + "_administrator_added"})
-            
-            #Send mail to user to know is added to a team
+
+            # Send mail to user to know is added to a team
             _ = send_email(user.email,
-                    'add_admin_coprod',
-                    {"coprod_id": db_obj.id,
-                        "coprod_name": db_obj.name,})
-        
+                           'add_admin_coprod',
+                           {"coprod_id": db_obj.id,
+                            "coprod_name": db_obj.name, })
+
         return db_obj
 
     async def remove_administrator(self, db: Session, *, db_obj: ModelType, user: User = None) -> ModelType:
         from app.worker import sync_asset_users
         if len(db_obj.administrators) <= 1:
-            raise HTTPException(status_code=400, detail="Can not delete the last administrator")
+            raise HTTPException(
+                status_code=400, detail="Can not delete the last administrator")
 
         db_obj.administrators.remove(user)
         db.add(db_obj)
@@ -161,10 +164,10 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
             await socket_manager.send_to_id(db_obj.id, {"event": self.modelName.lower() + "_administrator_removed"})
         elif hasattr(db_obj, "coproductionprocess_id"):
             await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName.lower() + "_administrator_removed"})
-            
+
         # Send info to private socket to update workspace page
         await socket_manager.send_to_id(generate_uuid(user.id), {"event": self.modelName.lower() + "_administrator_removed"})
-            
+
         return db_obj
 
     async def update(
@@ -192,15 +195,14 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
             await socket_manager.send_to_id(db_obj.id, {"event": self.modelName.lower() + "_updated"})
         elif hasattr(db_obj, "coproductionprocess_id"):
             await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName.lower() + "_updated"})
-        
-        #Send info when you create an team
+
+        # Send info when you create an team
         if self.modelName == "TEAM":
             await socket_manager.broadcast({"event": self.modelName.lower() + "_updated"})
 
-        #Send info when you create an team
+        # Send info when you create an team
         if self.modelName == "ORGANIZATION":
             await socket_manager.broadcast({"event": self.modelName.lower() + "_updated"})
-
 
         return db_obj
 
@@ -211,37 +213,36 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
         db.delete(db_obj)
         db.commit()
 
-        #General case where a (coproductionprocess_removed)
+        # General case where a (coproductionprocess_removed)
         if self.modelName == "COPRODUCTIONPROCESS":
             await socket_manager.send_to_id(db_obj.id, {"event": self.modelName.lower() + "_removed"})
-        
+
         elif hasattr(db_obj, "coproductionprocess_id"):
-          
-            #The case of the asset is (asset_removed)
+
+            # The case of the asset is (asset_removed)
             if self.modelName == "ASSET":
-                await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName.lower() + "_removed", "extra": { "task_id" : jsonable_encoder(db_obj.task_id) }})
+                await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName.lower() + "_removed", "extra": {"task_id": jsonable_encoder(db_obj.task_id)}})
             else:
                 # Any other case:
                 await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": self.modelName.lower() + "_removed"})
-            
+
         # # Send info to private socket to update workspace page
         if hasattr(db_obj, "team") and self.modelName == "PERMISSION":
             for user in db_obj.team.users:
                 await socket_manager.send_to_id(generate_uuid(user.id), {"event": self.modelName.lower() + "_removed"})
-        
-        #Send info when you create an organization
+
+        # Send info when you create an organization
         if self.modelName == "ORGANIZATION":
             await socket_manager.broadcast({"event": self.modelName.lower() + "_removed"})
-        
-        #Send info when you create an team
+
+        # Send info when you create an team
         if self.modelName == "TEAM":
             await socket_manager.broadcast({"event": self.modelName.lower() + "_removed"})
-        
 
         return None
 
-
     # LOGS
+
     async def log_on_get(self, obj):
         # enriched : dict  = self.enrich_log_data(obj, {
         #     "action": "GET"
