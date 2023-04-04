@@ -20,9 +20,13 @@ def send_email(
     environment["server"] = settings.SERVER_NAME
     if type == 'add_member_team':
         subject = 'Interlink: You have been added to a new team'
+        environment["team_url"] = 'https://{server}/dashboard/organizations/{org_id}/{team_id}'.format(
+            server=settings.SERVER_NAME,
+            org_id=environment['org_id'],
+            team_id=environment['team_id'])
         environment["link"] = 'https://{server}/dashboard/organizations/{org_id}/{team_id}'.format(
             server=settings.SERVER_NAME,
-            org_id=environment['organization'],
+            org_id=environment['org_id'],
             team_id=environment['team_id'])
     elif type == 'add_admin_coprod':
         subject = 'Interlink: You have been added to a new coproduction process'
@@ -79,13 +83,24 @@ def send_team_email(
 
     elif type == 'add_member_team':
         subject = 'Interlink: You have been added to a new team'
+        environment["team_url"] = 'https://{server}/dashboard/organizations/{org_id}/{team_id}'.format(
+            server=settings.SERVER_NAME,
+            org_id=environment['org_id'],
+            team_id=environment['team_id'])
         environment["link"] = 'https://{server}/dashboard/organizations/{org_id}/{team_id}'.format(
             server=settings.SERVER_NAME,
-            org_id=environment['organization'],
+            org_id=environment['org_id'],
             team_id=environment['team_id'])
 
     elif type == 'add_team_treeitem':
         subject = 'Interlink: New permissions on a coproduction item'
+        environment["team_url"] = 'https://{server}/dashboard/organizations/{org_id}/{team_id}'.format(
+            server=settings.SERVER_NAME,
+            org_id=environment['org_id'],
+            team_id=environment['team_id'])
+        environment["coprod_url"] = 'https://{server}/dashboard/coproductionprocesses/{coprod_id}'.format(
+            server=settings.SERVER_NAME,
+            coprod_id=environment['coprod_id'])
         environment["link"] = 'https://{server}/dashboard/coproductionprocesses/{coprod_id}/{treeitem_id}'.format(
             server=settings.SERVER_NAME,
             coprod_id=environment['coprod_id'],

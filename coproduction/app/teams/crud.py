@@ -58,7 +58,7 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
             environment={
                 "team_id": team.id,
                 "team_name": team.name,
-                "organization": team.organization_id,
+                "org_id": team.organization_id,
             },
         )
 
@@ -163,7 +163,7 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
             environment={
                 "team_id": db_obj.id,
                 "team_name": db_obj.name,
-                "organization": db_obj.organization_id,
+                "org_id": db_obj.organization_id,
             },
         )
 
