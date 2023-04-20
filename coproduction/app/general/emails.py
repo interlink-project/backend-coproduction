@@ -2,6 +2,7 @@ import logging
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, Optional
+import threading
 
 import emails
 from emails.template import JinjaTemplate
@@ -9,6 +10,12 @@ from emails.template import JinjaTemplate
 from app.models import Team
 from app.config import settings
 
+semaphore = threading.Semaphore(4)
+
+def thread_send_email(message, email_to, environment, smtp_options):
+    with semaphore:
+        response = message.send(to=email_to, render=environment, smtp=smtp_options)
+        logging.info(f"send email result: {response}")
 
 def send_email(
     email_to: str,
@@ -20,9 +27,13 @@ def send_email(
     environment["server"] = settings.SERVER_NAME
     if type == 'add_member_team':
         subject = 'Interlink: You have been added to a new team'
+        environment["team_url"] = 'https://{server}/dashboard/organizations/{org_id}/{team_id}'.format(
+            server=settings.SERVER_NAME,
+            org_id=environment['org_id'],
+            team_id=environment['team_id'])
         environment["link"] = 'https://{server}/dashboard/organizations/{org_id}/{team_id}'.format(
             server=settings.SERVER_NAME,
-            org_id=environment['organization'],
+            org_id=environment['org_id'],
             team_id=environment['team_id'])
     elif type == 'add_admin_coprod':
         subject = 'Interlink: You have been added to a new coproduction process'
@@ -54,9 +65,9 @@ def send_email(
         smtp_options["user"] = settings.SMTP_USER
     if settings.SMTP_PASSWORD:
         smtp_options["password"] = settings.SMTP_PASSWORD
+    t = threading.Thread(target=thread_send_email,args=(message, email_to, environment, smtp_options))
+    t.start()
 
-    response = message.send(to=email_to, render=environment, smtp=smtp_options)
-    logging.info(f"send email result: {response}")
 
 
 def send_team_email(
@@ -69,19 +80,34 @@ def send_team_email(
     environment["server"] = settings.SERVER_NAME
     if type == 'add_team_coprod':
         subject = 'Interlink: Your team has been added to a coproduction process'
+        environment["team_url"] = 'https://{server}/dashboard/organizations/{org_id}/{team_id}'.format(
+            server=settings.SERVER_NAME,
+            org_id=environment['org_id'],
+            team_id=environment['team_id'])
         environment["link"] = 'https://{server}/dashboard/coproductionprocesses/{id}/overview'.format(
             server=settings.SERVER_NAME,
             id=environment['coprod_id'])
 
     elif type == 'add_member_team':
         subject = 'Interlink: You have been added to a new team'
+        environment["team_url"] = 'https://{server}/dashboard/organizations/{org_id}/{team_id}'.format(
+            server=settings.SERVER_NAME,
+            org_id=environment['org_id'],
+            team_id=environment['team_id'])
         environment["link"] = 'https://{server}/dashboard/organizations/{org_id}/{team_id}'.format(
             server=settings.SERVER_NAME,
-            org_id=environment['organization'],
+            org_id=environment['org_id'],
             team_id=environment['team_id'])
 
     elif type == 'add_team_treeitem':
         subject = 'Interlink: New permissions on a coproduction item'
+        environment["team_url"] = 'https://{server}/dashboard/organizations/{org_id}/{team_id}'.format(
+            server=settings.SERVER_NAME,
+            org_id=environment['org_id'],
+            team_id=environment['team_id'])
+        environment["coprod_url"] = 'https://{server}/dashboard/coproductionprocesses/{coprod_id}'.format(
+            server=settings.SERVER_NAME,
+            coprod_id=environment['coprod_id'])
         environment["link"] = 'https://{server}/dashboard/coproductionprocesses/{coprod_id}/{treeitem_id}'.format(
             server=settings.SERVER_NAME,
             coprod_id=environment['coprod_id'],
@@ -107,11 +133,8 @@ def send_team_email(
         smtp_options["password"] = settings.SMTP_PASSWORD
 
     for user in team.users:
-        response = message.send(to=user.email,
-                                render=environment,
-                                smtp=smtp_options)
-        logging.info(f"send email result: {response}")
-
+        t = threading.Thread(target=thread_send_email,args=(message, user.email, environment, smtp_options))
+        t.start()
 
 def send_test_email(email_to: str) -> None:
     project_name = settings.PROJECT_NAME
