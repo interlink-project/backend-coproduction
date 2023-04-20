@@ -42,7 +42,7 @@ class CoproductionProcess(BaseModel):
     #-------------
     hasAddAnOrganization =Column(Boolean,nullable=True)
     skipResourcesStep =Column(Boolean,nullable=True)
-    hideGuieCheckList =Column(Boolean,nullable=True)
+    hideguidechecklist =Column(Boolean,nullable=True)
     #-------------
 
     is_part_of_publication = Column(Boolean,nullable=True)

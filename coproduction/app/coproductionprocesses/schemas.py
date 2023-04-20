@@ -26,7 +26,7 @@ class CoproductionProcessBase(BaseModel):
     #Optional field defined just by the user:
     hasAddAnOrganization : Optional[bool]
     skipResourcesStep : Optional[bool]
-    hideGuieCheckList : Optional[bool]
+    hideguidechecklist : Optional[bool]
 
     is_part_of_publication: Optional[bool]
     game_id: Optional[str]
@@ -50,7 +50,7 @@ class CoproductionProcessPatch(CoproductionProcessCreate):
     #Optional field defined just by the user:
     hasAddAnOrganization : Optional[bool]
     skipResourcesStep : Optional[bool]
-    hideGuieCheckList : Optional[bool]
+    hideguidechecklist : Optional[bool]
 
 
 class CoproductionProcess(CoproductionProcessBase):
