@@ -257,7 +257,6 @@ async def read_asset(
     *,
     db: Session = Depends(deps.get_db),
     id: uuid.UUID,
-    asset_in: schemas.AssetPatch,
     current_user: Optional[models.User] = Depends(deps.get_current_active_user),
     token: str = Depends(deps.get_current_active_token),
 ) -> Any:
@@ -266,7 +265,7 @@ async def read_asset(
     """
 
     if asset := await crud.asset.get(db=db, id=id):
-        if not crud.asset.can_read(asset):
+        if not crud.asset.can_read(db,current_user,asset.task):
             raise HTTPException(status_code=403, detail="Not enough permissions")
         return asset
     raise HTTPException(status_code=404, detail="Asset not found")

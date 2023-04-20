@@ -404,6 +404,8 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
     # CRUD Permissions
 
     def can_create(self, db : Session, user: models.User, task: models.TreeItem):
+        print('entra en can_create')
+        print(db)
         return permissionsCrud.user_can(db=db, user=user, task=task, permission="create_assets_permission")
 
     def can_list(self, db : Session, user: models.User, task: models.TreeItem):

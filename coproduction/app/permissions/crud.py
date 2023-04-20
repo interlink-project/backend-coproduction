@@ -205,6 +205,8 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
     def get_for_user_and_treeitem(
         self, db: Session, user: models.User, treeitem: models.TreeItem
     ):
+        print('Llega a preguntar por los assets:')
+        print(db)
         return db.query(
             Permission
         ).filter(
@@ -235,6 +237,8 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
     def get_dict_for_user_and_treeitem(self, db: Session, treeitem: models.TreeItem, user: models.User):
         if user in treeitem.coproductionprocess.administrators:
             return GRANT_ALL
+        print('Llega a preguntar por los user tree :')
+        print(db)
         permissions = self.get_for_user_and_treeitem(db=db, user=user, treeitem=treeitem)
 
         final_permissions_dict = copy.deepcopy(DENY_ALL)
@@ -267,6 +271,8 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
         if user in task.coproductionprocess.administrators:
             return True
         if permission in PERMS:
+            print('Pregunta por User Can :')
+            print(db)
             perms : dict = self.get_dict_for_user_and_treeitem(db=db, treeitem=task, user=user)
             return perms[permission]
         raise Exception(permission + " is not a valid permission")
