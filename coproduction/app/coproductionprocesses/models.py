@@ -45,6 +45,8 @@ class CoproductionProcess(BaseModel):
     hideguidechecklist =Column(Boolean,nullable=True)
     #-------------
 
+    intergovernmental_model =Column(String,nullable=True)
+
     is_part_of_publication = Column(Boolean,nullable=True)
 
     status = Column(Enum(Status, create_constraint=False,

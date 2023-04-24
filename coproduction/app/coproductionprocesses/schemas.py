@@ -28,6 +28,8 @@ class CoproductionProcessBase(BaseModel):
     skipResourcesStep : Optional[bool]
     hideguidechecklist : Optional[bool]
 
+    intergovernmental_model: Optional[str]
+
     is_part_of_publication: Optional[bool]
     game_id: Optional[str]
 
@@ -43,6 +45,7 @@ class CoproductionProcessPatch(CoproductionProcessCreate):
     status: Optional[Status]
     logotype: Optional[str]
     incentive_and_rewards_state: Optional[bool]
+    intergovernmental_model: Optional[str]
     is_part_of_publication: Optional[bool]
     language: Optional[Languages]
     game_id: Optional[str]
@@ -67,6 +70,7 @@ class CoproductionProcess(CoproductionProcessBase):
 
 class CoproductionProcessOut(CoproductionProcess):
     logotype_link: Optional[str] 
+    intergovernmental_model: Optional[str]
     language: Any
     administrators_ids: List[str]
     current_user_participation: list
