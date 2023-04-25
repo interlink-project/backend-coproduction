@@ -42,14 +42,14 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
         
         listAssets=db.query(Asset).filter(*queries).offset(skip).limit(limit).all()
 
-        print('Entra en multi_withIntData')
+        #print('Entra en multi_withIntData')
 
         for asset in listAssets:
             if asset.type == "internalasset":
 
                 serverName=settings.SERVER_NAME
-                print("ServerName")
-                print(serverName)
+                #print("ServerName")
+                #print(serverName)
 
                 if('loomio' in asset.link):
 
@@ -90,32 +90,32 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                 else:
                 
                     if('servicepedia' in asset.link):
-                        print("Servicepedia")
+                        #print("Servicepedia")
                         #print('Es servicepedia')
 
                         requestlink=f"http://augmenterservice/assets/{asset.external_asset_id}"
                         response = requests.get(requestlink)
                         datosAsset = response.json()
-                        print(datosAsset)
+                        #print(datosAsset)
 
 
                         asset_uri=asset.link+'/view'
                         asset.internalData={'icon':'https://'+serverName+'/catalogue/static/augmenter/logotype.png','name':datosAsset['name'],'link':asset_uri}
 
                     else:
-                        print("Internal Asset")
+                        #print("Internal Asset")
                         serviceName=os.path.split(asset.link)[0].split('/')[3]
                         requestlink=f"http://{serviceName}/assets/{asset.external_asset_id}"
                     
-                        print(requestlink)
+                        #print(requestlink)
                         response = requests.get(requestlink)
 
-                        print(response)
+                        #print(response)
                         datosAsset = response.json()
                         asset.internalData=datosAsset
             
             if asset.type == "externalasset":
-                print("External Asset")
+                #print("External Asset")
                 asset.internalData={'icon':asset.icon,'name':asset.name,'link':asset.uri}
                 
 
@@ -327,12 +327,12 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
         return db_obj
 
     async def copy(self, db: Session, asset: AssetCreate, creator: models.User, task: models.Task, token, justRead =False) -> Asset:
-        print('Start to copy the assets')
-        print(asset.id)
-        print(asset.type)
-        print('')
+        #print('Start to copy the assets')
+        #print(asset.id)
+        #print(asset.type)
+        #print('')
         if asset.type == 'internalasset':
-            print('Copying internal asset')
+            #print('Copying internal asset')
 
             methodCloneCall="/clone"
             params = {'justRead': justRead}
@@ -340,22 +340,22 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
             #print(methodCloneCall)
             data_from_interlinker=None
             try:
-                print('The request is:')
-                print(asset.internal_link + methodCloneCall)
+                #print('The request is:')
+                #print(asset.internal_link + methodCloneCall)
                 data_from_interlinker = requests.post(asset.internal_link + methodCloneCall, params=params, headers={
                 "Authorization": "Bearer " + token
                 }).json()
             except:
                 try:
-                    print('The request try again with:')
-                    print(asset.link + methodCloneCall)
+                    #print('The request try again with:')
+                    #print(asset.link + methodCloneCall)
                     data_from_interlinker = requests.post(asset.link + methodCloneCall, params=params, headers={
                     "Authorization": "Bearer " + token
                     }).json()
                 except:
                     pass
             if(data_from_interlinker):  
-                print(data_from_interlinker)  
+                #print(data_from_interlinker)  
                 external_asset_id = data_from_interlinker["id"] if "id" in data_from_interlinker else data_from_interlinker["_id"]
 
                 new_asset = InternalAssetCreate(task_id=task.id,
@@ -365,7 +365,7 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                 await self.create(db=db, asset=new_asset, creator=creator, task=task)
         
         elif asset.type == 'externalasset':
-            print('Copying external asset')
+            #print('Copying external asset')
             new_asset = ExternalAssetCreate(task_id=task.id,
                                          externalinterlinker_id=asset.externalinterlinker_id,
                                          name=asset.name,
@@ -404,8 +404,8 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
     # CRUD Permissions
 
     def can_create(self, db : Session, user: models.User, task: models.TreeItem):
-        print('entra en can_create')
-        print(db)
+        #print('entra en can_create')
+        #print(db)
         return permissionsCrud.user_can(db=db, user=user, task=task, permission="create_assets_permission")
 
     def can_list(self, db : Session, user: models.User, task: models.TreeItem):

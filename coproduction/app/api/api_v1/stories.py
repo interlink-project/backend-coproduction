@@ -33,8 +33,8 @@ async def list_stories(
     """
     Retrieve stories.
     """
-    print("La busqueda es:")
-    print(search)
+    #print("La busqueda es:")
+    #print(search)
     return await crud.story.get_multiDict(db, search=search,  rating=rating,  language=language, keyword=keyword)
 
 # @router.get("", response_model=List[schemas.StoryOutFull])
@@ -92,8 +92,8 @@ async def create_story(
     """
     Create new story.
     """
-    print('Llega al metodo create')
-    print(story_in)
+    #print('Llega al metodo create')
+    #print(story_in)
 
     newStory=Story()
     newStory.coproductionprocess_id=process_id
@@ -110,8 +110,8 @@ async def create_story(
     db.commit()
     db.refresh(coproductionprocess)
    
-    print('Los datos de la historia son:')
-    print(story_in['data_story'])
+    #print('Los datos de la historia son:')
+    #print(story_in['data_story'])
 
 
     newStory.data_story=story_in['data_story']

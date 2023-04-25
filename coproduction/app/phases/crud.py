@@ -33,7 +33,7 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
 
     async def create(self, db: Session, *, obj_in: PhaseCreate, creator: User = None, extra: dict = {}, commit: bool = True, withNotifications: bool = True, withSocketMsn: bool = True) -> Phase:
 
-        print('Llega a create la Phase!!')
+        #print('Llega a create la Phase!!')
         obj_in_data = jsonable_encoder(obj_in)
         prereqs = obj_in_data.get("prerequisites_ids")
         del obj_in_data["prerequisites_ids"]
@@ -115,7 +115,7 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
 
     async def add_prerequisite(self, db: Session, phase: Phase, prerequisite: Phase, commit: bool = True) -> Phase:
         if phase == prerequisite:
-            print(phase, prerequisite)
+            #print(phase, prerequisite)
             raise Exception("Same object")
 
         recursive_check(phase.id, prerequisite)
@@ -157,7 +157,7 @@ class CRUDPhase(CRUDBase[Phase, PhaseCreate, PhasePatch]):
         await treeitems_crud.remove(db=db, obj=obj, model=self.model, user_id=user_id, remove_definitely=remove_definitely)
 
     async def copy(self, db: Session, *, obj_in: PhaseCreate, coproductionprocess: CoproductionProcess, creator: User = None, extra: dict = {}, commit: bool = True):
-        print("copying phase")
+        #print("copying phase")
 
         # Get the new ids of the prerequistes
         prereqs_ids = []

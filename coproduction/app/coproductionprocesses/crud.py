@@ -60,8 +60,8 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                 if asset.type == "internalasset":
 
                     serverName=settings.SERVER_NAME
-                    print("ServerName")
-                    print(serverName)
+                    #print("ServerName")
+                    #print(serverName)
 
                     if('loomio' in asset.link):
                         print("Es un loomio")
@@ -99,20 +99,20 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                     else:
 
                         if ('servicepedia' in asset.link):
-                            print(" Es un Servicepedia")
-                            # print('Es servicepedia')
+                            #print(" Es un Servicepedia")
+                            # #print('Es servicepedia')
 
                             requestlink = f"http://augmenterservice/assets/{asset.external_asset_id}"
                             response = requests.get(requestlink)
                             datosAsset = response.json()
-                            print(datosAsset)
+                            #print(datosAsset)
 
                             asset_uri = asset.link+'/view'
                             asset.internalData = {
                                 'icon': 'https://'+serverName+'/catalogue/static/augmenter/logotype.png', 'name': datosAsset['name'], 'link': asset_uri}
 
                         else:
-                            print("Es un Internal Asset")
+                            #print("Es un Internal Asset")
                             serviceName = os.path.split(asset.link)[0].split('/')[3]
                             requestlink = f"http://{serviceName}/assets/{asset.external_asset_id}"
                             response = requests.get(requestlink)
@@ -120,7 +120,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                             asset.internalData = datosAsset
 
                 if asset.type == "externalasset":
-                    print("Es un External Asset")
+                    #print("Es un External Asset")
                     queries = []
                     queries.append(Asset.id == asset.id)
                     datosAsset = db.query(Asset).filter(*queries).first()
@@ -163,7 +163,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
             return listOfAssets
 
-        print('No es admin ni permisos generales, busco por treeitem')
+        #print('No es admin ni permisos generales, busco por treeitem')
         # En el caso que tengas permisos sobre treeitems Individuales:
         ids = [treeitem.id for treeitem in await treeitemsCrud.get_for_user_and_coproductionprocess(db=db, user=user, coproductionprocess_id=coproductionprocess.id) if not treeitem.disabled_on]
 
@@ -179,7 +179,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
         # Check if the user has the permissions to see the asset.
         for asset in listOfAssets:
-            print(asset)
+            #print(asset)
             tienePermisosListado = crud.asset.can_list(
                 db=db, user=user, task=asset.task)
             if not tienePermisosListado:
@@ -323,7 +323,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
             for admin in administrators:
                 await self.add_administrator(db=db, db_obj=db_obj, user=admin, notifyAfterAdded=False)
 
-        print("STARTING TREEITEMS")
+        #print("STARTING TREEITEMS")
         phases_temp = coproductionprocess.children.copy()
         phases = []
         indexes = []
@@ -349,17 +349,17 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
             tmp_phase, phase_id_updates = await crud.phase.copy(db=db, obj_in=phase, coproductionprocess=db_obj, extra=ids_dict)
             ids_dict['Phase_'+str(phase.id)] = tmp_phase.id
             ids_dict.update(phase_id_updates)
-        print("TREEITEMS COPIED")
+        #print("TREEITEMS COPIED")
 
-        print("STARTING ASSET")
-        print(from_view)
+        #print("STARTING ASSET")
+        #print(from_view)
         # Copy the assets of the project
-        assets = await self.get_assets(db, coproductionprocess, user)
+        assets = await self.get_assets(db, coproductionprocess, user,token=token)
         contador_assets = 0
         for asset in assets:
-            print('El numero de assets es:')
+            #print('El numero de assets es:')
             contador_assets = contador_assets+1
-            print(str(contador_assets)+'/'+str(len(assets)))
+            #print(str(contador_assets)+'/'+str(len(assets)))
 
             task = await crud.task.get(db, ids_dict['Task_' + str(asset.task_id)])
 
@@ -368,12 +368,12 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                 await crud.asset.copy(db, asset, user, task, token, True)
             else:
                 await crud.asset.copy(db, asset, user, task, token)
-            print('termino el copiado de '+str(asset.id))
-            print('')
+            #print('termino el copiado de '+str(asset.id))
+            #print('')
 
-        print("ASSETS COPIED")
+        #print("ASSETS COPIED")
 
-        print("STARTING PERMISSIONS")
+        #print("STARTING PERMISSIONS")
         # Copy the permissions of the project (THE NEW CREATOR IS THE CREATOR OF THE COPY)
         if (from_view == 'story'):
             # If the copy is made from the story then the dont need to create permissions
@@ -383,7 +383,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                 treeitem = None
                 if permission.treeitem:
                     treeitem = await treeitemsCrud.get(db, ids_dict[permission.treeitem.__class__.__name__ + '_' + str(permission.treeitem.id)])
-                print("New permission")
+                #print("New permission")
                 new_permission = PermissionCreate(
                     creator_id=user.id,
                     creator=user,

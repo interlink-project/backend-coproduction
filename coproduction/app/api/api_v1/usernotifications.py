@@ -111,7 +111,7 @@ async def get_usernotification_notification(
     """
     usernotification = await crud.usernotification.get(db=db, id=id)
     notification = await crud.notification.get_notification_by_id(db=db, id=usernotification.notification_id)
-    print(notification)
+    #print(notification)
     if not usernotification:
         raise HTTPException(status_code=404, detail="Usernotification not found")
     return notification

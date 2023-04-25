@@ -110,7 +110,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
 
     async def add_prerequisite(self, db: Session, task: Task, prerequisite: Task, commit : bool = True) -> Task:
         if task == prerequisite:
-            print(task, prerequisite)
+            #print(task, prerequisite)
             raise Exception("Same object")
 
         recursive_check(task.id, prerequisite)
@@ -188,7 +188,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskPatch]):
         await treeitems_crud.remove(db=db, obj=obj, model=self.model, user_id=user_id, remove_definitely=remove_definitely)
 
     async def copy(self, db: Session, *, obj_in: TaskCreate, coproductionprocess, parent: Objective, extra: dict = {}) -> Task:
-        print("COPYING TASK", obj_in)
+        #print("COPYING TASK", obj_in)
         
         # Get the new ids of the prerequistes
         prereqs_ids = []

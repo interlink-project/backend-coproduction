@@ -155,7 +155,7 @@ async def update_coproductionprocess(
     """
     Update an coproductionprocess.
     """
-    print(coproductionprocess_in)
+    #print(coproductionprocess_in)
     coproductionprocess = await crud.coproductionprocess.get(db=db, id=id)
     if not coproductionprocess:
         raise HTTPException(status_code=404, detail="CoproductionProcess not found")
@@ -402,10 +402,10 @@ async def copy_coproductionprocess(
                 #print("out_file", out_file_path)
                 await out_file.write(content) 
                  # async write
-        print("PREUPDATE")
+        #print("PREUPDATE")
 
     
         await crud.coproductionprocess.set_logotype(db=db, coproductionprocess=new_coprod,logotype_path=out_file_path)
-    print("POSTUPDATE")
+    #print("POSTUPDATE")
     # If new_coprod is returned it raises an error regarding recursion with Python
     return new_coprod.id

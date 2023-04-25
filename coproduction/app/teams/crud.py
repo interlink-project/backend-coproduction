@@ -168,8 +168,8 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
         )
 
         # Send msn to all user part of a team create
-        print("El team model is:"+get_language())
-        print(user_ids)
+        #print("El team model is:"+get_language())
+        #print(user_ids)
         for user_id in user_ids:
 
             # Create a notification for every user
@@ -179,10 +179,10 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
             notification = await notification_crud.get_notification_by_event(
                 db=db, event="add_user_team", language=get_language()
             )
-            print("La notification es:::::")
-            print(notification)
+            #print("La notification es:::::")
+            #print(notification)
             if notification:
-                print("Entra a crear notificacion"+str(notification.id))
+                #print("Entra a crear notificacion"+str(notification.id))
 
                 newUserNotification.notification_id = notification.id
                 newUserNotification.channel = "in_app"
@@ -225,8 +225,8 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamPatch]):
                 status_code=400,
                 detail="The user is part of the team",
             )
-        print(db_obj.organization_id)
-        print(db_obj.id)
+        #print(db_obj.organization_id)
+        #print(db_obj.id)
         # Send mail to administrators to know there is an application to the team
         for admin in db_obj.administrators:
             _ = send_email(

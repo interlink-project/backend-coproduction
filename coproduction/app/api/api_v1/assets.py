@@ -313,7 +313,7 @@ async def read_internal_asset(
             if not crud.asset.can_read(db=db, user=current_user, task=asset.task):
                 raise HTTPException(status_code=403, detail="Not enough permissions")
 
-            print("Retrieving internal ", asset.link)
+            #print("Retrieving internal ", asset.link)
             await log(crud.asset.enrich_log_data(asset, {
                 "action": "GET"
             }))
@@ -346,7 +346,7 @@ async def read_internal_asset_catalogue(
             # if not crud.asset.can_read(db=db, user=current_user, task=asset.task):
             #     raise HTTPException(status_code=403, detail="Not enough permissions")
 
-            print("Retrieving internal ", asset.link)
+            #print("Retrieving internal ", asset.link)
             await log(crud.asset.enrich_log_data(asset, {
                 "action": "GET"
             }))

@@ -112,7 +112,7 @@ class CRUDObjective(CRUDBase[Objective, ObjectiveCreate, ObjectivePatch]):
 
     async def add_prerequisite(self, db: Session, objective: Objective, prerequisite: Objective, commit: bool = True) -> Objective:
         if objective == prerequisite:
-            print(objective, prerequisite)
+            #print(objective, prerequisite)
             raise Exception("Same object")
         # TODO: if objective in prerequisite.prerequisites => block
 

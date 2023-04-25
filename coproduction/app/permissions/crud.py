@@ -88,7 +88,7 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
         return None
 
     async def create(self, db: Session, obj_in: PermissionCreate, creator: models.User, notifyAfterAdded=True) -> Permission:
-        print("LlAMA AL METODO CREATE DE PERMISSIONS:")
+        #print("LlAMA AL METODO CREATE DE PERMISSIONS:")
 
         obj_in_data = jsonable_encoder(obj_in)
         db_obj = Permission(**obj_in_data)
@@ -208,8 +208,8 @@ class CRUDPermission(CRUDBase[Permission, schemas.PermissionCreate, schemas.Perm
     def get_for_user_and_treeitem(
         self, db: Session, user: models.User, treeitem: models.TreeItem
     ):
-        print('Llega a preguntar por los assets:')
-        print(db)
+        #print('Llega a preguntar por los assets:')
+        #print(db)
         return db.query(
             Permission
         ).filter(

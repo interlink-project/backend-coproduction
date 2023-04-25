@@ -22,11 +22,11 @@ class NotificationsManager:
         ):
 
         #Save the event as a notification of coproduction
-        print('El documento a borrar es:')
-        print('id:'+str(id))
+        #print('El documento a borrar es:')
+        #print('id:'+str(id))
         db_obj = await asset_crud.get(db=db, id=id)
                         
-        print(db_obj)
+        #print(db_obj)
         if type(db_obj) == ExternalAssetCreate:
             #External Asset
             #Create the coproductionNotification

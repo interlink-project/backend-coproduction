@@ -59,7 +59,7 @@ class CRUDCoproductionProcessNotification(CRUDBase[CoproductionProcessNotificati
     async def get_coproductionprocess_notifications_justbyAseetId(self, db: Session, asset_id:str) -> Optional[List[CoproductionProcessNotification]]:
         listofCoproductionProcessNotifications = db.query(CoproductionProcessNotification).filter(models.CoproductionProcessNotification.asset_id==asset_id                                                                                             
                                                                                                     ).order_by(models.CoproductionProcessNotification.created_at.desc()).all()
-        print(listofCoproductionProcessNotifications)
+        #print(listofCoproductionProcessNotifications)
         return listofCoproductionProcessNotifications
 
 

@@ -23,7 +23,7 @@ class CRUDUserNotification(CRUDBase[UserNotification, UserNotificationCreate, Us
     #Get all notifications by user:
     async def get_user_notifications(self, db: Session, user_id: str) -> Optional[List[UserNotification]]:
         listofUserNotifications = db.query(UserNotification).filter(models.UserNotification.user_id==user_id).all()
-        print(listofUserNotifications)
+        #print(listofUserNotifications)
         return listofUserNotifications
 
     #Get unseen notifications by user:
@@ -31,13 +31,13 @@ class CRUDUserNotification(CRUDBase[UserNotification, UserNotificationCreate, Us
         listofUserNotifications = db.query(UserNotification).filter(
             and_(models.UserNotification.user_id==user_id,models.UserNotification.state==False)
             ).order_by(models.UserNotification.created_at.desc()).all()
-        print(listofUserNotifications)
+        #print(listofUserNotifications)
         return listofUserNotifications
 
     #Get user notifications by coproduction process:
     async def get_user_notifications_by_coproid(self, db: Session, copro_id: str) -> Optional[List[UserNotification]]:
         listofUserNotifications = db.query(UserNotification).filter(models.UserNotification.coproductionprocess_id==copro_id).order_by(models.UserNotification.created_at.desc()).all()
-        print(listofUserNotifications)
+        #print(listofUserNotifications)
         return listofUserNotifications
 
 

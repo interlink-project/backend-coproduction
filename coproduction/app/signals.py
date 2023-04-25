@@ -19,13 +19,13 @@ def after_permission_insert_update_or_delete(mapper, connection, target: Permiss
 @event.listens_for(InternalAsset, "after_insert")
 @event.listens_for(InternalAsset, "after_update")
 def after_asset_insert_or_update(mapper, connection, target: InternalAsset):
-    print("Asset created", target)
+    #print("Asset created", target)
     sync_asset_treeitems.delay([target.task_id])
 
 
 @event.listens_for(InternalAsset, "after_delete")
 async def after_asset_delete(mapper, connection, target: InternalAsset):
-    print("Asset deleted", target)
+    #print("Asset deleted", target)
     URL = target.internal_link
     requests.delete(URL, headers={
         "Authorization": settings.BACKEND_SECRET

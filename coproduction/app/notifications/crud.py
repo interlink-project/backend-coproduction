@@ -22,14 +22,14 @@ class CRUDNotification(CRUDBase[Notification, NotificationCreate, NotificationPa
 
     #Get all notifications by Event:
     async def get_notification_by_event(self, db: Session, event: str, language: str) -> Optional[List[UserNotification]]:
-        print("Entra en notification  by event")
-        print(event)
-        print(language)
+        #print("Entra en notification  by event")
+        #print(event)
+        #print(language)
         notification = db.query(Notification).filter(and_(
                                                     models.Notification.event==event,
                                                     models.Notification.language==language
                                                     )).first()
-        print(notification)
+        #print(notification)
         return notification
 
     async def get_notification_by_id(self, db: Session, id:  uuid.UUID) -> Optional[List[UserNotification]]:

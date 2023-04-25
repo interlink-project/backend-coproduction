@@ -41,5 +41,5 @@ class LanguagePlugin(Plugin):
             used_language = header_lang if header_lang in settings.ALLOWED_LANGUAGES_LIST else settings.DEFAULT_LANGUAGE
         except:
             used_language = settings.DEFAULT_LANGUAGE
-        print("LANGUAGE", used_language)
+        #print("LANGUAGE", used_language)
         return used_language
