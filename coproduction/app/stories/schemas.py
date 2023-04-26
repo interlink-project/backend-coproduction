@@ -17,6 +17,7 @@ class StoryBase(BaseModel):
     state: bool
     published_date: Optional[date]
     rating: Optional[float]
+    logotype: Optional[str]
  
 
 class Story(StoryBase):

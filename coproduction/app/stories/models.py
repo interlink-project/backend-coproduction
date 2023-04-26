@@ -21,6 +21,7 @@ class Story(BaseModel):
     coproductionprocess_cloneforpub_id = Column(UUID(as_uuid=True),nullable=True)
     user_id = Column(String, nullable=True)
     state = Column(Boolean, nullable=False, default=False)
+    logotype = Column(String, nullable=True)
 
     #Json object with information relevant to a story:
     data_story = Column(JSONB, nullable=True)

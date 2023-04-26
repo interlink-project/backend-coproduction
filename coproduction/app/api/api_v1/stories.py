@@ -100,6 +100,7 @@ async def create_story(
     newStory.user_id=current_user.id
     newStory.state=story_in['state']
     newStory.rating=story_in['rating']
+    newStory.logotype=story_in['logotype']
     newStory.coproductionprocess_cloneforpub_id=story_in['coproductionprocess_cloneforpub_id']
 
 
