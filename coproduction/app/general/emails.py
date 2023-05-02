@@ -112,7 +112,9 @@ def send_team_email(
             server=settings.SERVER_NAME,
             coprod_id=environment['coprod_id'],
             treeitem_id=environment['treeitem_id'])
-
+    elif type == 'ask_team_contribution':
+        subject = environment['subject']
+        
     with open(Path(settings.EMAIL_TEMPLATES_DIR) / "{type}.html".format(type=type)) as f:
         template_str = f.read()
     template = JinjaTemplate(template_str)

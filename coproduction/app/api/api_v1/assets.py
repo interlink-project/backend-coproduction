@@ -13,8 +13,10 @@ from app.general import deps
 from app.messages import log
 from app.notificationsManager import notification_manager
 from app.assets.schemas import *
-from app.models import  CoproductionProcessNotification
+from app.models import CoproductionProcessNotification
 from sqlalchemy import or_, and_
+
+from app.general.emails import send_team_email
 
 router = APIRouter()
 
@@ -35,8 +37,9 @@ async def list_assets(
 
     if not crud.asset.can_list(db=db, user=current_user, task=task):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    
+
     return await crud.asset.get_multi(db, task=task)
+
 
 @router.get("/listAssetswithInternalInfo")
 async def list_assets_with_internaldata(
@@ -54,9 +57,8 @@ async def list_assets_with_internaldata(
 
     if not crud.asset.can_list(db=db, user=current_user, task=task):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    
-    return await crud.asset.get_multi_withIntData(db, task=task,token=token)
 
+    return await crud.asset.get_multi_withIntData(db, task=task, token=token)
 
 
 @router.get("/catalogue", response_model=List[schemas.AssetOutFull])
@@ -74,6 +76,7 @@ async def list_assets_catalogue(
         raise HTTPException(status_code=404, detail="Task not found")
 
     return await crud.asset.get_multi(db, task=task)
+
 
 def check_interlinker(id, token):
     url = f"http://{settings.CATALOGUE_SERVICE}/api/v1/interlinkers/{id}"
@@ -236,12 +239,23 @@ async def clone_asset(
 async def create_copro_notification(
     *,
     db: Session = Depends(deps.get_db),
-    datos: schemas.EmailAssetContribution,
+    data: dict,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    print(datos)
-    return datos
 
+    if (coproductionprocess := await crud.coproductionprocess.get(db=db, id=data['processId'])):
+        if crud.coproductionprocess.can_update(user=current_user, object=coproductionprocess):
+            for team_id in data['listTeams']:
+                if (team := await crud.team.get(db=db, id=team_id)):
+                    send_team_email(team, "ask_team_contribution", 
+                                    {"link": data['link'],
+                                     "icon_link": data['icon'],
+                                     "instructions": data['instructions'],
+                                     "asset_name": data['asset_name'],
+                                     "subject": data['subject']
+                                     })
+
+    return "Done"
 
 
 @router.put("/{id}", response_model=schemas.AssetOutFull)
@@ -277,7 +291,7 @@ async def read_asset(
     """
 
     if asset := await crud.asset.get(db=db, id=id):
-        if not crud.asset.can_read(db,current_user,asset.task):
+        if not crud.asset.can_read(db, current_user, asset.task):
             raise HTTPException(status_code=403, detail="Not enough permissions")
         return asset
     raise HTTPException(status_code=404, detail="Asset not found")
@@ -296,14 +310,14 @@ async def read_asset_contributions(
     """
 
     if asset := await crud.asset.get(db=db, id=id):
-        #Get all contribution of users:
+        # Get all contribution of users:
         listofContribucionesNotifications = db.query(CoproductionProcessNotification).filter(and_(
-                                                                                                    models.CoproductionProcessNotification.asset_id==str(asset.id),
-                                                                                                    models.CoproductionProcessNotification.user_id!=None
-                                                                                                    )                                                                                             
-                                                                                                ).order_by(models.CoproductionProcessNotification.created_at.desc()).all()
+            models.CoproductionProcessNotification.asset_id == str(asset.id),
+            models.CoproductionProcessNotification.user_id != None
+        )
+        ).order_by(models.CoproductionProcessNotification.created_at.desc()).all()
 
-        asset.contributors=listofContribucionesNotifications
+        asset.contributors = listofContribucionesNotifications
         return asset
     raise HTTPException(status_code=404, detail="Asset not found")
 
@@ -390,14 +404,11 @@ async def delete_asset(
         if not crud.asset.can_remove(db=db, user=current_user, task=asset.task):
             raise HTTPException(status_code=403, detail="Not enough permissions")
 
-
-        #Erase all notification related with this asset.
-        listNotificationbyAsset=await crud.coproductionprocessnotification.get_coproductionprocess_notifications_justbyAseetId( db= db, asset_id=str(asset.id))
+        # Erase all notification related with this asset.
+        listNotificationbyAsset = await crud.coproductionprocessnotification.get_coproductionprocess_notifications_justbyAseetId(db=db, asset_id=str(asset.id))
         for notification in listNotificationbyAsset:
             db.delete(notification)
         db.commit()
-
-
 
         await crud.asset.remove(db=db, id=id)
         return None
