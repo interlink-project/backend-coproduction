@@ -62,7 +62,7 @@ async def create_coproductionprocessnotification(
     return await crud.coproductionprocessnotification.create(db=db, obj_in=coproductionprocessnotification_in)
     # raise HTTPException(status_code=400, detail="CoproductionProcessNotification already exists")
 
-@router.post("/createbyEvent", response_model=schemas.CoproductionProcessNotificationOutFull)
+@router.post("/createbyEvent")
 async def create_copro_notification(
     *,
     db: Session = Depends(deps.get_db),
@@ -74,21 +74,16 @@ async def create_copro_notification(
     """
     
     coproduction = await crud.coproductionprocess.get(db=db, id=coproductionprocessnotification_in.coproductionprocess_id)  
-    #print(coproduction)
-    #print(coproduction.language)
     notification = await crud.notification.get_notification_by_event(db=db, event=coproductionprocessnotification_in.notification_event,language= coproduction.language)
-    newCoproNotification=CoproductionProcessNotification()
-    newCoproNotification.notification_id=notification.id
-    newCoproNotification.claim_type=coproductionprocessnotification_in.claim_type
-    newCoproNotification.coproductionprocess_id=coproductionprocessnotification_in.coproductionprocess_id
-    newCoproNotification.asset_id=coproductionprocessnotification_in.asset_id
-    if coproductionprocessnotification_in.user_id:
-        newCoproNotification.user_id=coproductionprocessnotification_in.user_id
-    else:
-        newCoproNotification.user_id=current_user.id
+    
+    listaDeUsuario=[]
 
-    #Add the user to the information
-    import json
+    if coproductionprocessnotification_in.user_id is None: 
+        listaDeUsuario=[current_user.id]
+    else:    
+        listaDeUsuario=coproductionprocessnotification_in.user_id.split(',')
+    
+    listaRegistros=[]
 
     def shortName(s):
         # split the string into a list
@@ -106,11 +101,29 @@ async def create_copro_notification(
         new += l[-1].title()
         return new
 
-    json_parameters = json.loads(coproductionprocessnotification_in.parameters)
-    json_parameters['userName']=shortName(current_user.full_name)
-    newCoproNotification.parameters=json.dumps(json_parameters)
+    for usuario in listaDeUsuario:
+         #Add the user to the notification
+        import json
+        datosUser= await crud.user.get(db=db, id=usuario)
 
-    return await crud.coproductionprocessnotification.create(db=db, obj_in=newCoproNotification)
+        newCoproNotification=CoproductionProcessNotification()
+        newCoproNotification.user_id=datosUser.id
+        newCoproNotification.notification_id=notification.id
+        newCoproNotification.claim_type=coproductionprocessnotification_in.claim_type
+        newCoproNotification.coproductionprocess_id=coproductionprocessnotification_in.coproductionprocess_id
+        newCoproNotification.asset_id=coproductionprocessnotification_in.asset_id
+    
+        json_parameters = json.loads(coproductionprocessnotification_in.parameters)
+        json_parameters['userName']=shortName(datosUser.full_name)
+        newCoproNotification.parameters=json.dumps(json_parameters)
+        
+        listaRegistros.append(newCoproNotification)
+
+    print("Inicio la creacion de la lista de notificaciones")
+    
+    resultOfCreate= crud.coproductionprocessnotification.createList(db=db, registros=listaRegistros)
+
+    return resultOfCreate
 
 
 
