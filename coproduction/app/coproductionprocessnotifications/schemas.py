@@ -33,6 +33,7 @@ class CoproductionProcessNotificationCreatebyEvent(BaseModel):
     claim_type: Optional[ClaimTypes]
     asset_id: Optional[str]
     user_id: Optional[str]
+    isTeam: Optional[bool]
  
 
 

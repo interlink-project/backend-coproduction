@@ -75,14 +75,29 @@ async def create_copro_notification(
     
     coproduction = await crud.coproductionprocess.get(db=db, id=coproductionprocessnotification_in.coproductionprocess_id)  
     notification = await crud.notification.get_notification_by_event(db=db, event=coproductionprocessnotification_in.notification_event,language= coproduction.language)
-    
+
     listaDeUsuario=[]
 
-    if coproductionprocessnotification_in.user_id is None: 
-        listaDeUsuario=[current_user.id]
-    else:    
-        listaDeUsuario=coproductionprocessnotification_in.user_id.split(',')
-    
+
+    if coproductionprocessnotification_in.isTeam:
+        listaDeTeams=coproductionprocessnotification_in.user_id.split(',')
+        for team_id in listaDeTeams:
+            team = await crud.team.get(db=db, id=team_id)
+            listaDeUsuarioTemp= team.user_ids
+            for userItem in listaDeUsuarioTemp:
+                if(userItem not in listaDeUsuario):
+                    listaDeUsuario.append(userItem)
+
+
+    else:
+
+        if coproductionprocessnotification_in.user_id is None: 
+            listaDeUsuario=[current_user.id]
+        else:    
+            listaDeUsuario=coproductionprocessnotification_in.user_id.split(',')
+        
+
+
     listaRegistros=[]
 
     def shortName(s):
