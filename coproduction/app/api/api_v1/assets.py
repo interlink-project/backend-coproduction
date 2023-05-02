@@ -232,6 +232,18 @@ async def clone_asset(
     return db_asset
 
 
+@router.post("/emailAskTeamContribution")
+async def create_copro_notification(
+    *,
+    db: Session = Depends(deps.get_db),
+    datos: schemas.EmailAssetContribution,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    print(datos)
+    return datos
+
+
+
 @router.put("/{id}", response_model=schemas.AssetOutFull)
 async def update_asset(
     *,
