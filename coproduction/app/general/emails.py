@@ -108,7 +108,7 @@ def send_team_email(
         environment["coprod_url"] = 'https://{server}/dashboard/coproductionprocesses/{coprod_id}'.format(
             server=settings.SERVER_NAME,
             coprod_id=environment['coprod_id'])
-        environment["link"] = 'https://{server}/dashboard/coproductionprocesses/{coprod_id}/{treeitem_id}'.format(
+        environment["link"] = 'https://{server}/dashboard/coproductionprocesses/{coprod_id}/{treeitem_id}/guide'.format(
             server=settings.SERVER_NAME,
             coprod_id=environment['coprod_id'],
             treeitem_id=environment['treeitem_id'])
