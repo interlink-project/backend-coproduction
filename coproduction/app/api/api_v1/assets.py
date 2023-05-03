@@ -239,7 +239,7 @@ async def clone_asset(
 async def create_copro_notification(
     *,
     db: Session = Depends(deps.get_db),
-    data: dict,
+    data: schemas.EmailAssetContribution,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
 

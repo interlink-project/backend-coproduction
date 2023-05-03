@@ -112,11 +112,13 @@ AssetPatch = Annotated[
 
 class EmailAssetContribution(BaseModel):
     asset_id: uuid.UUID
-    asset_link: str
+    link: str
+    asset_name: str
+    icon: str
     subject: str
     instructions: str
-    listTeams: str
-
+    listTeams: List[uuid.UUID]
+    processId: uuid.UUID
 
 
 
