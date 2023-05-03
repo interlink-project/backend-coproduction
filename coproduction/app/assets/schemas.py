@@ -110,6 +110,7 @@ AssetPatch = Annotated[
     Field(discriminator="type"),
 ]
 
+
 class EmailAssetContribution(BaseModel):
     asset_id: uuid.UUID
     link: str

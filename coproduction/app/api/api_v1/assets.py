@@ -103,7 +103,7 @@ async def create_asset(
     if not crud.asset.can_create(db=db, user=current_user, task=task):
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
-    # check that interlinker exists
+    #  check that interlinker exists
     if type(asset_in) == schemas.InternalAssetCreate and asset_in.softwareinterlinker_id:
         softwareinterlinker = check_interlinker(asset_in.softwareinterlinker_id, token)
 
@@ -239,20 +239,21 @@ async def clone_asset(
 async def create_copro_notification(
     *,
     db: Session = Depends(deps.get_db),
-    data: schemas.EmailAssetContribution,
+    data: EmailAssetContribution,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-
-    if (coproductionprocess := await crud.coproductionprocess.get(db=db, id=data['processId'])):
+    print(data)
+    print(data.processId)
+    if (coproductionprocess := await crud.coproductionprocess.get(db=db, id=data.processId)):
         if crud.coproductionprocess.can_update(user=current_user, object=coproductionprocess):
-            for team_id in data['listTeams']:
+            for team_id in data.listTeams:
                 if (team := await crud.team.get(db=db, id=team_id)):
-                    send_team_email(team, "ask_team_contribution", 
-                                    {"link": data['link'],
-                                     "icon_link": data['icon'],
-                                     "instructions": data['instructions'],
-                                     "asset_name": data['asset_name'],
-                                     "subject": data['subject']
+                    send_team_email(team, "ask_team_contribution",
+                                    {"link": data.link,
+                                     "icon_link": data.icon,
+                                     "instructions": data.instructions,
+                                     "asset_name": data.asset_name,
+                                     "subject": data.subject
                                      })
 
     return "Done"
@@ -339,7 +340,7 @@ async def read_internal_asset(
             if not crud.asset.can_read(db=db, user=current_user, task=asset.task):
                 raise HTTPException(status_code=403, detail="Not enough permissions")
 
-            #print("Retrieving internal ", asset.link)
+            # print("Retrieving internal ", asset.link)
             await log(crud.asset.enrich_log_data(asset, {
                 "action": "GET"
             }))
@@ -372,7 +373,7 @@ async def read_internal_asset_catalogue(
             # if not crud.asset.can_read(db=db, user=current_user, task=asset.task):
             #     raise HTTPException(status_code=403, detail="Not enough permissions")
 
-            #print("Retrieving internal ", asset.link)
+            # print("Retrieving internal ", asset.link)
             await log(crud.asset.enrich_log_data(asset, {
                 "action": "GET"
             }))
