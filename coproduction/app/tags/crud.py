@@ -6,11 +6,10 @@ from sqlalchemy.orm import Session
 from app.models import Tag
 from app.schemas import TagCreate, TagPatch
 from app.general.utils.CRUDBase import CRUDBase
-from app.locales import get_language
 
 
 class CRUDTag(CRUDBase[Tag, TagCreate, TagPatch]):
-    async def get_by_name(self, db: Session, name: str, locale: str = get_language()) -> Optional[Tag]:
+    async def get_by_name(self, db: Session, name: str) -> Optional[Tag]:
         return db.query(Tag).filter(Tag.name == name).first()
 
     # CRUD Permissions

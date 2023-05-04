@@ -35,6 +35,19 @@ async def create_tag(
         return await crud.tag.create(db=db, obj_in=tag_in, creator=current_user)
     raise HTTPException(status_code=400, detail="Tag already exists")
 
+@router.get("/search",  response_model=schemas.TagOut)
+async def search_tag(
+    name: str,
+    db: Session = Depends(deps.get_db),
+) -> Any:
+    """
+    Search tag by name.
+    """
+    tag = await crud.tag.get_by_name(db=db, name=name)
+    if not tag:
+        raise HTTPException(status_code=404, detail="Tag not found")
+    return tag
+
 @router.get("/{id}", response_model=schemas.TagOut)
 async def readTag(
     *,
@@ -50,18 +63,6 @@ async def readTag(
         raise HTTPException(status_code=404, detail="Tag not found")
     return tag
 
-@router.get("/{name}",  response_model=schemas.TagOut)
-async def search_tag(
-    name: str,
-    db: Session = Depends(deps.get_db),
-) -> Any:
-    """
-    Search tag by name.
-    """
-    tag = await crud.tag.get_by_name(db=db, name=name)
-    if not tag:
-        raise HTTPException(status_code=404, detail="Tag not found")
-    return tag
 
 @router.delete("/{id}")
 async def delete_tag(

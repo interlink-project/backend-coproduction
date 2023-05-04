@@ -409,3 +409,21 @@ async def copy_coproductionprocess(
     #print("POSTUPDATE")
     # If new_coprod is returned it raises an error regarding recursion with Python
     return new_coprod.id
+
+@router.post("/{id}/addTag")
+async def add_tag(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: uuid.UUID,
+    current_user: models.User = Depends(deps.get_current_active_user),
+    tag: schemas.Tag,
+) -> Any:
+    """
+    Add tag to coproductionprocess.
+    """
+    coproductionprocess = await crud.coproductionprocess.get(db=db, id=id)
+    if not coproductionprocess:
+        raise HTTPException(status_code=404, detail="CoproductionProcess not found")
+    if not crud.coproductionprocess.can_update(user=current_user, object=coproductionprocess):
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    return await crud.coproductionprocess.add_tag(db=db, db_obj=coproductionprocess, tag=tag)
