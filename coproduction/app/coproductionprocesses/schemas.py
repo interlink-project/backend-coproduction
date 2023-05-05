@@ -75,7 +75,7 @@ class CoproductionProcessOut(CoproductionProcess):
     administrators_ids: List[str]
     current_user_participation: list
     
-    tags_ids: List[str]
+    tags_ids: List[uuid.UUID]
 
     @validator('administrators_ids', pre=True)
     def administrators_ids_to_list(cls, v):

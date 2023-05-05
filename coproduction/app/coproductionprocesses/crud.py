@@ -402,14 +402,15 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
         return db_obj
     
-    async def add_tag(self, db: Session, db_obj: CoproductionProcess, tag: models.Tag):
-        if tag not in db_obj.tags:
-            db_obj.tags.append(tag)
-            db.add(db_obj)
-            db.commit()
-            db.refresh(db_obj)
-        else:
-            raise HTTPException(status_code=400, detail="Tag already exists in this coproduction process")
+    async def add_tag(self, db: Session, db_obj: CoproductionProcess, tag_id: uuid.UUID):
+        if (tag := await crud.tag.get(db=db, id=tag_id)):
+            if tag not in db_obj.tags:
+                db_obj.tags.append(tag)
+                db.add(db_obj)
+                db.commit()
+                db.refresh(db_obj)
+            else:
+                raise HTTPException(status_code=400, detail="Tag already exists in this coproduction process")
         
         await self.log_on_update(db_obj)
         
