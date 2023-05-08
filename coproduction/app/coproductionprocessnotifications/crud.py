@@ -83,16 +83,17 @@ class CRUDCoproductionProcessNotification(CRUDBase[CoproductionProcessNotificati
         try:
         # Iniciar una transacción
             #with db.begin() as transaction:
-            for notification in registros:
-                # Crear una instancia de la entidad CoproductionProcessNotification
-                obj_in_data = jsonable_encoder(notification)
-                notification_model = CoproductionProcessNotification(**obj_in_data)
-                notification_model.user_id=notification.user_id
+            if(len(registros)>0):
+                for notification in registros:
+                    # Crear una instancia de la entidad CoproductionProcessNotification
+                    obj_in_data = jsonable_encoder(notification)
+                    notification_model = CoproductionProcessNotification(**obj_in_data)
+                    notification_model.user_id=notification.user_id
 
-                # Agregar la instancia a la sesión de SQLAlchemy
-                db.add(notification_model)
-            
-            db.commit()
+                    # Agregar la instancia a la sesión de SQLAlchemy
+                    db.add(notification_model)
+                
+                db.commit()
             return True
         except Exception as e:
             # Rollback the transaction in case of any exceptions

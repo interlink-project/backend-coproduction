@@ -77,6 +77,7 @@ async def create_copro_notification(
     notification = await crud.notification.get_notification_by_event(db=db, event=coproductionprocessnotification_in.notification_event,language= coproduction.language)
 
     listaDeUsuario=[]
+    listaExcludedUsers=[]
 
 
     if coproductionprocessnotification_in.isTeam:
@@ -120,6 +121,19 @@ async def create_copro_notification(
          #Add the user to the notification
         import json
         datosUser= await crud.user.get(db=db, id=usuario)
+        datosAsset= await crud.asset.get(db=db, id=coproductionprocessnotification_in.asset_id)
+      
+        #Valido que el usuario sea parte de almenos un equipo asignado a un recurso:
+        permisos_user= crud.permission.get_dict_for_user_and_treeitem(db=db, user=datosUser, treeitem=datosAsset.task)
+        
+        #In case the user dont have rights is excluded from the notification creation
+        if(permisos_user['access_assets_permission'] is False):
+            listaExcludedUsers.append(datosUser.id)
+            continue
+            
+
+        print('Los permisos sobre el asset son:')
+        print(permisos_user)
 
         newCoproNotification=CoproductionProcessNotification()
         newCoproNotification.user_id=datosUser.id
@@ -136,9 +150,14 @@ async def create_copro_notification(
 
     print("Inicio la creacion de la lista de notificaciones")
     
-    resultOfCreate= crud.coproductionprocessnotification.createList(db=db, registros=listaRegistros)
+    isSuccessInserted=crud.coproductionprocessnotification.createList(db=db, registros=listaRegistros)
 
-    return resultOfCreate
+    resultOfCreate= {
+                     "inserted":isSuccessInserted,
+                     "excluded":listaExcludedUsers
+                     }
+
+    return json.dumps(resultOfCreate)
 
 
 
