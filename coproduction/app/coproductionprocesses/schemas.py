@@ -49,6 +49,8 @@ class CoproductionProcessPatch(CoproductionProcessCreate):
     is_part_of_publication: Optional[bool]
     language: Optional[Languages]
     game_id: Optional[str]
+    tags: Optional[List]
+
 
     #Optional field defined just by the user:
     hasAddAnOrganization : Optional[bool]
@@ -75,12 +77,12 @@ class CoproductionProcessOut(CoproductionProcess):
     administrators_ids: List[str]
     current_user_participation: list
     
-    tags_ids: List[str]
+    tags: List
 
     @validator('administrators_ids', pre=True)
     def administrators_ids_to_list(cls, v):
         return list(v)
     
-    @validator('tags_ids', pre=True)
-    def tags_ids_to_list(cls, v):
-        return list(v)
+    # @validator('tags_ids', pre=True)
+    # def tags_ids_to_list(cls, v):
+    #     return list(v)
