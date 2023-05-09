@@ -128,7 +128,7 @@ async def create_copro_notification(
         
         #In case the user dont have rights is excluded from the notification creation
         if(permisos_user['access_assets_permission'] is False):
-            listaExcludedUsers.append(datosUser.id)
+            listaExcludedUsers.append(datosUser.email)
             continue
             
 
