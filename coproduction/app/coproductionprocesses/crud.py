@@ -309,6 +309,7 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
             organization_desc=coproductionprocess.organization,
             challenges=coproductionprocess.challenges,
             status=coproductionprocess.status,
+            cloned_from_id=coproductionprocess.id,
         )
 
         db_obj = await self.create(db=db, obj_in=new_coproductionprocess, creator=user, set_creator_admin=True)

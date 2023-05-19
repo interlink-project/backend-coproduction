@@ -13,7 +13,7 @@ from sqlalchemy import (
 )
 from sqlalchemy_utils import aggregated
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from app.general.db.base_class import Base as BaseModel
 from app.config import settings
 from app.phases.models import Phase
@@ -97,7 +97,10 @@ class CoproductionProcess(BaseModel):
     
     
     stories = association_proxy("coproductionprocess_story_associations", "story")
-
+    
+    cloned_from_id = Column(UUID(as_uuid=True), ForeignKey('coproductionprocess.id', ondelete='CASCADE', name='fk_copro_id_cloned_from'), nullable=True)
+    cloned_to = relationship("CoproductionProcess", backref=backref("cloned_from", remote_side=[id]))
+    
     @aggregated('children', Column(Date))
     def end_date(self):
         return func.max(Phase.end_date)

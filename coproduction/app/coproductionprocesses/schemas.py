@@ -30,6 +30,7 @@ class CoproductionProcessBase(BaseModel):
 
     intergovernmental_model: Optional[str]
 
+    cloned_from_id: Optional[uuid.UUID]
     is_part_of_publication: Optional[bool]
     game_id: Optional[str]
 
