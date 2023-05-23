@@ -35,6 +35,22 @@ async def create_tag(
         return await crud.tag.create(db=db, obj_in=tag_in, creator=current_user)
     raise HTTPException(status_code=400, detail="Tag already exists")
 
+@router.post("/createbyName", response_model=schemas.TagOut)
+async def create_tag_by_name(
+    *,
+    db: Session = Depends(deps.get_db),
+    tag_in: schemas.TagCreate,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Create new tag taking in account the name"""
+    tag = await crud.tag.get_by_name(db=db, name=tag_in.name)
+    if not tag:
+        return await crud.tag.create(db=db, obj_in=tag_in, creator=current_user)
+    else:
+        return tag
+
+
 @router.get("/search",  response_model=schemas.TagOut)
 async def search_tag(
     name: str,
