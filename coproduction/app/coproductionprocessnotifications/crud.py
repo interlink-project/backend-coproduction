@@ -18,6 +18,7 @@ from uuid_by_string import generate_uuid
 from app import crud, models, schemas
 import json
 import html
+from app.messages import log
 
 
 class CRUDCoproductionProcessNotification(CRUDBase[CoproductionProcessNotification, CoproductionProcessNotificationCreate, CoproductionProcessNotificationPatch]):
@@ -83,7 +84,13 @@ class CRUDCoproductionProcessNotification(CRUDBase[CoproductionProcessNotificati
 
         # await socket_manager.send_to_id(db_obj.coproductionprocess_id, {"event": "contribution_created", "extra": {"task_id": jsonable_encoder(parametros['treeitem_id'])}})
 
-        await self.log_on_create(db_obj)
+        if( db_obj.claim_type is None ):
+            await self.log_on_create(db_obj)
+        else:
+            #When the notification is a claim, we need to create a log
+            await log({"action": "CREATE","model":"CLAIM","object_id":db_obj.id,"asset_id":db_obj.asset_id,"task_id":selectTreeItemId,"coproductionprocess_id":db_obj.coproductionprocess_id})
+
+
         return db_obj
 
     async def createList(self, db: Session, registros: List[CoproductionProcessNotificationCreate]) -> Any:
@@ -114,10 +121,17 @@ class CRUDCoproductionProcessNotification(CRUDBase[CoproductionProcessNotificati
                     coproductionProcessId = notification_model.coproductionprocess_id
                     selectTreeItemId = json.loads(notification_model.parameters)[
                         'treeitem_id']
+                    
+                    db.commit()
+                    db.refresh(notification_model)
 
-                    await self.log_on_create(notification_model)
+                    if( notification_model.claim_type is None ):
+                        await self.log_on_create(notification_model)
+                    else:
+                        #When the notification is a claim, we need to create a log
+                        await log({"action": "CREATE","model":"CLAIM","object_id":notification_model.id,"asset_id":notification_model.asset_id,"task_id":selectTreeItemId,"coproductionprocess_id":notification_model.coproductionprocess_id})
 
-                db.commit()
+                
 
                 # Envio la notificacion al socket
 
