@@ -219,7 +219,9 @@ async def add_claim(
     - name
     - development
     """
-    print(data)
+    # # print(data.json())
+    # json_object = json.dumps(data, indent = 4) 
+    # print(json_object)
     coproductionprocess = await crud.coproductionprocess.get(db=db, id=process_id)
     if not coproductionprocess:
         raise HTTPException(status_code=404, detail="CoproductionProcess not found")
@@ -237,8 +239,7 @@ async def add_claim(
                                 'Accept': '*/*'
                             })
 
-    return response.json()
-
+    return response.text
 
 @router.put("/{process_id}/{task_id}/complete")
 async def complete_task(
@@ -265,7 +266,7 @@ async def complete_task(
                                 'Accept': '*/*'
                             })
 
-    return response.json()
+    return response.text
 
 
 @router.delete("/{process_id}/{task_id}/revert")
