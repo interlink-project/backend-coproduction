@@ -17,7 +17,8 @@ from app.api.api_v1 import (
     utils,
     games,
     recomenders,
-    tags
+    tags,
+    ratings
 )
 
 api_router = APIRouter()
@@ -49,7 +50,9 @@ api_router.include_router(coproductionprocessnotifications.router,
 api_router.include_router(stories.router,
                           prefix="/stories", tags=["Stories"])    
 api_router.include_router(recomenders.router,
-                            prefix="/recomenders", tags=["Recomenders"])             
+                            prefix="/recomenders", tags=["Recomenders"])   
+api_router.include_router(ratings.router,
+                            prefix="/ratings", tags=["Ratings"])             
 api_router.include_router(utils.router, prefix="/utils", tags=["utils"])
 api_router.include_router(games.router, prefix="/games", tags=["games"])
 api_router.include_router(tags.router, prefix="/tags", tags=["tags"])

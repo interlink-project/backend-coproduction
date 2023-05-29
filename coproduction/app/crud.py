@@ -13,3 +13,4 @@ from app.usernotifications.crud import exportCrud as usernotification
 from app.coproductionprocessnotifications.crud import exportCrud as coproductionprocessnotification
 from app.stories.crud import exportCrud as story
 from app.tags.crud import exportCrud as tag
+from app.ratings.crud import exportCrud as rating
