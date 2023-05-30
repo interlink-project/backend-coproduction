@@ -54,6 +54,9 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
             await self.log_on_get(obj)
             return obj
         return
+    
+    async def get_multi_by_name(self, db: Session, name: str) -> Optional[ModelType]:
+        return db.query(self.model).filter(self.model.name == name).all()
 
     async def get_by_name_translation(self, db: Session, name: str, language: str = settings.DEFAULT_LANGUAGE) -> Optional[ModelType]:
         if obj := db.query(self.model).filter(self.model.name_translations[language] == name).first():

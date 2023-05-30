@@ -38,17 +38,19 @@ async def create_team(
     """
     Create new team.
     """
-    team = await crud.team.get_by_name(db=db, name=team_in.name)
-    if not team:
-        if team_in.organization_id and await crud.team.can_create(db=db, organization_id=team_in.organization_id, user=current_user):
-            #print('LLAMA AL POSR CREATE TEAM!!!!!!!!!!')
-            return await crud.team.create(db=db, obj_in=team_in, creator=current_user)
-        else:
-            raise HTTPException(
-                status_code=403, detail="You can not create a team for this organization")
-
-    raise HTTPException(status_code=400, detail="Team already exists")
-
+    teams = await crud.team.get_multi_by_name(db=db, name=team_in.name)
+    if teams:
+        for team in teams:
+            if team.organization_id == team_in.organization_id:
+                raise HTTPException(status_code=400, detail="Team already exists")
+    
+    if team_in.organization_id and await crud.team.can_create(db=db, organization_id=team_in.organization_id, user=current_user):
+        #print('LLAMA AL POSR CREATE TEAM!!!!!!!!!!')
+        return await crud.team.create(db=db, obj_in=team_in, creator=current_user)
+    else:
+        raise HTTPException(
+            status_code=403, detail="You can not create a team for this organization")
+            
 
 @router.post("/{id}/logotype", response_model=schemas.TeamOutFull)
 async def set_logotype(
