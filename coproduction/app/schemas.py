@@ -15,6 +15,7 @@ from app.coproductionprocessnotifications.schemas import *
 from app.stories.schemas import *
 from app.tags.schemas import *
 from app.ratings.schemas import *
+from app.keywords.schemas import *
 
 # out
 

@@ -14,3 +14,4 @@ from app.coproductionprocessnotifications.crud import exportCrud as coproduction
 from app.stories.crud import exportCrud as story
 from app.tags.crud import exportCrud as tag
 from app.ratings.crud import exportCrud as rating
+from app.keywords.crud import exportCrud as keyword

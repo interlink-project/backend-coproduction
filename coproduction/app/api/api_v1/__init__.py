@@ -18,7 +18,8 @@ from app.api.api_v1 import (
     games,
     recomenders,
     tags,
-    ratings
+    ratings,
+    keywords
 )
 
 api_router = APIRouter()
@@ -56,6 +57,7 @@ api_router.include_router(ratings.router,
 api_router.include_router(utils.router, prefix="/utils", tags=["utils"])
 api_router.include_router(games.router, prefix="/games", tags=["games"])
 api_router.include_router(tags.router, prefix="/tags", tags=["tags"])
+api_router.include_router(keywords.router, prefix="/keywords", tags=["keywords"])
 
 @api_router.get("/")
 async def main():

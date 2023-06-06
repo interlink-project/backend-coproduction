@@ -14,3 +14,4 @@ from app.coproductionprocessnotifications.models import *
 from app.stories.models import *
 from app.tags.models import *
 from app.ratings.models import *
+from app.keywords.models import *

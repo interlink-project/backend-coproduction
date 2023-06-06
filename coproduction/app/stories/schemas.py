@@ -19,6 +19,7 @@ class StoryBase(BaseModel):
     rating: Optional[float]
     ratings_count: Optional[int]
     logotype: Optional[str]
+    keywords: Optional[List]
  
 
 class Story(StoryBase):
