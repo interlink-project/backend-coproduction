@@ -54,6 +54,7 @@ def send_email(
     message = emails.Message(
         subject=subject,
         html=template,
+        text=subject,
         mail_from=(settings.EMAILS_FROM_NAME, settings.EMAILS_FROM_EMAIL),
     )
 
