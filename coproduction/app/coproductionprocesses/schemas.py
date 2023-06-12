@@ -27,12 +27,13 @@ class CoproductionProcessBase(BaseModel):
     hasAddAnOrganization : Optional[bool]
     skipResourcesStep : Optional[bool]
     hideguidechecklist : Optional[bool]
-
     intergovernmental_model: Optional[str]
-
     cloned_from_id: Optional[uuid.UUID]
     is_part_of_publication: Optional[bool]
+    is_public: Optional[bool]
     game_id: Optional[str]
+    rating: Optional[float]
+    ratings_count: Optional[int]
 
 
 class CoproductionProcessCreate(CoproductionProcessBase):
@@ -48,9 +49,12 @@ class CoproductionProcessPatch(CoproductionProcessCreate):
     incentive_and_rewards_state: Optional[bool]
     intergovernmental_model: Optional[str]
     is_part_of_publication: Optional[bool]
+    is_public: Optional[bool]
     language: Optional[Languages]
     game_id: Optional[str]
     tags: Optional[List]
+    rating: Optional[float]
+    ratings_count: Optional[int]
 
 
     #Optional field defined just by the user:

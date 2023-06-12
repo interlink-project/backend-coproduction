@@ -5,6 +5,7 @@ from sqlalchemy import (
     Enum,
     ForeignKey,
     Integer,
+    Numeric,
     String,
     Date,
     Text,
@@ -48,9 +49,14 @@ class CoproductionProcess(BaseModel):
     intergovernmental_model =Column(String,nullable=True)
 
     is_part_of_publication = Column(Boolean,nullable=True)
+    is_public = Column(Boolean,nullable=True)
 
     status = Column(Enum(Status, create_constraint=False,
                     native_enum=False), default=Status.in_progress)
+    
+    # 1 digit for decimals
+    rating= Column(Numeric(2, 1), default=0)
+    ratings_count = Column(Integer, default=0) 
 
 
     # created by

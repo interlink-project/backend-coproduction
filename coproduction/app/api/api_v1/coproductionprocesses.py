@@ -2,6 +2,7 @@ from locale import strcoll
 import os
 import uuid
 from typing import Any, Dict, List, Optional
+from fastapi_pagination import Page
 
 import aiofiles
 import requests
@@ -12,6 +13,7 @@ from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.general import deps
 from app.sockets import socket_manager 
+from app.locales import get_language
 
 router = APIRouter()
 
@@ -30,6 +32,28 @@ async def list_coproductionprocesses(
     if not crud.coproductionprocess.can_list(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return await crud.coproductionprocess.get_multi_by_user(db, user=current_user, search=search)
+
+@router.get("/public", response_model=Page[Any])
+async def list_coproductionprocesses(
+    db: Session = Depends(deps.get_db),
+    rating: Optional[int] = Query(None),
+    search: Optional[str] = Query(None),
+    tag: Optional[List[str]] = Query(None),
+    skip: int = 0,
+    limit: int = 100,
+    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
+    language: str = Depends(get_language)
+
+) -> Any:
+    """
+    Retrieve Public Coproduction Processes.
+    """
+    # print("search", search)
+    # print("rating", rating)
+    # print("tag", tag)
+    # if not crud.coproductionprocess.can_list(current_user):
+    #     raise HTTPException(status_code=403, detail="Not enough permissions")
+    return await crud.coproductionprocess.get_multi_public(db, search=search,  rating=rating,  language=language, tag=tag)
 
 
 @router.post("", response_model=schemas.CoproductionProcessOutFull)

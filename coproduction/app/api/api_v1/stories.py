@@ -33,8 +33,13 @@ async def list_stories(
     """
     Retrieve stories.
     """
-    #print("La busqueda es:")
-    #print(search)
+    # print("La busqueda es:")
+    # print(search)
+    # print("El rating es:")
+    # print(rating)
+    # print("El keyword es:")
+    # print(keyword)
+    
     return await crud.story.get_multiDict(db, search=search,  rating=rating,  language=language, keyword=keyword)
 
 # @router.get("", response_model=List[schemas.StoryOutFull])
