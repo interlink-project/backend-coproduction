@@ -39,7 +39,7 @@ async def create_rating(
 
     try:
         ratingCreated=await crud.rating.create(db=db, rating=rating_in, user_id=current_user.id)
-        print('llega hasta aqui Ingresa el primero.')
+        #print('llega hasta aqui Ingresa el primero.')
         #Update rating and ratingCount of story
         if rating_in.artefact_type=="story":
             story=await crud.story.get(db=db, id=rating_in.artefact_id)
@@ -59,6 +59,19 @@ async def create_rating(
             db.add(story)
             db.commit()
             db.refresh(story)
+        
+        if rating_in.artefact_type=="publiccoproduction":
+            coproductionprocess=await crud.coproductionprocess.get(db=db, id=rating_in.artefact_id)
+            list_ratings=await crud.rating.get_ratting_by_artefacktid(db=db, artefact_id=rating_in.artefact_id)
+            sumRating=0
+            for(rating) in list_ratings:
+                sumRating+=rating.value
+            coproductionprocess.rating=sumRating/len(list_ratings)
+            coproductionprocess.ratings_count=len(list_ratings)
+            
+            db.add(coproductionprocess)
+            db.commit()
+            db.refresh(coproductionprocess)
 
         return ratingCreated
     except Exception as e:
