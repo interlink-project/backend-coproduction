@@ -41,7 +41,6 @@ async def list_coproductionprocesses(
     tag: Optional[List[str]] = Query(None),
     skip: int = 0,
     limit: int = 100,
-    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
     language: str = Depends(get_language)
 
 ) -> Any:
