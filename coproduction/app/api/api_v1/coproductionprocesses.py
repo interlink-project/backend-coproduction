@@ -397,7 +397,7 @@ async def sendEmailApplyToBeContributor(
         if crud.coproductionprocess.can_update(user=current_user, object=coproductionprocess):
             for admin_email in data["adminEmails"]:
                 send_email(admin_email, "apply_to_be_contributor",
-                                {"copro_id": data["processId"],
+                                {"coprod_id": data["processId"],
                                  "user_name": current_user.full_name,
                                  "user_email": current_user.email,
                                  "coproductionprocess_name": data["coproductionName"],
