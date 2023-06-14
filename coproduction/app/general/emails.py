@@ -47,6 +47,13 @@ def send_email(
             org_id=environment['org_id'],
             team_id=environment['team_id'],
             user_email=environment['user_email'])
+    elif type == 'apply_to_be_contributor':
+        subject = 'Interlink: A user has applied to be a contributor'
+        environment["link"] = 'https://{server}/dashboard/coproductionprocesses/{id}/team'.format(
+            server=settings.SERVER_NAME,
+            id=environment['coprod_id'])
+
+    
 
     with open(Path(settings.EMAIL_TEMPLATES_DIR) / "{type}.html".format(type=type)) as f:
         template_str = f.read()

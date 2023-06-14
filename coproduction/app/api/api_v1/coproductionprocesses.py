@@ -14,6 +14,7 @@ from app import crud, models, schemas
 from app.general import deps
 from app.sockets import socket_manager 
 from app.locales import get_language
+from app.general.emails import send_email
 
 router = APIRouter()
 
@@ -380,6 +381,30 @@ async def send_message(
     message: str
 ) -> Any:
     await socket_manager.send_to_id(id=id, data={"data": message})
+
+
+@router.post("/emailApplyToBeContributor")
+async def sendEmailApplyToBeContributor(
+    *,
+    db: Session = Depends(deps.get_db),
+    data: dict,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    print('Llega al endpoint de emailApplyToBeContributor')
+    print(data)
+    print(data.processId)
+    if (coproductionprocess := await crud.coproductionprocess.get(db=db, id=data.processId)):
+        if crud.coproductionprocess.can_update(user=current_user, object=coproductionprocess):
+            for admin_email in data.adminEmails:
+                send_email(admin_email, "apply_to_be_contributor",
+                                {"copro_id": data.processId,
+                                 "user_name": current_user.full_name,
+                                 "user_email": current_user.email,
+                                 "coproductionprocess_name": data.coproductionName,
+                                 "razon": data.razon,
+                                })
+
+    return "Done"
 
 
 @router.websocket("/{id}/ws")
