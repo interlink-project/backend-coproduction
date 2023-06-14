@@ -392,16 +392,16 @@ async def sendEmailApplyToBeContributor(
 ) -> Any:
     print('Llega al endpoint de emailApplyToBeContributor')
     print(data)
-    print(data.processId)
-    if (coproductionprocess := await crud.coproductionprocess.get(db=db, id=data.processId)):
+    print(data["processId"])
+    if (coproductionprocess := await crud.coproductionprocess.get(db=db, id=data["processId"])):
         if crud.coproductionprocess.can_update(user=current_user, object=coproductionprocess):
-            for admin_email in data.adminEmails:
+            for admin_email in data["adminEmails"]:
                 send_email(admin_email, "apply_to_be_contributor",
-                                {"copro_id": data.processId,
+                                {"copro_id": data["processId"],
                                  "user_name": current_user.full_name,
                                  "user_email": current_user.email,
-                                 "coproductionprocess_name": data.coproductionName,
-                                 "razon": data.razon,
+                                 "coproductionprocess_name": data["coproductionName"],
+                                 "razon": data["razon"],
                                 })
 
     return "Done"
