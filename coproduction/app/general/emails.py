@@ -98,7 +98,9 @@ def send_email(
         template_text = JinjaTemplate(template_text_str)
         rendered_text = template_text.render(environment)
         message.attach(data=rendered_text, filename=None, content_type="text/plain")
-    except:
+    except Exception as error:
+        # handle the exception
+        print("An exception occurred:", error) # An exception occurred: division by zero
         print("This email don't have a plain text version")
    
     
