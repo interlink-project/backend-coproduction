@@ -407,6 +407,7 @@ async def sendEmailApplyToBeContributor(
 ) -> Any:
     if (coproductionprocess := await crud.coproductionprocess.get(db=db, id=data["processId"])):
         #if crud.coproductionprocess.can_update(user=current_user, object=coproductionprocess):
+        print(data["adminEmails"])
         for admin_email in data["adminEmails"]:
             send_email(admin_email, "apply_to_be_contributor",
                             {"coprod_id": data["processId"],

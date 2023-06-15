@@ -55,6 +55,8 @@ def send_email(
             id=environment['coprod_id'])
         #Print to see what is in the environment
         environment["coprod_id"] = str(environment.get("coprod_id", ""))
+        print(type)
+        print(email_to)
         print("env", json.dumps(environment))
     
 
@@ -68,6 +70,9 @@ def send_email(
         html=template,
         mail_from=(settings.EMAILS_FROM_NAME, settings.EMAILS_FROM_EMAIL),
     )
+
+    if type == 'apply_to_be_contributor':
+        print("template:", template)
 
     # SMTP settings
     smtp_options = {"host": settings.SMTP_HOST, "port": settings.SMTP_PORT}
