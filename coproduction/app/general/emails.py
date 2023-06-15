@@ -72,7 +72,7 @@ def send_email(
     )
 
     if type == 'apply_to_be_contributor':
-        print("template:", template)
+        print("template (HTML):", template)
 
     # SMTP settings
     smtp_options = {"host": settings.SMTP_HOST, "port": settings.SMTP_PORT}
