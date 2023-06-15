@@ -82,13 +82,7 @@ def send_email(
     # Attach plain text version
      #  Load plain text template
 
-    try:
-        with open(Path(settings.EMAIL_TEMPLATES_DIR) / f"{type}.txt") as f:
-            template_text_str = f.read()
-        template_text = Template(template_text_str)
-        plain_text_content = template_text.render(environment)
-    except FileNotFoundError:
-        plain_text_content = "This email does not have a plain text version."
+    
     
     try:
         with open(Path(settings.EMAIL_TEMPLATES_DIR) / "{type}.txt".format(type=type)) as f:
