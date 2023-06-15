@@ -406,15 +406,15 @@ async def sendEmailApplyToBeContributor(
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     if (coproductionprocess := await crud.coproductionprocess.get(db=db, id=data["processId"])):
-        if crud.coproductionprocess.can_update(user=current_user, object=coproductionprocess):
-            for admin_email in data["adminEmails"]:
-                send_email(admin_email, "apply_to_be_contributor",
-                                {"coprod_id": data["processId"],
-                                 "user_name": current_user.full_name,
-                                 "user_email": current_user.email,
-                                 "coproductionprocess_name": data["coproductionName"],
-                                 "razon": data["razon"],
-                                })
+        #if crud.coproductionprocess.can_update(user=current_user, object=coproductionprocess):
+        for admin_email in data["adminEmails"]:
+            send_email(admin_email, "apply_to_be_contributor",
+                            {"coprod_id": data["processId"],
+                                "user_name": current_user.full_name,
+                                "user_email": current_user.email,
+                                "coproductionprocess_name": data["coproductionName"],
+                                "razon": data["razon"],
+                            })
 
     return "Done"
 
