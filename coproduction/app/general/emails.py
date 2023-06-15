@@ -116,8 +116,8 @@ def send_email(
         smtp_options["user"] = settings.SMTP_USER
     if settings.SMTP_PASSWORD:
         smtp_options["password"] = settings.SMTP_PASSWORD
-    # t = threading.Thread(target=thread_send_email,args=(message, email_to, environment, smtp_options))
-    # t.start()
+    t = threading.Thread(target=thread_send_email,args=(message, email_to, environment, smtp_options))
+    t.start()
 
 
 
