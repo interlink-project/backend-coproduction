@@ -1,3 +1,4 @@
+import json
 import logging
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -22,6 +23,7 @@ def send_email(
     type: str = "",
     environment: Dict[str, Any] = {},
 ) -> None:
+    print("env", json.dumps(environment))
     assert settings.EMAILS_ENABLED, "no provided configuration for email variables"
     
     environment["server"] = settings.SERVER_NAME

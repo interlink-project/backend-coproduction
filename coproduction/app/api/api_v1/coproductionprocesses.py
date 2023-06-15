@@ -405,9 +405,6 @@ async def sendEmailApplyToBeContributor(
     data: dict,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    print('Llega al endpoint de emailApplyToBeContributor')
-    print(data)
-    print(data["processId"])
     if (coproductionprocess := await crud.coproductionprocess.get(db=db, id=data["processId"])):
         if crud.coproductionprocess.can_update(user=current_user, object=coproductionprocess):
             for admin_email in data["adminEmails"]:
