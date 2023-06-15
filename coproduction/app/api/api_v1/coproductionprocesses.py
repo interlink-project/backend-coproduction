@@ -15,7 +15,7 @@ from app.general import deps
 from app.sockets import socket_manager 
 from app.locales import get_language
 from app.general.emails import send_email
-from app.general.emailsV2 import send_emailV2
+from
 
 router = APIRouter()
 
@@ -410,7 +410,7 @@ async def sendEmailApplyToBeContributor(
         #if crud.coproductionprocess.can_update(user=current_user, object=coproductionprocess):
         print(data["adminEmails"])
         for admin_email in data["adminEmails"]:
-            send_emailV2(admin_email, "apply_to_be_contributor",
+            send_email(admin_email, "apply_to_be_contributor",
                             {"coprod_id": data["processId"],
                                 "user_name": current_user.full_name,
                                 "user_email": current_user.email,
