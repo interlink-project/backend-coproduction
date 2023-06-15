@@ -64,9 +64,7 @@ def send_email(
             id=environment['coprod_id'])
         #Print to see what is in the environment
         environment["coprod_id"] = str(environment.get("coprod_id", ""))
-        print(type)
-        print(email_to)
-        print("env", json.dumps(environment))
+
     
 
     
