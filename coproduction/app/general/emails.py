@@ -6,6 +6,8 @@ from typing import Any, Dict, Optional
 import threading
 
 import emails
+from emails import Message
+import uuid
 from emails.template import JinjaTemplate
 
 from app.models import Team
@@ -17,6 +19,13 @@ def thread_send_email(message, email_to, environment, smtp_options):
     with semaphore:
         response = message.send(to=email_to, render=environment, smtp=smtp_options)
         logging.info(f"send email result: {response}")
+
+# Create a new class that inherits from the emails.Message class
+class CustomMessage(Message):
+    def build(self):
+        msg = super().build()
+        msg['Message-ID'] = '<{}@'+settings.SERVER_NAME+'>'.format(uuid.uuid4())
+        return msg
 
 def send_email(
     email_to: str,
@@ -66,11 +75,17 @@ def send_email(
         template_str = f.read()
     template = JinjaTemplate(template_str)
 
-    message = emails.Message(
+    # message = emails.Message(
+    #     subject=subject,
+    #     html=template,
+    #     mail_from=(settings.EMAILS_FROM_NAME, settings.EMAILS_FROM_EMAIL),
+    # )
+    message = CustomMessage(
         subject=subject,
         html=template,
         mail_from=(settings.EMAILS_FROM_NAME, settings.EMAILS_FROM_EMAIL),
     )
+
 
     if type == 'apply_to_be_contributor':
         print("template (HTML):", template)
@@ -88,10 +103,7 @@ def send_email(
    
     
 
-    # Add Message-ID header
-    import uuid
-    message_id = str(uuid.uuid4()) + '@' + settings.SERVER_NAME
-    message.headers["Message-ID"] = message_id
+   
 
     # SMTP settings
     smtp_options = {"host": settings.SMTP_HOST, "port": settings.SMTP_PORT}
