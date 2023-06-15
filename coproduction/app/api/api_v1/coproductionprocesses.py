@@ -15,7 +15,6 @@ from app.general import deps
 from app.sockets import socket_manager 
 from app.locales import get_language
 from app.general.emails import send_email
-from
 
 router = APIRouter()
 
