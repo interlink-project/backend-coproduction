@@ -23,7 +23,6 @@ def send_email(
     type: str = "",
     environment: Dict[str, Any] = {},
 ) -> None:
-    print("env", json.dumps(environment))
     assert settings.EMAILS_ENABLED, "no provided configuration for email variables"
     
     environment["server"] = settings.SERVER_NAME
@@ -54,6 +53,10 @@ def send_email(
         environment["link"] = 'https://{server}/dashboard/coproductionprocesses/{id}/team'.format(
             server=settings.SERVER_NAME,
             id=environment['coprod_id'])
+        #Print to see what is in the environment
+        environment["coprod_id"] = str(environment.get("coprod_id", ""))
+        print("env", json.dumps(environment))
+    
 
     
 
