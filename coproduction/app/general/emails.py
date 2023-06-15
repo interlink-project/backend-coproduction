@@ -76,19 +76,31 @@ def send_email(
         mail_from=(settings.EMAILS_FROM_NAME, settings.EMAILS_FROM_EMAIL),
     )
 
+    if type == 'apply_to_be_contributor':
+        print("template (HTML):", template)
+
     # Attach plain text version
      #  Load plain text template
+
+    try:
+        with open(Path(settings.EMAIL_TEMPLATES_DIR) / f"{type}.txt") as f:
+            template_text_str = f.read()
+        template_text = Template(template_text_str)
+        plain_text_content = template_text.render(environment)
+    except FileNotFoundError:
+        plain_text_content = "This email does not have a plain text version."
+    
     try:
         with open(Path(settings.EMAIL_TEMPLATES_DIR) / "{type}.txt".format(type=type)) as f:
             template_text_str = f.read()
         template_text = JinjaTemplate(template_text_str)
-        plain_text_content = template_text.render(**environment)
-        
+        rendered_text = template_text.render(**environment)
+        message.attach(data=rendered_text, filename=None, content_type="text/plain")
+    
     except Exception as error:
         # handle the exception
-        plain_text_content = "This email does not have a plain text version."
-    
-    message.attach(data=plain_text_content, filename=None, content_type="text/plain")
+        print("An exception occurred:", error) # An exception occurred: division by zero
+        print("This email don't have a plain text version")
    
     # SMTP settings
     smtp_options = {"host": settings.SMTP_HOST, "port": settings.SMTP_PORT}
@@ -98,7 +110,6 @@ def send_email(
         smtp_options["user"] = settings.SMTP_USER
     if settings.SMTP_PASSWORD:
         smtp_options["password"] = settings.SMTP_PASSWORD
-
     t = threading.Thread(target=thread_send_email,args=(message, email_to, environment, smtp_options))
     t.start()
 
