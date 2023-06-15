@@ -67,7 +67,7 @@ def send_email(
     template = JinjaTemplate(template_str)
 
     # Load plain text template
-    with open(Path(settings.EMAIL_TEXT_TEMPLATES_DIR) / "{type}.txt".format(type=type)) as f:
+    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "{type}.txt".format(type=type)) as f:
         template_text_str = f.read()
     template_text = JinjaTemplate(template_text_str)
     rendered_text = template_text.render(environment)
