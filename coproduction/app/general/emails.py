@@ -96,9 +96,9 @@ def send_email(
         with open(Path(settings.EMAIL_TEMPLATES_DIR) / "{type}.txt".format(type=type)) as f:
             template_text_str = f.read()
         template_text = JinjaTemplate(template_text_str)
-        rendered_text = template_text.render(environment)
-        print("template (text):", rendered_text)
+        rendered_text = template_text.render(**environment)
         message.attach(data=rendered_text, filename=None, content_type="text/plain")
+    
     except Exception as error:
         # handle the exception
         print("An exception occurred:", error) # An exception occurred: division by zero
@@ -116,8 +116,8 @@ def send_email(
         smtp_options["user"] = settings.SMTP_USER
     if settings.SMTP_PASSWORD:
         smtp_options["password"] = settings.SMTP_PASSWORD
-    t = threading.Thread(target=thread_send_email,args=(message, email_to, environment, smtp_options))
-    t.start()
+    # t = threading.Thread(target=thread_send_email,args=(message, email_to, environment, smtp_options))
+    # t.start()
 
 
 
