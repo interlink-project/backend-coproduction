@@ -66,12 +66,6 @@ def send_email(
         template_str = f.read()
     template = JinjaTemplate(template_str)
 
-    # Load plain text template
-    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "{type}.txt".format(type=type)) as f:
-        template_text_str = f.read()
-    template_text = JinjaTemplate(template_text_str)
-    rendered_text = template_text.render(environment)
-
     message = emails.Message(
         subject=subject,
         html=template,
@@ -82,10 +76,20 @@ def send_email(
         print("template (HTML):", template)
 
     # Attach plain text version
-    message.attach(data=rendered_text, filename=None, content_type="text/plain")
-    import uuid
+     #  Load plain text template
+    try:
+        with open(Path(settings.EMAIL_TEMPLATES_DIR) / "{type}.txt".format(type=type)) as f:
+            template_text_str = f.read()
+        template_text = JinjaTemplate(template_text_str)
+        rendered_text = template_text.render(environment)
+        message.attach(data=rendered_text, filename=None, content_type="text/plain")
+    except:
+        print("This email don't have a plain text version")
+   
+    
 
     # Add Message-ID header
+    import uuid
     message_id = str(uuid.uuid4()) + '@' + settings.SERVER_NAME
     message.headers["Message-ID"] = message_id
 
