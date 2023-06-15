@@ -84,6 +84,8 @@ class CoproductionProcessOutFull(CoproductionProcessOut):
         # set instead of list to avoid repeated teams
         return set(v)
 
+class CoproductionPublicProcessOutFull(CoproductionProcessOut):
+    administrators: List[UserOut]
 
 class TagOutFull(TagOut):
     pass

@@ -213,6 +213,21 @@ async def read_coproductionprocess(
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return coproductionprocess
 
+@router.get("/public/{id}", response_model=schemas.CoproductionPublicProcessOutFull)
+async def read_public_coproductionprocess(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: uuid.UUID,
+    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Get coproductionprocess by ID.
+    """
+    coproductionprocess = await crud.coproductionprocess.get(db=db, id=id)
+    if not coproductionprocess:
+        raise HTTPException(status_code=404, detail="CoproductionProcess not found")
+    return coproductionprocess
+
 @router.get("/{id}/catalogue", response_model=schemas.CoproductionProcessOutFull)
 async def read_coproductionprocess_catalogue(
     *,
