@@ -97,6 +97,7 @@ def send_email(
             template_text_str = f.read()
         template_text = JinjaTemplate(template_text_str)
         rendered_text = template_text.render(environment)
+        print("template (text):", rendered_text)
         message.attach(data=rendered_text, filename=None, content_type="text/plain")
     except Exception as error:
         # handle the exception
