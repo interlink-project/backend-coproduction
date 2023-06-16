@@ -20,12 +20,7 @@ def thread_send_email(message, email_to, environment, smtp_options):
         response = message.send(to=email_to, render=environment, smtp=smtp_options)
         logging.info(f"send email result: {response}")
 
-# Create a new class that inherits from the emails.Message class
-class CustomMessage(Message):
-    def build(self):
-        msg = super().build()
-        msg['Message-ID'] = '<{}@'+settings.SERVER_NAME+'>'.format(uuid.uuid4())
-        return msg
+
 
 def send_email(
     email_to: str,
@@ -70,7 +65,7 @@ def send_email(
     template = JinjaTemplate(template_str)
 
     # Create EmailMessage instance
-    message = CustomMessage(
+    message = emails.Message(
         subject=subject,
         html=template,
         mail_from=(settings.EMAILS_FROM_NAME, settings.EMAILS_FROM_EMAIL),
@@ -104,7 +99,11 @@ def send_email(
         smtp_options["user"] = settings.SMTP_USER
     if settings.SMTP_PASSWORD:
         smtp_options["password"] = settings.SMTP_PASSWORD
-    t = threading.Thread(target=thread_send_email,args=(message, email_to, environment, smtp_options))
+
+    # I can put the name and email:
+    recipients = [('Recipient One', email_to)] #or multiple : [(), ('Recipient Two', 'recipient2@example.com')]
+    
+    t = threading.Thread(target=thread_send_email,args=(message, recipients, environment, smtp_options))
     t.start()
 
 
