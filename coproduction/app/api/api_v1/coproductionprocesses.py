@@ -217,8 +217,7 @@ async def read_coproductionprocess(
 async def read_public_coproductionprocess(
     *,
     db: Session = Depends(deps.get_db),
-    id: uuid.UUID,
-    current_user: Optional[models.User] = Depends(deps.get_current_active_user),
+    id: uuid.UUID
 ) -> Any:
     """
     Get coproductionprocess by ID.
