@@ -35,6 +35,7 @@ class CoproductionProcess(BaseModel):
     idea = Column(Text, nullable=True)
     organization_desc = Column(Text, nullable=True)
     challenges = Column(Text, nullable=True)
+    requirements = Column(Text, nullable=True)
 
     #Active Optional Modules
     incentive_and_rewards_state =Column(Boolean,nullable=True)

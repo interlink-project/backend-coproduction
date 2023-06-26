@@ -20,6 +20,7 @@ class CoproductionProcessBase(BaseModel):
     organization_desc: Optional[str]
     organization_id: Optional[uuid.UUID]
     challenges: Optional[str]
+    requirements: Optional[str]
     status: Optional[Status]
     incentive_and_rewards_state: Optional[bool]
 
