@@ -4,7 +4,7 @@ services:
     container_name: coproduction-redis
     image: redis:6-alpine
     networks:
-      - default
+      - traefik-public
     logging:
       driver: "json-file"
       options:
@@ -36,11 +36,12 @@ services:
       - traefik.http.middlewares.coproduction-stripprefix.stripprefix.prefixes=/coproduction
     networks:
       - traefik-public
-      - default
     logging:
       driver: "json-file"
       options:
         tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
+    extra_hosts:
+      - "auth1.localhost:172.17.0.1"
 
   coproductionworker:
     image: "coproductionworkerdev"
@@ -62,7 +63,6 @@ services:
     command: ["bash", "./worker-start.sh"]
     networks:
       - traefik-public
-      - default
     logging:
       driver: "json-file"
       options:
@@ -70,4 +70,6 @@ services:
 
 networks:
   traefik-public:
-    external: true
+    external:
+      name: traefik-public
+  default:
