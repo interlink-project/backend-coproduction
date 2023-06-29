@@ -15,6 +15,12 @@ from app.general import deps
 from app.sockets import socket_manager 
 from app.locales import get_language
 from app.general.emails import send_email
+from fastapi.responses import FileResponse
+from app.models import UserNotification
+import os
+import zipfile
+import json
+import html
 
 router = APIRouter()
 
@@ -296,6 +302,138 @@ async def get_coproductionprocess_tree(
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return coproductionprocess.children
 
+
+
+# Order the phases by the order of the tasks
+def topological_sort(tasks):
+    visited = set()
+    stack = []
+    mapping = {task.name: task for task in tasks}
+
+    def visit(task):
+        if task.name not in visited:
+            visited.add(task.name)
+            for prereq_name in task.prerequisites:
+                if prereq_name.name in mapping:
+                    visit(mapping[prereq_name.name])
+            stack.append(task)
+
+    # Visit tasks without prerequisites first
+    for task in tasks:
+        if not task.prerequisites:
+            visit(task)
+
+    # Then visit the rest
+    for task in tasks:
+        if task.name not in visited:
+            visit(task)
+
+    return stack
+
+
+
+
+#Download the coproduction process in a zip file:
+
+@router.get("/{id}/download")
+async def download_zip(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: uuid.UUID,
+    current_user: models.User = Depends(deps.get_current_active_user),
+    token: str = Depends(deps.get_current_active_token)
+):
+
+    #Get the coproductionprocess tree:
+    coproductionprocess = await crud.coproductionprocess.get(db=db, id=id)
+    #Phases:
+    #Order the phases using the topological sort:
+    ordered_phases = topological_sort(coproductionprocess.children)
+    phase_dict_list = [phase.to_dict() for phase in ordered_phases]
+
+    cont_phases=0
+    for phase in ordered_phases:
+        ordered_objectives=topological_sort(phase.children)
+        objectives_dict_list = [obj.to_dict() for obj in ordered_objectives]
+        phase_dict_list[cont_phases]["objectives"]=objectives_dict_list
+        
+        cont_objectives=0
+        for objective in ordered_objectives:
+ 
+            ordered_tasks=topological_sort(objective.children)
+            tasks_dict_list = [task.to_dict() for task in ordered_tasks]
+            phase_dict_list[cont_phases]["objectives"][cont_objectives]["tasks"]=tasks_dict_list
+
+
+            cont_objectives=cont_objectives+1
+
+        cont_phases=cont_phases+1
+    #print(phase_dict_list)
+
+   
+    phases_json = json.dumps(phase_dict_list, indent=2)
+    print(phases_json)
+
+
+    # Define the directory name
+    dir_root = 'processes_exported'
+    dir_name = dir_root+'/'+coproductionprocess.name.replace(' ', '_')
+
+    # Create the directory if it does not exist
+    if not os.path.exists(dir_name):
+        os.makedirs(dir_name)
+
+    # Now write the JSON string to a file in the new directory
+    with open(os.path.join(dir_name, 'schema.json'), 'w') as f:
+        f.write(phases_json)
+
+    # Go through the tasks and download all the files:
+    print("-----------------------------------------------------------------")
+    for phase in ordered_phases:
+        ordered_objectives=topological_sort(phase.children)
+        for objective in ordered_objectives:
+            ordered_tasks=topological_sort(objective.children)  
+            for task in ordered_tasks:
+                #Get the assets of this task:
+                print("The task is: "+str(task.id))
+
+                assets=await crud.asset.get_multi_withIntData(db, task=task, token=token)
+      
+                for asset in assets:
+                    print("The asset id: "+str(asset.id))
+                    print("The asset type: "+str(asset.type))
+                    if asset.type=="internalasset":
+                        print("The info del internal asset: "+json.dumps(asset.internalData))
+                        
+                           
+
+                    print(asset)
+                    break
+                break
+            break
+        break
+    print("-----------------------------------------------------------------")
+
+
+
+
+    # I need to create a json file with the coproduction process
+    # specify your directory
+    directory = dir_name
+
+    # specify the name of your zip file
+    file_name = coproductionprocess.name.replace(' ', '_')+'.zip'
+    zipf = zipfile.ZipFile(file_name, 'w', zipfile.ZIP_DEFLATED)
+
+    # compress all files in the directory
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            zipf.write(os.path.join(root, file))
+
+    zipf.close()
+
+    return FileResponse(file_name, media_type='application/zip', filename=file_name)
+
 @router.get("/{id}/tree/catalogue", response_model=Optional[List[schemas.PhaseOutFull]])
 async def get_coproductionprocess_tree_catalogue(
     *,
@@ -405,6 +543,30 @@ async def sendEmailApplyToBeContributor(
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     if (coproductionprocess := await crud.coproductionprocess.get(db=db, id=data["processId"])):
+
+        #Lets create a notification in-app of the solicitude.
+        notification = await crud.notification.get_notification_by_event(db=db, event="apply_submited", language=coproductionprocess.language)
+        if (notification):
+
+            #I need to create a notification for every admin of the process:
+            for admin_id in coproductionprocess.administrators_ids:
+                newUserNotification = UserNotification()
+                newUserNotification.user_id = admin_id
+
+                newUserNotification.notification_id = notification.id
+                newUserNotification.channel = "in_app"
+                newUserNotification.state = False
+                newUserNotification.coproductionprocess_id = str(
+                    coproductionprocess.id)
+                newUserNotification.parameters = "{'razon':'"+data["razon"]+"','userName':'"+current_user.full_name+"','userEmail':'"+current_user.email+"','processName':'"+html.escape(
+                    coproductionprocess.name)+"','copro_id':'"+str(coproductionprocess.id)+"'}"
+
+            
+            db.add(newUserNotification)
+            db.commit()
+            db.refresh(newUserNotification)
+
+
         #if crud.coproductionprocess.can_update(user=current_user, object=coproductionprocess):
         print(data["adminEmails"])
         for admin_email in data["adminEmails"]:
