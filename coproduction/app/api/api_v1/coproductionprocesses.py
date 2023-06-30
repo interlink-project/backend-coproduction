@@ -387,6 +387,26 @@ async def download_zip(
     with open(os.path.join(dir_name, 'schema.json'), 'w') as f:
         f.write(phases_json)
 
+
+    # To do a process to download the process information in a file.
+    # Convert the CoproductionProcess object to a dictionary
+    coproduction_dict = coproductionprocess.to_dict()
+
+    # Specify the directory and filename
+    directory = dir_name
+    filename = "coproduction.json"
+
+    # Create the full file path
+    file_path = os.path.join(directory, filename)
+
+    # Convert the dictionary to JSON
+    json_data = json.dumps(coproduction_dict)
+
+    # Write the JSON data to the specified file
+    with open(file_path, "w") as json_file:
+        json_file.write(json_data)
+
+
     # Go through the tasks and download all the files:
     print("-----------------------------------------------------------------")
     for phase in ordered_phases:
@@ -421,9 +441,20 @@ async def download_zip(
     # specify your directory
     directory = dir_name
 
+    # specify the directory where the zip file will be stored
+    zip_directory = 'zipfiles'
+
+    # Check if directory exists. If not, create it.
+    if not os.path.exists(zip_directory):
+        os.makedirs(zip_directory)
+
     # specify the name of your zip file
     file_name = coproductionprocess.name.replace(' ', '_')+'.zip'
-    zipf = zipfile.ZipFile(file_name, 'w', zipfile.ZIP_DEFLATED)
+
+    # create the full zip file path
+    zip_path = os.path.join(zip_directory, file_name)
+
+    zipf = zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED)
 
     # compress all files in the directory
     for root, dirs, files in os.walk(directory):
@@ -432,7 +463,9 @@ async def download_zip(
 
     zipf.close()
 
-    return FileResponse(file_name, media_type='application/zip', filename=file_name)
+
+    print("The zip file is: "+zip_path)
+    return FileResponse(zip_path, media_type='application/zip', filename=file_name)
 
 @router.get("/{id}/tree/catalogue", response_model=Optional[List[schemas.PhaseOutFull]])
 async def get_coproductionprocess_tree_catalogue(

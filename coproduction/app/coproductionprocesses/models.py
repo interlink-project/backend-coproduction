@@ -151,3 +151,38 @@ class CoproductionProcess(BaseModel):
                             if not task.disabled_on:
                                 res.append(task.id)
         return res
+    
+
+
+    # Define the serialize function
+    def to_dict(self):
+        return {
+            'id': str(self.id),
+            'schema_used': str(self.schema_used),
+            'language': self.language,
+            'name': self.name,
+            'description': self.description,
+            'logotype': self.logotype,
+            'aim': self.aim,
+            'idea': self.idea,
+            'organization_desc': self.organization_desc,
+            'challenges': self.challenges,
+            'requirements': self.requirements,
+            'incentive_and_rewards_state': self.incentive_and_rewards_state,
+            'hasAddAnOrganization': self.hasAddAnOrganization,
+            'skipResourcesStep': self.skipResourcesStep,
+            'hideguidechecklist': self.hideguidechecklist,
+            'intergovernmental_model': self.intergovernmental_model,
+            'is_part_of_publication': self.is_part_of_publication,
+            'is_public': self.is_public,
+            'status': self.status,
+            'rating': str(self.rating),
+            'ratings_count': self.ratings_count,
+            'administrators': [admin.email for admin in self.administrators],
+            'tags': [str(tag.name) for tag in self.tags],
+            'end_date': self.end_date.isoformat() if self.end_date else None,
+            'start_date': self.start_date.isoformat() if self.start_date else None,
+            'logotype_link': self.logotype_link,
+
+        }
+
