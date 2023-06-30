@@ -121,6 +121,16 @@ class EmailAssetContribution(BaseModel):
     listTeams: List[uuid.UUID]
     processId: uuid.UUID
 
+class EmailUserAssetContribution(BaseModel):
+    asset_id: uuid.UUID
+    link: str
+    asset_name: str
+    icon: str
+    subject: str
+    instructions: str
+    userTo: str
+    processId: uuid.UUID
+
 
 
 class AssetOut(BaseModel):

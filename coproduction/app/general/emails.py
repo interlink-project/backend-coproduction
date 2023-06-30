@@ -63,6 +63,9 @@ def send_email(
             server=settings.SERVER_NAME,
             id=environment['coprod_id'])
         environment["coprod_id"] = str(environment.get("coprod_id", ""))
+    
+    elif type == 'ask_team_contribution':
+        subject = environment['subject']
 
     # Load HTML template
     with open(Path(settings.EMAIL_TEMPLATES_DIR) / "{type}.html".format(type=type)) as f:
