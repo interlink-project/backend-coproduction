@@ -4,7 +4,7 @@
   "subtitle": "Lietotājs '{userName}' ({userEmail}) piesakās piedalīties kopražošanas procesā '{processName}'.",
   "text": "Lietotājs {userName} ({userEmail}) piesakās piedalīties kopražošanas procesā '<a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a>'.",
   "html_template": null,
-  "url_link": "/dashboard/coproductionprocesses/{copro_id}/team",
+  "url_link": "/dashboard/coproductionprocesses/{copro_id}/team?tab=Requests",
   "icon":"group",
-  "language":"en" 
+  "language":"lv" 
 }

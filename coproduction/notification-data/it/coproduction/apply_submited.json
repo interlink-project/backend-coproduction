@@ -4,7 +4,7 @@
     "subtitle": "L'utente '{userName}' ({userEmail}) ha richiesto di far parte del processo di co-produzione '{processName}'.",
     "text": "L'utente {userName} ({userEmail}) ha richiesto di far parte del processo di coproduzione '<a href='/dashboard/coproductionprocesses/{copro_id}/overview/'>{processName}</a>'.",
     "html_template": null,
-    "url_link": "/dashboard/coproductionprocesses/{copro_id}/team",
+    "url_link": "/dashboard/coproductionprocesses/{copro_id}/team?tab=Requests",
     "icon":"group",
     "language":"it" 
   }
