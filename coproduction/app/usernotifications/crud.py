@@ -29,10 +29,22 @@ class CRUDUserNotification(CRUDBase[UserNotification, UserNotificationCreate, Us
     #Get all notifications by coproduction process:
     async def get_list_user_aplications_by_copro(self, db: Session, copro_id: str) -> Optional[List[UserNotification]]:
 
-        #listofUserNotifications = db.query(UserNotification,Notification).filter(models.UserNotification.coproductionprocess_id==copro_id and UserNotification.notification_id==Notification.id).all()
-        listofUserNotifications = db.query(UserNotification).join(Notification).filter(UserNotification.coproductionprocess_id==copro_id, Notification.event=='apply_submited').order_by(UserNotification.created_at.desc()).all()
+        listofUserNotifications = db.query(UserNotification).join(Notification).filter(
+            UserNotification.coproductionprocess_id==copro_id,
+            Notification.event=='apply_submited',
+            UserNotification.is_archived.isnot(True)
+        ).order_by(UserNotification.created_at.desc()).all()
 
-        #print(listofUserNotifications)
+        return listofUserNotifications
+    
+    #Get history (including archived) notifications by coproduction process:
+    async def get_list_user_aplicationshistory_by_copro(self, db: Session, copro_id: str) -> Optional[List[UserNotification]]:
+
+        listofUserNotifications = db.query(UserNotification).join(Notification).filter(
+            UserNotification.coproductionprocess_id==copro_id,
+            Notification.event=='apply_submited'
+        ).order_by(UserNotification.created_at.desc()).all()
+
         return listofUserNotifications
 
     #Get unseen notifications by user:
