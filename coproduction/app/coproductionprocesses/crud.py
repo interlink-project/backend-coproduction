@@ -66,31 +66,33 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
         queries = []
 
-        if rating:
-            queries.append(CoproductionProcess.rating >= rating)
+        if rating>0:
+            if rating:
+                queries.append(CoproductionProcess.rating >= rating)
 
-        if search:
-            search = search.lower()
-            queries.append(or_(
-                    # func.lower(Story.keywords_translations[language]).contains(
-                    #     search),
-                    func.lower(CoproductionProcess.name).contains(func.lower(
-                        search)),
-                    func.lower(
-                        CoproductionProcess.description).contains(func.lower(search))
-                ))
+        if search!="":
+            if search:
+                search = search.lower()
+                queries.append(or_(
+                        # func.lower(Story.keywords_translations[language]).contains(
+                        #     search),
+                        func.lower(CoproductionProcess.name).contains(func.lower(
+                            search)),
+                        func.lower(
+                            CoproductionProcess.description).contains(func.lower(search))
+                    ))
             
-    
-        if tag:
-            subq = (
-                db.query(CoproductionProcess.id)
-                .join(CoproductionProcess.tags)
-                .filter(models.Tag.name.in_(tag))
-                .group_by(CoproductionProcess.id)
-                .having(func.count(func.distinct(models.Tag.name)) == len(tag))
-                .subquery()
-            )
-            queries.append(CoproductionProcess.id.in_(subq))
+        if len(tag) > 0:
+            if tag:
+                subq = (
+                    db.query(CoproductionProcess.id)
+                    .join(CoproductionProcess.tags)
+                    .filter(models.Tag.name.in_(tag))
+                    .group_by(CoproductionProcess.id)
+                    .having(func.count(func.distinct(models.Tag.name)) == len(tag))
+                    .subquery()
+                )
+                queries.append(CoproductionProcess.id.in_(subq))
 
         queries.append(CoproductionProcess.is_public == True)
 
