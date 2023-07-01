@@ -129,6 +129,8 @@ class EmailUserAssetContribution(BaseModel):
     subject: str
     instructions: str
     userTo: str
+    resourceId: uuid.UUID
+    taskName: str
     processId: uuid.UUID
 
 
