@@ -66,8 +66,8 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
 
         queries = []
 
-        if rating>0:
-            if rating:
+        
+        if rating:
                 queries.append(CoproductionProcess.rating >= rating)
 
         if search!="":
@@ -82,22 +82,26 @@ class CRUDCoproductionProcess(CRUDBase[CoproductionProcess, CoproductionProcessC
                             CoproductionProcess.description).contains(func.lower(search))
                     ))
             
-        if len(tag) > 0:
-            if tag:
-                subq = (
-                    db.query(CoproductionProcess.id)
-                    .join(CoproductionProcess.tags)
-                    .filter(models.Tag.name.in_(tag))
-                    .group_by(CoproductionProcess.id)
-                    .having(func.count(func.distinct(models.Tag.name)) == len(tag))
-                    .subquery()
-                )
-                queries.append(CoproductionProcess.id.in_(subq))
+        
+        if tag and any(tag):
+            subq = (
+                db.query(CoproductionProcess.id)
+                .join(CoproductionProcess.tags)
+                .filter(models.Tag.name.in_(tag))
+                .group_by(CoproductionProcess.id)
+                .having(func.count(func.distinct(models.Tag.name)) == len(tag))
+                .subquery()
+            )
+            queries.append(CoproductionProcess.id.in_(subq))
+            query: Query = db.query(CoproductionProcess).join(CoproductionProcess.tags)
+        else:
+            query: Query = db.query(CoproductionProcess)
 
         queries.append(CoproductionProcess.is_public == True)
 
-        query: Query = db.query(CoproductionProcess).join(CoproductionProcess.tags)
+        
         query = query.options(subqueryload(CoproductionProcess.tags))
+
         query = query.filter(*queries, CoproductionProcess.id.not_in(exclude))
 
         return paginate(query)
