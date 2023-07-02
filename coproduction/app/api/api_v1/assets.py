@@ -252,8 +252,8 @@ async def create_copro_notification(
             for team_id in data.listTeams:
                 if (team := await crud.team.get(db=db, id=team_id)):
 
-                    for user in team.user_ids:
-                        if (user := await crud.user.get(db=db, id=data.userTo)):
+                    for user_id in team.user_ids:
+                        if (user := await crud.user.get(db=db, id=user_id)):
                              #Lets create a notification in-app of the solicitude.
                             notification = await crud.notification.get_notification_by_event(db=db, event="assign_resource", language=coproductionprocess.language)
                             if (notification):
