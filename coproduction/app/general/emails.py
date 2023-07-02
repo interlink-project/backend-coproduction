@@ -59,7 +59,7 @@ def send_email(
             user_email=environment['user_email'])
     elif type == 'apply_to_be_contributor':
         subject = 'Interlink: A user has applied to be a contributor'
-        environment["link"] = 'https://{server}/dashboard/coproductionprocesses/{id}/team'.format(
+        environment["link"] = 'https://{server}/dashboard/coproductionprocesses/{id}/team?tab=Requests'.format(
             server=settings.SERVER_NAME,
             id=environment['coprod_id'])
         environment["coprod_id"] = str(environment.get("coprod_id", ""))
@@ -79,25 +79,6 @@ def send_email(
         mail_from=(settings.EMAILS_FROM_NAME, settings.EMAILS_FROM_EMAIL),
     )
 
-    if type == 'apply_to_be_contributor':
-        print("template (HTML):", template)
-
-    # Attach plain text version
-     #  Load plain text template
-
-    
-    
-    try:
-        with open(Path(settings.EMAIL_TEMPLATES_DIR) / "{type}.txt".format(type=type)) as f:
-            template_text_str = f.read()
-        template_text = JinjaTemplate(template_text_str)
-        rendered_text = template_text.render(**environment)
-        message.attach(data=rendered_text, filename=None, content_type="text/plain")
-    
-    except Exception as error:
-        # handle the exception
-        print("An exception occurred:", error) # An exception occurred: division by zero
-        print("This email don't have a plain text version")
    
     # SMTP settings
     smtp_options = {"host": settings.SMTP_HOST, "port": settings.SMTP_PORT}
@@ -107,6 +88,7 @@ def send_email(
         smtp_options["user"] = settings.SMTP_USER
     if settings.SMTP_PASSWORD:
         smtp_options["password"] = settings.SMTP_PASSWORD
+
     t = threading.Thread(target=thread_send_email,args=(message, email_to, environment, smtp_options))
     t.start()
 
