@@ -576,11 +576,11 @@ async def sendEmailApplyToBeContributor(
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     if (coproductionprocess := await crud.coproductionprocess.get(db=db, id=data["processId"])):
-
+        print("The coproductionprocess is: "+str(coproductionprocess.id))
         #Lets create a notification in-app of the solicitude.
         notification = await crud.notification.get_notification_by_event(db=db, event="apply_submited", language=coproductionprocess.language)
         if (notification):
-
+            print("The notification is: "+str(notification.id))
             #I need to create a notification for every admin of the process:
             for admin_id in coproductionprocess.administrators_ids:
                 newUserNotification = UserNotification()
@@ -593,11 +593,11 @@ async def sendEmailApplyToBeContributor(
                     coproductionprocess.id)
                 newUserNotification.parameters = "{'razon':'"+data["razon"]+"','userName':'"+current_user.full_name+"','userEmail':'"+current_user.email+"','processName':'"+html.escape(
                     coproductionprocess.name)+"','copro_id':'"+str(coproductionprocess.id)+"'}"
-
             
-            db.add(newUserNotification)
-            db.commit()
-            db.refresh(newUserNotification)
+            
+                db.add(newUserNotification)
+                db.commit()
+                db.refresh(newUserNotification)
 
 
         #if crud.coproductionprocess.can_update(user=current_user, object=coproductionprocess):
