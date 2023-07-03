@@ -594,7 +594,7 @@ async def sendEmailApplyToBeContributor(
                 newUserNotification.parameters = "{'razon':'"+data["razon"]+"','userName':'"+current_user.full_name+"','userEmail':'"+current_user.email+"','processName':'"+html.escape(
                     coproductionprocess.name)+"','copro_id':'"+str(coproductionprocess.id)+"'}"
             
-            
+                print("Create a notification for the user: "+str(admin_id)+" with the notification: "+str(notification.id)+" and the coproductionprocess: "+str(coproductionprocess.id)+" and the parameters: "+str(newUserNotification.parameters))
                 db.add(newUserNotification)
                 db.commit()
                 db.refresh(newUserNotification)
@@ -603,6 +603,7 @@ async def sendEmailApplyToBeContributor(
         #if crud.coproductionprocess.can_update(user=current_user, object=coproductionprocess):
         print(data["adminEmails"])
         for admin_email in data["adminEmails"]:
+            print("Send email to: "+admin_email)
             send_email(admin_email, "apply_to_be_contributor",
                             {"coprod_id": data["processId"],
                                 "user_name": current_user.full_name,
