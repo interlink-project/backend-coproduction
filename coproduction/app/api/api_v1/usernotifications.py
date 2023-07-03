@@ -23,7 +23,7 @@ async def list_usernotifications(
     return await crud.usernotification.get_multi(db=db, user=current_user)
 
 @router.get("/{user_id}/listUserNotifications", response_model=Optional[List[schemas.UserNotificationOutFull]])
-async def list_usernotifications(
+async def list_user_notifications(
     db: Session = Depends(deps.get_db),
     current_user: Optional[models.User] = Depends(deps.get_current_active_user),
     user_id: str = '',

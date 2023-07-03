@@ -12,6 +12,7 @@ from app.api.api_v1 import (
     organizations,
     notifications,
     usernotifications,
+    participationrequests,
     coproductionprocessnotifications,
     stories,
     utils,
@@ -45,7 +46,9 @@ api_router.include_router(organizations.router,
 api_router.include_router(notifications.router,
                           prefix="/notifications", tags=["notification"])
 api_router.include_router(usernotifications.router,
-                          prefix="/usernotifications", tags=["usernotification"])        
+                          prefix="/usernotifications", tags=["usernotification"])       
+api_router.include_router(participationrequests.router,
+                          prefix="/participationrequests", tags=["participationrequest"])      
 api_router.include_router(coproductionprocessnotifications.router,
                           prefix="/coproductionprocessnotifications", tags=["coproductionprocessnotification"])   
 api_router.include_router(stories.router,

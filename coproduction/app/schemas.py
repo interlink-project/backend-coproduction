@@ -11,6 +11,7 @@ from app.teams.schemas import *
 from app.users.schemas import *
 from app.notifications.schemas import *
 from app.usernotifications.schemas import *
+from app.participationrequests.schemas import *
 from app.coproductionprocessnotifications.schemas import *
 from app.stories.schemas import *
 from app.tags.schemas import *
@@ -57,6 +58,10 @@ class NotificationOutFull(NotificationOut):
 
 class UserNotificationOutFull(UserNotificationOut):
     notification: NotificationOut
+    pass
+
+class ParticipationRequestOutFull(ParticipationRequestOut):
+    user:UserOut
     pass
 
 class CoproductionProcessNotificationOutFull(CoproductionProcessNotificationOut):

@@ -10,6 +10,7 @@ from app.organizations.crud import exportCrud as organization
 from app.permissions.crud import exportCrud as permission
 from app.notifications.crud import exportCrud as notification
 from app.usernotifications.crud import exportCrud as usernotification
+from app.participationrequests.crud import exportCrud as participationrequest
 from app.coproductionprocessnotifications.crud import exportCrud as coproductionprocessnotification
 from app.stories.crud import exportCrud as story
 from app.tags.crud import exportCrud as tag

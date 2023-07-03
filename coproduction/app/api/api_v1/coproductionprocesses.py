@@ -17,6 +17,7 @@ from app.locales import get_language
 from app.general.emails import send_email
 from fastapi.responses import FileResponse
 from app.models import UserNotification
+from app.models import ParticipationRequest
 import os
 import zipfile
 import json
@@ -577,6 +578,17 @@ async def sendEmailApplyToBeContributor(
 ) -> Any:
     if (coproductionprocess := await crud.coproductionprocess.get(db=db, id=data["processId"])):
         print("The coproductionprocess is: "+str(coproductionprocess.id))
+        
+        #Create an request application to be contributor
+        newParticipationRequest = ParticipationRequest() 
+        newParticipationRequest.candidate_id = current_user.id
+        newParticipationRequest.coproductionprocess_id = coproductionprocess.id
+        newParticipationRequest.razon=data["razon"]
+        db.add(newParticipationRequest)
+        db.commit()
+        db.refresh(newParticipationRequest)
+
+        
         #Lets create a notification in-app of the solicitude.
         notification = await crud.notification.get_notification_by_event(db=db, event="apply_submited", language=coproductionprocess.language)
         if (notification):
