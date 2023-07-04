@@ -12,20 +12,26 @@ from sqlalchemy.orm import Session
 from app.utils import ChannelTypes
 from app.users.models import User
 
-class ParticipationRequest(BaseModel):
+class Claim(BaseModel):
     """Association Class contains for a Notification and User."""
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    candidate_id = Column(
+
+    user_id = Column(
         String, ForeignKey("user.id", ondelete='CASCADE')
     )
+    user = relationship("User", foreign_keys=[user_id], backref=backref('claims', passive_deletes=True))
+
+    asset_id = Column(
+        UUID(as_uuid=True), ForeignKey("asset.id", ondelete='CASCADE')
+    )
+    asset = relationship("Asset", foreign_keys=[asset_id], backref=backref('claims', passive_deletes=True))
     
-    user = relationship("User", foreign_keys=[
-                             candidate_id], backref=backref('participation_requests', passive_deletes=True))
+    task_id = Column(UUID(as_uuid=True), nullable=True)
     coproductionprocess_id = Column(UUID(as_uuid=True), nullable=True)
-    razon = Column(String, nullable=True)
-    is_archived = Column(Boolean, nullable=True, default=False)
+    title = Column(String, nullable=True)
+    description = Column(String, nullable=True)
+    state = Column(Boolean, nullable=True, default=False)
+    claim_type = Column(String, nullable=True)
 
-
-    
     def __repr__(self) -> str:
-        return f"<ParticipationRequest {self.id} {self.user.name} {self.razon} {self.is_archived}>"
+        return f"<Claim {self.id} {self.user.name} {self.title} {self.state}>"

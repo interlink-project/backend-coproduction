@@ -20,7 +20,8 @@ from app.api.api_v1 import (
     recomenders,
     tags,
     ratings,
-    keywords
+    keywords,
+    claims,
 )
 
 api_router = APIRouter()
@@ -48,7 +49,9 @@ api_router.include_router(notifications.router,
 api_router.include_router(usernotifications.router,
                           prefix="/usernotifications", tags=["usernotification"])       
 api_router.include_router(participationrequests.router,
-                          prefix="/participationrequests", tags=["participationrequest"])      
+                          prefix="/participationrequests", tags=["participationrequest"])  
+api_router.include_router(claims.router,
+                          prefix="/claims", tags=["claim"])      
 api_router.include_router(coproductionprocessnotifications.router,
                           prefix="/coproductionprocessnotifications", tags=["coproductionprocessnotification"])   
 api_router.include_router(stories.router,

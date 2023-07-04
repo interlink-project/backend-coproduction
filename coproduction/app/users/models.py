@@ -24,12 +24,7 @@ class User(BaseModel):
         cascade="all, delete-orphan",
     )
 
-    participation_request_associations = relationship(
-        "ParticipationRequest",
-        back_populates="user",
-        cascade="all, delete-orphan",
-    )
-
+  
 
     notifications = association_proxy("user_notification_associations", "notification")
 

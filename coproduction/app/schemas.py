@@ -17,6 +17,7 @@ from app.stories.schemas import *
 from app.tags.schemas import *
 from app.ratings.schemas import *
 from app.keywords.schemas import *
+from app.claims.schemas import *
 
 # out
 
@@ -62,6 +63,11 @@ class UserNotificationOutFull(UserNotificationOut):
 
 class ParticipationRequestOutFull(ParticipationRequestOut):
     user:UserOut
+    pass
+
+class ClaimOutFull(ClaimOut):
+    user:UserOut
+    asset:AssetOut
     pass
 
 class CoproductionProcessNotificationOutFull(CoproductionProcessNotificationOut):
