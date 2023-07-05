@@ -39,7 +39,7 @@ def send_email(
     
     environment["server"] = settings.SERVER_NAME
     if type == 'add_member_team':
-        environment['Subject'] = 'Interlink: You have been added to a new team'
+        subject = 'Interlink: You have been added to a new team'
         environment["team_url"] = 'https://{server}/dashboard/organizations/{org_id}/{team_id}'.format(
             server=settings.SERVER_NAME,
             org_id=environment['org_id'],
@@ -49,26 +49,26 @@ def send_email(
             org_id=environment['org_id'],
             team_id=environment['team_id'])
     elif type == 'add_admin_coprod':
-        environment['Subject'] = 'Interlink: You have been added to a new coproduction process'
+        subject = 'Interlink: You have been added to a new coproduction process'
         environment["link"] = 'https://{server}/dashboard/coproductionprocesses/{id}/overview'.format(
             server=settings.SERVER_NAME,
             id=environment['coprod_id'])
     elif type == 'user_apply_team':
-        environment['Subject'] = 'Interlink: A new user has applied to join your team'
+        subject = 'Interlink: A new user has applied to join your team'
         environment["link"] = 'https://{server}/dashboard/organizations/{org_id}/{team_id}?user={user_email}'.format(
             server=settings.SERVER_NAME,
             org_id=environment['org_id'],
             team_id=environment['team_id'],
             user_email=environment['user_email'])
     elif type == 'apply_to_be_contributor':
-        environment['Subject'] = 'Interlink: A user has applied to be a contributor'
+        subject = 'Interlink: A user has applied to be a contributor'
         environment["link"] = 'https://{server}/dashboard/coproductionprocesses/{id}/team?tab=Requests'.format(
             server=settings.SERVER_NAME,
             id=environment['coprod_id'])
         environment["coprod_id"] = str(environment.get("coprod_id", ""))
     
     elif type == 'ask_team_contribution':
-        environment['Subject'] = environment['subject']
+        subject = environment['subject']
 
     # Load HTML template
     with open(Path(settings.EMAIL_TEMPLATES_DIR) / "{type}.html".format(type=type)) as f:
