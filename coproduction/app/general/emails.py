@@ -85,7 +85,7 @@ def send_email(
     email_string = email_message.as_string()
     
     context = ssl.create_default_context()
-    with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, context=context) as server:
+    with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
         server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
         server.sendmail(settings.EMAILS_FROM_EMAIL, email_to, email_string)
     
