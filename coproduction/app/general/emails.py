@@ -1,14 +1,10 @@
 import json
+import os
 import logging
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, Optional
 import threading
-
-import smtplib, ssl
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.message import EmailMessage
 
 import emails
 from emails import Message
@@ -22,6 +18,7 @@ semaphore = threading.Semaphore(4)
 
 def thread_send_email(message, email_to, environment, smtp_options):
     with semaphore:
+        message.dkim(key=os.environ['DKIM_KEY'], domain='interlink-project.eu', selector='google')
         response = message.send(to=email_to, render=environment, smtp=smtp_options)
         logging.info(f"send email result: {response}")
 
@@ -38,14 +35,11 @@ def send_email(
     environment: Dict[str, Any] = {},
 ) -> None:
     assert settings.EMAILS_ENABLED, "no provided configuration for email variables"
-    
-    email_message = MIMEMultipart()
-    email_message['From'] = settings.EMAILS_FROM_EMAIL
-    email_message['To'] = email_to
+
     
     environment["server"] = settings.SERVER_NAME
     if type == 'add_member_team':
-        email_message['Subject'] = 'Interlink: You have been added to a new team'
+        environment['Subject'] = 'Interlink: You have been added to a new team'
         environment["team_url"] = 'https://{server}/dashboard/organizations/{org_id}/{team_id}'.format(
             server=settings.SERVER_NAME,
             org_id=environment['org_id'],
@@ -55,39 +49,31 @@ def send_email(
             org_id=environment['org_id'],
             team_id=environment['team_id'])
     elif type == 'add_admin_coprod':
-        email_message['Subject'] = 'Interlink: You have been added to a new coproduction process'
+        environment['Subject'] = 'Interlink: You have been added to a new coproduction process'
         environment["link"] = 'https://{server}/dashboard/coproductionprocesses/{id}/overview'.format(
             server=settings.SERVER_NAME,
             id=environment['coprod_id'])
     elif type == 'user_apply_team':
-        email_message['Subject'] = 'Interlink: A new user has applied to join your team'
+        environment['Subject'] = 'Interlink: A new user has applied to join your team'
         environment["link"] = 'https://{server}/dashboard/organizations/{org_id}/{team_id}?user={user_email}'.format(
             server=settings.SERVER_NAME,
             org_id=environment['org_id'],
             team_id=environment['team_id'],
             user_email=environment['user_email'])
     elif type == 'apply_to_be_contributor':
-        email_message['Subject'] = 'Interlink: A user has applied to be a contributor'
+        environment['Subject'] = 'Interlink: A user has applied to be a contributor'
         environment["link"] = 'https://{server}/dashboard/coproductionprocesses/{id}/team?tab=Requests'.format(
             server=settings.SERVER_NAME,
             id=environment['coprod_id'])
         environment["coprod_id"] = str(environment.get("coprod_id", ""))
     
     elif type == 'ask_team_contribution':
-        email_message['Subject'] = environment['subject']
+        environment['Subject'] = environment['subject']
 
     # Load HTML template
     with open(Path(settings.EMAIL_TEMPLATES_DIR) / "{type}.html".format(type=type)) as f:
         template_str = f.read()
     template = JinjaTemplate(template_str)
-
-    email_message.attach(MIMEText(template_str, "html"))
-    email_string = email_message.as_string()
-    
-    context = ssl.create_default_context()
-    with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
-        server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-        server.sendmail(settings.EMAILS_FROM_EMAIL, email_to, email_string)
     
     
     # Create EmailMessage instance
