@@ -5,11 +5,6 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 import threading
 
-import smtplib, ssl
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.message import EmailMessage
-
 import emails
 from emails import Message
 import uuid
@@ -39,13 +34,9 @@ def send_email(
 ) -> None:
     assert settings.EMAILS_ENABLED, "no provided configuration for email variables"
     
-    email_message = MIMEMultipart()
-    email_message['From'] = settings.EMAILS_FROM_EMAIL
-    email_message['To'] = email_to
-    
     environment["server"] = settings.SERVER_NAME
     if type == 'add_member_team':
-        email_message['Subject'] = 'Interlink: You have been added to a new team'
+        subject = 'Interlink: You have been added to a new team'
         environment["team_url"] = 'https://{server}/dashboard/organizations/{org_id}/{team_id}'.format(
             server=settings.SERVER_NAME,
             org_id=environment['org_id'],
@@ -55,41 +46,32 @@ def send_email(
             org_id=environment['org_id'],
             team_id=environment['team_id'])
     elif type == 'add_admin_coprod':
-        email_message['Subject'] = 'Interlink: You have been added to a new coproduction process'
+        subject = 'Interlink: You have been added to a new coproduction process'
         environment["link"] = 'https://{server}/dashboard/coproductionprocesses/{id}/overview'.format(
             server=settings.SERVER_NAME,
             id=environment['coprod_id'])
     elif type == 'user_apply_team':
-        email_message['Subject'] = 'Interlink: A new user has applied to join your team'
+        subject = 'Interlink: A new user has applied to join your team'
         environment["link"] = 'https://{server}/dashboard/organizations/{org_id}/{team_id}?user={user_email}'.format(
             server=settings.SERVER_NAME,
             org_id=environment['org_id'],
             team_id=environment['team_id'],
             user_email=environment['user_email'])
     elif type == 'apply_to_be_contributor':
-        email_message['Subject'] = 'Interlink: A user has applied to be a contributor'
+        subject = 'Interlink: A user has applied to be a contributor'
         environment["link"] = 'https://{server}/dashboard/coproductionprocesses/{id}/team?tab=Requests'.format(
             server=settings.SERVER_NAME,
             id=environment['coprod_id'])
         environment["coprod_id"] = str(environment.get("coprod_id", ""))
     
     elif type == 'ask_team_contribution':
-        email_message['Subject'] = environment['subject']
+        subject = environment['subject']
 
     # Load HTML template
     with open(Path(settings.EMAIL_TEMPLATES_DIR) / "{type}.html".format(type=type)) as f:
         template_str = f.read()
     template = JinjaTemplate(template_str)
 
-    email_message.attach(MIMEText(template_str, "html"))
-    email_string = email_message.as_string()
-    
-    context = ssl.create_default_context()
-    with smtplib.SMTP_SSL(settings.SMTP_HOST, settings.SMTP_PORT, context=context) as server:
-        server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-        server.sendmail(settings.EMAILS_FROM_EMAIL, email_to, email_string)
-    
-    
     # Create EmailMessage instance
     message = CustomMessage(
         subject=subject,
@@ -184,3 +166,15 @@ def send_test_email(email_to: str) -> None:
     subject = f"{project_name} - Test email"
     with open(Path(settings.EMAIL_TEMPLATES_DIR) / "added_to_process.html") as f:
         template_str = f.read()
+    # message = emails.html(html=open(Path(settings.EMAIL_TEMPLATES_DIR) / "added_to_process.html"),
+    #                   subject='Friday party',
+    #                   mail_from=(settings.EMAILS_FROM_NAME, settings.EMAILS_FROM_EMAIL))
+    # response = message.send(render={"project_name": "user/project1", "username": 121},
+    #               to='ruben.sanchez@deusto.es',
+    #               smtp={"host": settings.SMTP_HOST, "port": settings.SMTP_PORT})
+    # send_email(
+    #     email_to=email_to,
+    #     subject_template=subject,
+    #     html_template=template_str,
+    #     environment={"project_name": settings.PROJECT_NAME, "email": email_to, "username": "asdf", "password": "asdf", "link": "asdf"},
+    # )
