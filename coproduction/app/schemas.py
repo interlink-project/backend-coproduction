@@ -101,6 +101,12 @@ class CoproductionPublicProcessOutFull(CoproductionProcessOut):
 class TagOutFull(TagOut):
     pass
 
+
+class CoproductionProcessAddToObservers(BaseModel):
+    users_ids: List[str]
+    coproduction_process_id: uuid.UUID
+    asset_id: uuid.UUID
+
 # in
 
 

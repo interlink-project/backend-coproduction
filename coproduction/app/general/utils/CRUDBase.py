@@ -77,6 +77,20 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, PatchSchemaType]):
                      self.model.name_translations["lv"] == name_translations["lv"]),
             ),
         ).first()
+    
+    async def get_by_name_translations_value(self, db: Session, name_translations: str) -> Optional[ModelType]:
+        return db.query(self.model).filter(
+            or_(
+                and_(self.model.name_translations["en"] != None,
+                     self.model.name_translations["en"] == name_translations),
+                and_(self.model.name_translations["es"] != None,
+                     self.model.name_translations["es"] == name_translations),
+                and_(self.model.name_translations["it"] != None,
+                     self.model.name_translations["it"] == name_translations),
+                and_(self.model.name_translations["lv"] != None,
+                     self.model.name_translations["lv"] == name_translations),
+            ),
+        ).first()
 
     async def get_multi(
         self, db: Session, *, skip: int = 0, limit: int = 100

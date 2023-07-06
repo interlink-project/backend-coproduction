@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional, List
 from sqlalchemy.orm import Session
 from app.general.utils.CRUDBase import CRUDBase
 from app.models import Notification, Claim, User, Organization
-from app.schemas import NotificationCreate, NotificationPatch, ClaimCreate, ClaimPatch
+from app.schemas import NotificationCreate, NotificationPatch, ClaimCreate, ClaimPatch, ClaimCreateList
 import uuid
 from app import models
 from app.users.crud import exportCrud as users_crud
@@ -78,6 +78,27 @@ class CRUDClaim(CRUDBase[Claim, ClaimCreate, ClaimPatch]):
 
         await self.log_on_create(db_obj)
         return db_obj
+    
+    async def createlist(self, db: Session, obj_in: ClaimCreateList) -> Claim:
+        
+        obj_in_data = jsonable_encoder(obj_in)
+        db_obj = Claim(**obj_in_data) 
+
+        for user_id in obj_in_data['user_id']:
+        
+            db_obj = Claim(**obj_in_data)
+            db_obj.user_id = user_id
+
+            db.add(db_obj)
+            db.commit()
+            db.refresh(db_obj)
+
+            #await socket_manager.broadcast({"event": "claim_created"})
+
+            await self.log_on_create(db_obj)
+
+        return db_obj
+
 
     async def update(
         self,

@@ -37,3 +37,14 @@ class ClaimPatch(ClaimBase):
 
 class ClaimCreate(ClaimBase):
     pass
+
+class ClaimCreateList(BaseModel):
+    user_id: List[str]
+    asset_id: Optional[uuid.UUID]
+    task_id: Optional[uuid.UUID]
+    coproductionprocess_id: Optional[uuid.UUID]
+    title: Optional[str]
+    description: Optional[str]
+    state: Optional[bool]
+    claim_type: Optional[str]
+    pass

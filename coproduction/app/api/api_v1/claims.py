@@ -76,6 +76,19 @@ async def create_claim(
     """
     return await crud.claim.create(db=db, obj_in=claim_in)
     
+@router.post("/createlist", response_model=Optional[schemas.ClaimOutFull])
+async def create_claim_list(
+    *,
+    db: Session = Depends(deps.get_db),
+    claim_in: schemas.ClaimCreateList,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Create new claims from a list.
+    """
+    return await crud.claim.createlist(db=db, obj_in=claim_in)
+
+
 
 #Just the Update of the state is cover in the API.
 @router.put("/{id}/approve", response_model=Optional[schemas.ClaimOutFull])
