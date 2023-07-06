@@ -1,5 +1,4 @@
 import json
-import os
 import logging
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -18,7 +17,6 @@ semaphore = threading.Semaphore(4)
 
 def thread_send_email(message, email_to, environment, smtp_options):
     with semaphore:
-        message.dkim(key=os.environ['DKIM_KEY'], domain='interlink-project.eu', selector='google')
         response = message.send(to=email_to, render=environment, smtp=smtp_options)
         logging.info(f"send email result: {response}")
 
@@ -35,7 +33,6 @@ def send_email(
     environment: Dict[str, Any] = {},
 ) -> None:
     assert settings.EMAILS_ENABLED, "no provided configuration for email variables"
-
     
     environment["server"] = settings.SERVER_NAME
     if type == 'add_member_team':
@@ -74,8 +71,7 @@ def send_email(
     with open(Path(settings.EMAIL_TEMPLATES_DIR) / "{type}.html".format(type=type)) as f:
         template_str = f.read()
     template = JinjaTemplate(template_str)
-    
-    
+
     # Create EmailMessage instance
     message = CustomMessage(
         subject=subject,
@@ -170,3 +166,15 @@ def send_test_email(email_to: str) -> None:
     subject = f"{project_name} - Test email"
     with open(Path(settings.EMAIL_TEMPLATES_DIR) / "added_to_process.html") as f:
         template_str = f.read()
+    # message = emails.html(html=open(Path(settings.EMAIL_TEMPLATES_DIR) / "added_to_process.html"),
+    #                   subject='Friday party',
+    #                   mail_from=(settings.EMAILS_FROM_NAME, settings.EMAILS_FROM_EMAIL))
+    # response = message.send(render={"project_name": "user/project1", "username": 121},
+    #               to='ruben.sanchez@deusto.es',
+    #               smtp={"host": settings.SMTP_HOST, "port": settings.SMTP_PORT})
+    # send_email(
+    #     email_to=email_to,
+    #     subject_template=subject,
+    #     html_template=template_str,
+    #     environment={"project_name": settings.PROJECT_NAME, "email": email_to, "username": "asdf", "password": "asdf", "link": "asdf"},
+    # )
