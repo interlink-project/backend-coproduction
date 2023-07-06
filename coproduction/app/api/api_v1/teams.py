@@ -107,10 +107,13 @@ async def add_to_observers(
     data: schemas.CoproductionProcessAddToObservers
 ) -> Any:
    
+    #Get the coproduction process:
+    coproductionprocess = await crud.coproductionprocess.get(db=db, id=data.coproduction_process_id)
+    
     #Create Interlink Organization
     #Ask if the organization exists:
     if not (organization := await crud.organization.get_by_name_translations_value(db=db, name_translations='Interlink-Platform')):
-        print('Organization dont exist and is created.')
+        #print('Organization dont exist and is created.')
         #Si no existe la creo:
         obj_in = { 'name_translations': { "en": "Interlink-Platform",
                                           "es": "Interlink-Platform",
@@ -120,17 +123,16 @@ async def add_to_observers(
                    'default_team_type': 'public_administration',
                    'team_creation_permission': 'administrators',
                    'public': False}
-        organization = await crud.organization.create(db=db, obj_in=obj_in, creator=current_user) 
-    else:
-        print('Organization exists.') 
+        organization = await crud.organization.create(db=db, obj_in=obj_in, creator=coproductionprocess.creator) 
 
-    coproductionprocess = await crud.coproductionprocess.get(db=db, id=data.coproduction_process_id)
+
+   
     labelTeam = "_".join(coproductionprocess.name.split())
 
 
     #Create observers team exists for this coproduction process:
     if not (team := await crud.team.get_by_name(db=db, name='Observers_'+labelTeam)):
-        print('Team Observers for the process dont exist and create it.')
+        #print('Team Observers for the process dont exist and create it.')
         
         #If it does not exists I create it:
         obj_in = {   'name': 'Observers_'+labelTeam,
@@ -139,16 +141,13 @@ async def add_to_observers(
                      'type': 'public_administration',
                      'logotype': '/static/platform/externalTeam.png',
                      'user_ids': []}
-        team = await crud.team.create(db=db, obj_in=obj_in, creator=current_user)
-    else:
-        print('Team exists.')
+        team = await crud.team.create(db=db, obj_in=obj_in, creator=coproductionprocess.creator)
+
     
     #Add user to observers team:
     if not current_user in team.users:
-        print('Add User to team observers.')
+        #print('Add User to team observers.')
         await crud.team.add_user(db=db, team=team, user=current_user)
-    else:
-        print('User already in team observers.')
     
     #Add permission to the team over the task wehere the assets is:
     if (asset := await crud.asset.get(db=db, id=data.asset_id)):
@@ -167,8 +166,7 @@ async def add_to_observers(
                 
                 await crud.permission.create(db=db, obj_in=obj_in, creator=current_user, notifyAfterAdded=False)
                 print('Permission created.')
-        else:
-            print('Permission exists.')
+
     return team
 
 
