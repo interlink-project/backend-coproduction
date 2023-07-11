@@ -76,17 +76,33 @@ async def create_claim(
     """
     return await crud.claim.create(db=db, obj_in=claim_in)
     
-@router.post("/createlist", response_model=Optional[schemas.ClaimOutFull])
-async def create_claim_list(
+@router.post("/create_user_list", response_model=List[schemas.ClaimOutFull])
+async def create_user_list(
     *,
     db: Session = Depends(deps.get_db),
-    claim_in: schemas.ClaimCreateList,
+    claim_in: schemas.ClaimCreateUserList,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Create new claims from a list.
     """
-    return await crud.claim.createlist(db=db, obj_in=claim_in)
+    claims = await crud.claim.create_user_list(db=db, obj_in=claim_in)
+    return claims
+
+
+@router.post("/create_team_list", response_model=List[schemas.ClaimOutFull])
+async def create_team_list(
+    *,
+    db: Session = Depends(deps.get_db),
+    claim_in: schemas.ClaimCreateTeamList,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Create new claims from a list.
+    """
+
+    claims = await crud.claim.create_team_list(db=db, obj_in=claim_in)
+    return claims
 
 
 

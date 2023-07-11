@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional, List
 from sqlalchemy.orm import Session
 from app.general.utils.CRUDBase import CRUDBase
 from app.models import Notification, Claim, User, Organization
-from app.schemas import NotificationCreate, NotificationPatch, ClaimCreate, ClaimPatch, ClaimCreateList
+from app.schemas import NotificationCreate, NotificationPatch, ClaimCreate, ClaimPatch, ClaimCreateTeamList, ClaimCreateUserList
 import uuid
 from app import models
 from app.users.crud import exportCrud as users_crud
@@ -14,6 +14,8 @@ from fastapi.encoders import jsonable_encoder
 from app.sockets import socket_manager
 from uuid_by_string import generate_uuid
 from app import schemas
+
+from app.teams.crud import exportCrud as teams_crud
 
 
 class CRUDClaim(CRUDBase[Claim, ClaimCreate, ClaimPatch]):
@@ -79,25 +81,62 @@ class CRUDClaim(CRUDBase[Claim, ClaimCreate, ClaimPatch]):
         await self.log_on_create(db_obj)
         return db_obj
     
-    async def createlist(self, db: Session, obj_in: ClaimCreateList) -> Claim:
-        
+    async def create_user_list(self, db: Session, obj_in: ClaimCreateUserList) -> List[Claim]:
         obj_in_data = jsonable_encoder(obj_in)
-        db_obj = Claim(**obj_in_data) 
+        created_claims = []
 
-        for user_id in obj_in_data['user_id']:
-        
-            db_obj = Claim(**obj_in_data)
-            db_obj.user_id = user_id
+        listUsers=obj_in_data['users_id']
+        obj_in_data.pop('users_id')
 
-            db.add(db_obj)
-            db.commit()
-            db.refresh(db_obj)
+        processed_users = set()  # Store users that have already been processed
 
-            #await socket_manager.broadcast({"event": "claim_created"})
+        for user_id in listUsers:
+            if user_id not in processed_users:  # Only process users that haven't been processed yet
+                db_obj = Claim(**obj_in_data)
+                db_obj.user_id = user_id
 
-            await self.log_on_create(db_obj)
+                db.add(db_obj)
+                await self.log_on_create(db_obj)
+                created_claims.append(db_obj)
 
-        return db_obj
+                processed_users.add(user_id)  # Add the user to the set of processed users
+
+        db.commit()
+
+        for claim in created_claims:
+            db.refresh(claim)
+
+        return created_claims
+    
+    async def create_team_list(self, db: Session, obj_in: ClaimCreateTeamList) -> List[Claim]:
+        obj_in_data = jsonable_encoder(obj_in)
+        created_claims = []
+
+        listTeams = obj_in_data['teams_id']
+        obj_in_data.pop('teams_id')
+
+        processed_users = set()  # Store users that have already been processed
+
+        for team_id in listTeams:
+            team = await teams_crud.get(db, team_id)
+
+            for user in team.users:
+                if user.id not in processed_users:  # Only process users that haven't been processed yet
+                    db_obj = Claim(**obj_in_data)
+                    db_obj.user_id = user.id
+
+                    db.add(db_obj)
+                    await self.log_on_create(db_obj)
+                    created_claims.append(db_obj)
+
+                    processed_users.add(user.id)  # Add the user to the set of processed users
+
+        db.commit()
+
+        for claim in created_claims:
+            db.refresh(claim)
+
+        return created_claims
 
 
     async def update(

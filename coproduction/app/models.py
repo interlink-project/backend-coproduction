@@ -17,3 +17,4 @@ from app.tags.models import *
 from app.ratings.models import *
 from app.keywords.models import *
 from app.claims.models import *
+from app.assignments.models import *

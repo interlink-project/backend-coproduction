@@ -17,3 +17,4 @@ from app.tags.crud import exportCrud as tag
 from app.ratings.crud import exportCrud as rating
 from app.keywords.crud import exportCrud as keyword
 from app.claims.crud import exportCrud as claim
+from app.assignments.crud import exportCrud as assignment

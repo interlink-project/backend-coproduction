@@ -18,6 +18,7 @@ from app.tags.schemas import *
 from app.ratings.schemas import *
 from app.keywords.schemas import *
 from app.claims.schemas import *
+from app.assignments.schemas import *
 
 # out
 
@@ -66,6 +67,11 @@ class ParticipationRequestOutFull(ParticipationRequestOut):
     pass
 
 class ClaimOutFull(ClaimOut):
+    user:UserOut
+    asset:AssetOut
+    pass
+
+class AssignmentOutFull(AssignmentOut):
     user:UserOut
     asset:AssetOut
     pass

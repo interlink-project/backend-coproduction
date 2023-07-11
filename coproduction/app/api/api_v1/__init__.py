@@ -22,6 +22,7 @@ from app.api.api_v1 import (
     ratings,
     keywords,
     claims,
+    assignments
 )
 
 api_router = APIRouter()
@@ -52,6 +53,8 @@ api_router.include_router(participationrequests.router,
                           prefix="/participationrequests", tags=["participationrequest"])  
 api_router.include_router(claims.router,
                           prefix="/claims", tags=["claim"])      
+api_router.include_router(assignments.router,
+                          prefix="/assignments", tags=["assignment"])  
 api_router.include_router(coproductionprocessnotifications.router,
                           prefix="/coproductionprocessnotifications", tags=["coproductionprocessnotification"])   
 api_router.include_router(stories.router,
