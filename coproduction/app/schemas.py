@@ -74,6 +74,7 @@ class ClaimOutFull(ClaimOut):
 class AssignmentOutFull(AssignmentOut):
     user:UserOut
     asset:AssetOut
+    claims:List[ClaimOutFull]
     pass
 
 class CoproductionProcessNotificationOutFull(CoproductionProcessNotificationOut):

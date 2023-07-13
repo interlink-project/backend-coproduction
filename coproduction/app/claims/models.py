@@ -28,6 +28,11 @@ class Claim(BaseModel):
     
     task_id = Column(UUID(as_uuid=True), nullable=True)
     coproductionprocess_id = Column(UUID(as_uuid=True), nullable=True)
+    
+    # add the foreign key to assignment
+    assignment_id = Column(UUID(as_uuid=True), ForeignKey('assignment.id'), nullable=True)
+
+    
     title = Column(String, nullable=True)
     description = Column(String, nullable=True)
     state = Column(Boolean, nullable=True, default=False)

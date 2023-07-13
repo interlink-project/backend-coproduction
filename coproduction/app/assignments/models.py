@@ -3,6 +3,8 @@ import uuid
 from sqlalchemy import Column, ForeignKey, String, Table, Integer, func, Boolean, Enum, Text, JSON
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship, declarative_base
+from sqlalchemy.orm import Mapped
+from typing import List
 
 from app.general.db.base_class import Base as BaseModel
 from app.config import settings
@@ -31,6 +33,9 @@ class Assignment(BaseModel):
     title = Column(String, nullable=True)
     description = Column(String, nullable=True)
     state = Column(Boolean, nullable=True, default=False)
+
+     # add the relationship to claims
+    claims = relationship('Claim', backref='assignment')
 
     def __repr__(self) -> str:
         return f"<Assignment {self.id} {self.user.name} {self.title} {self.state}>"

@@ -11,6 +11,7 @@ class ClaimBase(BaseModel):
     asset_id: Optional[uuid.UUID]
     task_id: Optional[uuid.UUID]
     coproductionprocess_id: Optional[uuid.UUID]
+    assignment_id: Optional[uuid.UUID]
     title: Optional[str]
     description: Optional[str]
     state: Optional[bool]
