@@ -55,8 +55,8 @@ class Settings(BaseSettings):
     SMTP_TLS: bool = False
     SMTP_PORT: Optional[int] = 25
     SMTP_HOST: Optional[str] = "mail.interlink-project.eu"
-    SMTP_USER: Optional[str] = None
-    SMTP_PASSWORD: Optional[str] = None
+    SMTP_USER: Optional[str] = os.getenv("SMTP_USER")
+    SMTP_PASSWORD: Optional[str] = os.getenv("SMTP_PASSWORD")
     EMAILS_FROM_EMAIL: Optional[str] = "support@interlink-project.eu"
     EMAILS_FROM_NAME: Optional[str] = "Interlink Support"
     EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48

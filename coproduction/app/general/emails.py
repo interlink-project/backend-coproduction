@@ -165,9 +165,3 @@ def send_team_email(
     for user in team.users:
         t = threading.Thread(target=thread_send_email,args=(message, user.email, environment, smtp_options))
         t.start()
-
-def send_test_email(email_to: str) -> None:
-    project_name = settings.PROJECT_NAME
-    subject = f"{project_name} - Test email"
-    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "added_to_process.html") as f:
-        template_str = f.read()
