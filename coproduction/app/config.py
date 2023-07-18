@@ -57,7 +57,7 @@ class Settings(BaseSettings):
     SMTP_HOST: Optional[str] = "mail.interlink-project.eu"
     SMTP_USER: Optional[str] = os.getenv("SMTP_USER")
     SMTP_PASSWORD: Optional[str] = os.getenv("SMTP_PASSWORD")
-    EMAILS_FROM_EMAIL: Optional[str] = "support@interlink-project.eu"
+    EMAILS_FROM_EMAIL: Optional[str] = "admin@interlink-project.eu"
     EMAILS_FROM_NAME: Optional[str] = "Interlink Support"
     EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48
     EMAIL_TEMPLATES_DIR: str = "/app/email-templates/build"
