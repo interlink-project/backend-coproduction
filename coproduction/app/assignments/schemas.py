@@ -14,6 +14,8 @@ class AssignmentBase(BaseModel):
     title: Optional[str]
     description: Optional[str]
     state: Optional[bool]
+    link: Optional[str]
+    link_to_claim: Optional[str]
     
 class AssignmentApproved(BaseModel):
     state: bool

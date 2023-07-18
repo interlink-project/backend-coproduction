@@ -72,7 +72,6 @@ async def list_assignments_bycopro_byassign(
     #Check if the user is assigned to the assignment
     assignment=await crud.assignment.get(db=db,id=uuid.UUID(assign_id))
 
-    print(assignment)
 
     if not assignment:
         raise HTTPException(
@@ -80,8 +79,6 @@ async def list_assignments_bycopro_byassign(
             detail="The assignment does not exist",
         )
     
-    print(assignment.user_id)
-    print(current_user.id)
 
     if(current_user.id != assignment.user_id):
         raise HTTPException(

@@ -242,11 +242,10 @@ async def clone_asset(
 async def create_copro_notification(
     *,
     db: Session = Depends(deps.get_db),
-    data: EmailAssetContribution,
+    data: EmailTeamContribution,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    print(data)
-    print(data.processId)
+
     if (coproductionprocess := await crud.coproductionprocess.get(db=db, id=data.processId)):
         if crud.coproductionprocess.can_update(user=current_user, object=coproductionprocess):
             for team_id in data.listTeams:
@@ -276,11 +275,23 @@ async def create_copro_notification(
                                 db.refresh(newUserNotification)
 
 
-
-
+                    #Send email to user
+                    # print("")
+                    # print("The data for the email is:")
+                    # print("To team:", team.name)
+                    # print({"link": data.assigmentDict[user_id],
+                    #                     "icon_link": data.icon,
+                    #                     "instructions": data.instructions,
+                    #                     "asset_name": data.asset_name,
+                    #                     "subject": data.subject
+                    #                     })
+                    # print("")
+                    # print("Correo enviado!!!!!")
+                    # print("")
+                
 
                     send_team_email(team, "ask_team_contribution",
-                                    {"link": data.link,
+                                    {"link": data.assigmentDict[user_id],
                                      "icon_link": data.icon,
                                      "instructions": data.instructions,
                                      "asset_name": data.asset_name,
@@ -297,8 +308,7 @@ async def create_user_copro_notification(
     data: EmailUserAssetContribution,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    print(data)
-    print(data.processId)
+
     if (coproductionprocess := await crud.coproductionprocess.get(db=db, id=data.processId)):
         if crud.coproductionprocess.can_update(user=current_user, object=coproductionprocess):
         
@@ -329,7 +339,19 @@ async def create_user_copro_notification(
 
 
                 #Send email to user
-
+                # print("")
+                # print("The data for the email is:")
+                # print("To user:", user.email)
+                # print({"link": data.link,
+                #                     "icon_link": data.icon,
+                #                     "instructions": data.instructions,
+                #                     "asset_name": data.asset_name,
+                #                     "subject": data.subject
+                #                     })
+                # print("")
+                # print("Correo enviado!!!!!")
+                # print("")
+                
                 send_email(user.email, "ask_team_contribution",
                                 {"link": data.link,
                                     "icon_link": data.icon,

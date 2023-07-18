@@ -111,7 +111,7 @@ AssetPatch = Annotated[
 ]
 
 
-class EmailAssetContribution(BaseModel):
+class EmailTeamContribution(BaseModel):
     asset_id: uuid.UUID
     link: str
     asset_name: str
@@ -122,6 +122,7 @@ class EmailAssetContribution(BaseModel):
     taskName: str
     listTeams: List[uuid.UUID]
     processId: uuid.UUID
+    assigmentDict: Optional[Dict[str, str]]
 
 class EmailUserAssetContribution(BaseModel):
     asset_id: uuid.UUID

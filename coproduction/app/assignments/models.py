@@ -37,5 +37,14 @@ class Assignment(BaseModel):
      # add the relationship to claims
     claims = relationship('Claim', backref='assignment',order_by='desc(Claim.created_at)')
 
+    @property
+    def link(self):
+        return f"http://{settings.SERVER_NAME}/dashboard/coproductionprocesses/{self.coproductionprocess_id}/resources?tab=Assignments&assignment={self.id}"
+
+    @property
+    def link_to_claim(self):
+        return f"http://{settings.SERVER_NAME}/dashboard/assignments/registerclaim/{self.id}"
+
+
     def __repr__(self) -> str:
         return f"<Assignment {self.id} {self.user.full_name} {self.title} {self.state}>"
