@@ -88,12 +88,12 @@ def send_email(
     # SMTP settings
     smtp_options = {"host": settings.SMTP_HOST, "port": settings.SMTP_PORT}
     if settings.SMTP_TLS:
-        smtp_options["tls"] = True
+        smtp_options["tls"] = settings.SMTP_TLS
     if settings.SMTP_USER:
         smtp_options["user"] = settings.SMTP_USER
     if settings.SMTP_PASSWORD:
         smtp_options["password"] = settings.SMTP_PASSWORD
-
+        
     t = threading.Thread(target=thread_send_email,args=(message, email_to, environment, smtp_options))
     t.start()
 
@@ -147,7 +147,7 @@ def send_team_email(
         template_str = f.read()
     template = JinjaTemplate(template_str)
 
-    message = emails.CustomMessage(
+    message = CustomMessage(
         subject=subject,
         html=template,
         mail_from=(settings.EMAILS_FROM_NAME, settings.EMAILS_FROM_EMAIL),
@@ -156,12 +156,11 @@ def send_team_email(
     # SMTP settings
     smtp_options = {"host": settings.SMTP_HOST, "port": settings.SMTP_PORT}
     if settings.SMTP_TLS:
-        smtp_options["tls"] = True
+        smtp_options["tls"] = settings.SMTP_TLS
     if settings.SMTP_USER:
         smtp_options["user"] = settings.SMTP_USER
     if settings.SMTP_PASSWORD:
         smtp_options["password"] = settings.SMTP_PASSWORD
-
     for user in team.users:
         t = threading.Thread(target=thread_send_email,args=(message, user.email, environment, smtp_options))
         t.start()
