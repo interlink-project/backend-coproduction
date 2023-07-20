@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, Optional
 import threading
+import email.utils as utils
 
 import emails
 from emails import Message
@@ -27,7 +28,9 @@ def thread_send_email(message, email_to, environment, smtp_options):
 class CustomMessage(Message):
     def build(self):
         msg = super().build()
-        msg['Message-ID'] = '<{}@'+settings.SERVER_NAME+'>'.format(uuid.uuid4())
+        # msg['Message-ID'] = '<{}@'+settings.SERVER_NAME+'>'.format(uuid.uuid4())
+        msg['message-id'] = utils.make_msgid(domain='interlink-project.eu')
+        msg.add_header('Content-Type', 'text/html')
         return msg
 
 def send_email(
