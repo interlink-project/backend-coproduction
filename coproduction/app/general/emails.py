@@ -20,7 +20,7 @@ semaphore = threading.Semaphore(4)
 def thread_send_email(message, email_to, environment, smtp_options):
     with semaphore:
         dkim_key = os.environ.get("DKIM_KEY").replace("\\n", "\n")
-        # message.dkim(key=dkim_key, domain='interlink-project.eu', selector='google')
+        message.dkim(key=dkim_key, domain='interlink-project.eu', selector='google')
         response = message.send(to=email_to, render=environment, smtp=smtp_options)
         logging.info(f"send email result: {response}")
 
