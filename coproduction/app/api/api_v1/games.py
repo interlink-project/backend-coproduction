@@ -9,6 +9,7 @@ import requests
 from fastapi import WebSocket, WebSocketDisconnect, APIRouter, Depends, File, HTTPException, Query, UploadFile
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from app.general.emails import send_email
 
 from app import crud, models, schemas
 from app.general import deps
@@ -325,6 +326,8 @@ async def complete_task(
                                 'Content-type': 'application/json',
                                 'Accept': '*/*'
                             })
+    task = get_task(db=db, process_id=process_id, task_id=task_id)
+    print(task)
 
     return response.json()
 
