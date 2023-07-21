@@ -27,6 +27,13 @@ def migrateDataClaims(connection=None):
 
     #Fix coproduction tree references:
 
+
+    #Delete all previous claims of table:
+    query_delete_claims = "DELETE FROM claim;"
+    cursor.execute(query_delete_claims)
+    connection.commit()  # Commit the transaction
+    
+
     #Obtain all parents nodes with multiple dependants (inconsistences)
 
     query_coproductionprocessnotification = "SELECT id,coproductionprocess_id, asset_id, user_id, parameters, created_at FROM coproductionprocessnotification WHERE claim_type='development';" 
