@@ -14,14 +14,13 @@ from app.models import Team
 from app.config import settings
 
 semaphore = threading.Semaphore(4)
-TEMPLATE_PATH = '/app/email-templates/build/'
 
 def thread_send_email(message, email_to, settings):
     with semaphore:
         mail = smtplib.SMTP('mail.interlink-project.eu', 587)
         mail.ehlo()
         mail.starttls()
-        mail.login(settings.EMAILS_FROM_EMAIL, settings.EMAILS_FROM_EMAIL_PASSWORD)
+        mail.login(settings.EMAILS_FROM_EMAIL, settings.SMTP_PASSWORD)
         response = mail.sendmail(settings.EMAILS_FROM_EMAIL, email_to, message.as_string())
         mail.quit()
         logging.info(f"send email result: {response}")
@@ -87,7 +86,7 @@ def send_email(
 
     # Load HTML template
     env = Environment(
-        loader=FileSystemLoader(TEMPLATE_PATH),
+        loader=FileSystemLoader(settings.EMAIL_TEMPLATES_DIR),
         autoescape=select_autoescape(['html', 'xml'])
     )
     template = env.get_template(type + '.html')
@@ -152,7 +151,7 @@ def send_team_email(
 
     for user in team.users:
         env = Environment(
-            loader=FileSystemLoader(TEMPLATE_PATH),
+            loader=FileSystemLoader(settings.EMAIL_TEMPLATES_DIR),
             autoescape=select_autoescape(['html', 'xml'])
         )
         template = env.get_template(type + '.html')
