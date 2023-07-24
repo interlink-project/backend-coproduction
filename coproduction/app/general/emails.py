@@ -1,37 +1,46 @@
-import json
-import os
-import logging
-from datetime import datetime, timedelta
-from pathlib import Path
-from typing import Any, Dict, Optional
-import threading
-import email.utils as utils
 
-import emails
-from emails import Message
-import uuid
-from emails.template import JinjaTemplate
+import logging
+from pathlib import Path
+from typing import Any, Dict
+import threading
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from jinja2 import Environment, FileSystemLoader, select_autoescape
+from email.utils import make_msgid, formatdate
+
 
 from app.models import Team
 from app.config import settings
 
 semaphore = threading.Semaphore(4)
 
-def thread_send_email(message, email_to, environment, smtp_options):
+def thread_send_email(message, email_to, settings):
     with semaphore:
-        dkim_key = os.environ.get("DKIM_KEY").replace("\\n", "\n")
-        message.dkim(key=dkim_key, domain='interlink-project.eu', selector='google')
-        response = message.send(to=email_to, render=environment, smtp=smtp_options)
+        mail = smtplib.SMTP('mail.interlink-project.eu', 587)
+        mail.ehlo()
+        mail.starttls()
+        mail.login(settings.EMAILS_FROM_EMAIL, settings.EMAILS_FROM_EMAIL_PASSWORD)
+        response = mail.sendmail(settings.EMAILS_FROM_EMAIL, email_to, message.as_string())
+        mail.quit()
         logging.info(f"send email result: {response}")
 
-# Create a new class that inherits from the emails.Message class
-class CustomMessage(Message):
-    def build(self):
-        msg = super().build()
-        # msg['Message-ID'] = '<{}@'+settings.SERVER_NAME+'>'.format(uuid.uuid4())
-        msg['message-id'] = utils.make_msgid(domain='interlink-project.eu')
-        msg.add_header('Content-Type', 'text/html')
-        return msg
+
+def new_message(from_mail, to, subject, body_text, body_html):
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = subject
+    msg['From'] = from_mail
+    msg['To'] = to
+    msg['Message-ID'] = make_msgid(domain='interlink-project.eu')
+    msg['Date'] = formatdate(timeval=None, localtime=False, usegmt=False)
+    
+    part1 = MIMEText(body_text, 'plain')
+    part2 = MIMEText(body_html, 'html')
+    
+    msg.attach(part1)
+    msg.attach(part2)
+    return msg
+
 
 def send_email(
     email_to: str,
@@ -74,30 +83,24 @@ def send_email(
     elif type == 'ask_team_contribution':
         subject = environment['subject']
 
+
     # Load HTML template
-    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "{type}.html".format(type=type)) as f:
-        template_str = f.read()
-    template = JinjaTemplate(template_str)
+    env = Environment(
+        loader=FileSystemLoader('../../email-templates/build/'),
+        autoescape=select_autoescape(['html', 'xml'])
+    )
+    template = env.get_template(type + '.html')
     
-    
-    # Create EmailMessage instance
-    message = CustomMessage(
+    message = new_message(
+        from_mail=settings.EMAILS_FROM_EMAIL,
+        to=email_to,
         subject=subject,
-        html=template,
-        mail_from=(settings.EMAILS_FROM_NAME, settings.EMAILS_FROM_EMAIL),
+        body_text="",
+        body_html=template.render(**environment),
     )
 
-   
-    # SMTP settings
-    smtp_options = {"host": settings.SMTP_HOST, "port": settings.SMTP_PORT}
-    if settings.SMTP_TLS:
-        smtp_options["tls"] = settings.SMTP_TLS
-    if settings.SMTP_USER:
-        smtp_options["user"] = settings.SMTP_USER
-    if settings.SMTP_PASSWORD:
-        smtp_options["password"] = settings.SMTP_PASSWORD
         
-    t = threading.Thread(target=thread_send_email,args=(message, email_to, environment, smtp_options))
+    t = threading.Thread(target=thread_send_email,args=(message, email_to, settings))
     t.start()
 
 
@@ -145,27 +148,22 @@ def send_team_email(
             treeitem_id=environment['treeitem_id'])
     elif type == 'ask_team_contribution':
         subject = environment['subject']
-        
-    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "{type}.html".format(type=type)) as f:
-        template_str = f.read()
-    template = JinjaTemplate(template_str)
 
-    message = CustomMessage(
-        subject=subject,
-        html=template,
-        mail_from=(settings.EMAILS_FROM_NAME, settings.EMAILS_FROM_EMAIL),
-    )
-
-    # SMTP settings
-    smtp_options = {"host": settings.SMTP_HOST, "port": settings.SMTP_PORT}
-    if settings.SMTP_TLS:
-        smtp_options["tls"] = settings.SMTP_TLS
-    if settings.SMTP_USER:
-        smtp_options["user"] = settings.SMTP_USER
-    if settings.SMTP_PASSWORD:
-        smtp_options["password"] = settings.SMTP_PASSWORD
     for user in team.users:
-        t = threading.Thread(target=thread_send_email,args=(message, user.email, environment, smtp_options))
+        env = Environment(
+            loader=FileSystemLoader('../../email-templates/build/'),
+            autoescape=select_autoescape(['html', 'xml'])
+        )
+        template = env.get_template(type + '.html')
+        
+        message = new_message(
+            from_mail=settings.EMAILS_FROM_EMAIL,
+            to=user.email,
+            subject=subject,
+            body_text="",
+            body_html=template.render(**environment),
+        )
+        t = threading.Thread(target=thread_send_email, args=(message, user.email, settings))
         t.start()
 
 def send_test_email(email_to: str) -> None:
