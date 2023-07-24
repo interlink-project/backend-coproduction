@@ -7,7 +7,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-from email.utils import make_msgid, formatdate
+from email.utils import make_msgid, formatdate, formataddr
 
 
 from app.models import Team
@@ -21,7 +21,8 @@ def thread_send_email(message, email_to, settings):
         mail.ehlo()
         mail.starttls()
         mail.login(settings.EMAILS_FROM_EMAIL, settings.SMTP_PASSWORD)
-        response = mail.sendmail(settings.EMAILS_FROM_EMAIL, email_to, message.as_string())
+        mail_from = formataddr(settings.EMAILS_FROM_NAME, settings.EMAILS_FROM_EMAIL)
+        response = mail.sendmail(mail_from, email_to, message.as_string())
         mail.quit()
         logging.info(f"send email result: {response}")
 
@@ -29,7 +30,7 @@ def thread_send_email(message, email_to, settings):
 def new_message(from_mail, to, subject, body_text, body_html):
     msg = MIMEMultipart('alternative')
     msg['Subject'] = subject
-    msg['From'] = from_mail
+    msg['From'] = formataddr(settings.EMAILS_FROM_NAME, from_mail)
     msg['To'] = to
     msg['Message-ID'] = make_msgid(domain='interlink-project.eu')
     msg['Date'] = formatdate(timeval=None, localtime=False, usegmt=False)
