@@ -14,6 +14,7 @@ from app.models import Team
 from app.config import settings
 
 semaphore = threading.Semaphore(4)
+TEMPLATE_PATH = '/app/email-templates/build/'
 
 def thread_send_email(message, email_to, settings):
     with semaphore:
@@ -86,7 +87,7 @@ def send_email(
 
     # Load HTML template
     env = Environment(
-        loader=FileSystemLoader('/app/email-templates/build/email-templates/build/'),
+        loader=FileSystemLoader(TEMPLATE_PATH),
         autoescape=select_autoescape(['html', 'xml'])
     )
     template = env.get_template(type + '.html')
@@ -151,7 +152,7 @@ def send_team_email(
 
     for user in team.users:
         env = Environment(
-            loader=FileSystemLoader('/app/email-templates/build/email-templates/build/'),
+            loader=FileSystemLoader(TEMPLATE_PATH),
             autoescape=select_autoescape(['html', 'xml'])
         )
         template = env.get_template(type + '.html')
