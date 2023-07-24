@@ -86,7 +86,7 @@ def send_email(
 
     # Load HTML template
     env = Environment(
-        loader=FileSystemLoader('../../email-templates/build/'),
+        loader=FileSystemLoader('/app/email-templates/build/email-templates/build/'),
         autoescape=select_autoescape(['html', 'xml'])
     )
     template = env.get_template(type + '.html')
@@ -151,7 +151,7 @@ def send_team_email(
 
     for user in team.users:
         env = Environment(
-            loader=FileSystemLoader('../../email-templates/build/'),
+            loader=FileSystemLoader('/app/email-templates/build/email-templates/build/'),
             autoescape=select_autoescape(['html', 'xml'])
         )
         template = env.get_template(type + '.html')
