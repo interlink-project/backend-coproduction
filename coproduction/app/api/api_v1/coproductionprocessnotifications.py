@@ -149,6 +149,11 @@ async def create_copro_notification(
         json_parameters['userName'] = shortName(datosUser.full_name)
         newCoproNotification.parameters = json.dumps(json_parameters)
 
+
+        #If there is a claim_id in the parameters I will use it as id of the notification
+        if 'claim_id' in json_parameters:
+            newCoproNotification.id = json_parameters['claim_id'] 
+
         listaRegistros.append(newCoproNotification)
 
     print("Inicio la creacion de la lista de notificaciones")
