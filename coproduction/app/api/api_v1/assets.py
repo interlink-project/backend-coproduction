@@ -289,14 +289,16 @@ async def create_copro_notification(
                     # print("Correo enviado!!!!!")
                     # print("")
                 
-
-                    send_team_email(team, "ask_team_contribution",
+                    try:
+                        send_team_email(team, "ask_team_contribution",
                                     {"link": data.assigmentDict[user_id],
                                      "icon_link": data.icon,
                                      "instructions": data.instructions,
                                      "asset_name": data.asset_name,
                                      "subject": data.subject
                                      })
+                    except:
+                        print("Email could not be send to team contributions")
 
     return "Done"
 
@@ -352,13 +354,17 @@ async def create_user_copro_notification(
                 # print("Correo enviado!!!!!")
                 # print("")
                 
-                send_email(user.email, "ask_team_contribution",
-                                {"link": data.link,
-                                    "icon_link": data.icon,
-                                    "instructions": data.instructions,
-                                    "asset_name": data.asset_name,
-                                    "subject": data.subject
-                                    })
+                try:
+                    send_email(user.email, "ask_team_contribution",
+                                    {"link": data.link,
+                                        "icon_link": data.icon,
+                                        "instructions": data.instructions,
+                                        "asset_name": data.asset_name,
+                                        "subject": data.subject
+                                        })
+                except:
+                    
+                        print("Email could not be send to team user:"+user.email)
 
     return "Done"
 
