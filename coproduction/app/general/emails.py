@@ -93,7 +93,7 @@ def send_email(
             server=settings.SERVER_NAME,
             coprod_id=environment['coproduction_process_id'],
             treeitem_id=environment['task_id'])
-         environment["coprod_link"] ='https://{server}/dashboard/coproductionprocesses/{coprod_id}/guide'.format(
+        environment["coprod_link"] ='https://{server}/dashboard/coproductionprocesses/{coprod_id}/guide'.format(
             server=settings.SERVER_NAME,
             coprod_id=environment['coproduction_process_id'])
 
