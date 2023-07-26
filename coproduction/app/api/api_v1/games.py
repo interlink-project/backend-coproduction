@@ -15,6 +15,7 @@ from app import crud, models, schemas
 from app.general import deps
 from app.sockets import socket_manager
 
+
 router = APIRouter()
 
 serviceName = "interlink-gamification-engine"
@@ -27,7 +28,7 @@ async def list_games() -> Any:
     Retrieve games.
     """
     response = requests.get(f"http://{serviceName}{PATH}")
-    
+
     return json.loads(response.text)
 
 
@@ -40,8 +41,9 @@ async def get_game(
     Retrieve game by process_id.
     """
     response = requests.get(f"http://{serviceName}{PATH}/processId/{process_id}")
-    
+
     return response.json()
+
 
 @router.post("/{process_id}")
 async def set_game(
@@ -309,6 +311,7 @@ async def complete_task(
     current_user: Optional[models.User] = Depends(deps.get_current_active_user),
     process_id: uuid.UUID,
     task_id: uuid.UUID,
+    data: dict
 ) -> Any:
     """
     Complete task by process_id and task_id.
@@ -326,8 +329,19 @@ async def complete_task(
                                 'Content-type': 'application/json',
                                 'Accept': '*/*'
                             })
-    task = get_task(db=db, process_id=process_id, task_id=task_id)
-    print(task)
+    
+    print(data)
+    task = await crud.task.get(db=db, id=task_id)
+    for user in data['data']:
+        send_email(email_to=data['data'][user]['email'],
+                   type='points_awarded',
+                   environment={
+                       'username': data['data'][user]['name'],
+                       'task_name': task.name,
+                       'task_id': task.id,
+                       'coproduction_process_name': coproductionprocess.name,
+                       'coproduction_process_id': coproductionprocess.id
+                       })
 
     return response.json()
 
