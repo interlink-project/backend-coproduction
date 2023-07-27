@@ -257,6 +257,7 @@ async def create_copro_notification(
                             notification = await crud.notification.get_notification_by_event(db=db, event="assign_resource", language=coproductionprocess.language)
                             if (notification):
 
+                                #Create the notification:
 
                                 newUserNotification = UserNotification()
                                 newUserNotification.user_id = user.id
@@ -274,31 +275,20 @@ async def create_copro_notification(
                                 db.commit()
                                 db.refresh(newUserNotification)
 
+                                #Send email to user
 
-                    #Send email to user
-                    # print("")
-                    # print("The data for the email is:")
-                    # print("To team:", team.name)
-                    # print({"link": data.assigmentDict[user_id],
-                    #                     "icon_link": data.icon,
-                    #                     "instructions": data.instructions,
-                    #                     "asset_name": data.asset_name,
-                    #                     "subject": data.subject
-                    #                     })
-                    # print("")
-                    # print("Correo enviado!!!!!")
-                    # print("")
-                
-                    try:
-                        send_team_email(team, "ask_team_contribution",
-                                    {"link": data.assigmentDict[user_id],
-                                     "icon_link": data.icon,
-                                     "instructions": data.instructions,
-                                     "asset_name": data.asset_name,
-                                     "subject": data.subject
-                                     })
-                    except:
-                        print("Email could not be send to team contributions")
+
+                                try:
+                                    send_email(user.email, "ask_team_contribution",
+                                                {"link": data.assigmentDict[user_id],
+                                                    "icon_link": data.icon,
+                                                    "instructions": data.instructions,
+                                                    "asset_name": data.asset_name,
+                                                    "subject": data.subject
+                                                    })
+                                    
+                                except:
+                                    print("Email could not be send to user"+user.email+" contributions")
 
     return "Done"
 
@@ -320,6 +310,7 @@ async def create_user_copro_notification(
                 notification = await crud.notification.get_notification_by_event(db=db, event="assign_resource", language=coproductionprocess.language)
                 if (notification):
 
+                    #Create the notification:
 
                     newUserNotification = UserNotification()
                     newUserNotification.user_id = user.id
@@ -339,32 +330,33 @@ async def create_user_copro_notification(
 
 
 
+                    #Send email to user
+                    try:
+                        send_email(user.email, "ask_team_contribution",
+                                        {"link": data.link,
+                                            "icon_link": data.icon,
+                                            "instructions": data.instructions,
+                                            "asset_name": data.asset_name,
+                                            "subject": data.subject
+                                            })
+                    except:
+                        
+                            print("Email could not be send to team user:"+user.email)
 
-                #Send email to user
-                # print("")
-                # print("The data for the email is:")
-                # print("To user:", user.email)
-                # print({"link": data.link,
-                #                     "icon_link": data.icon,
-                #                     "instructions": data.instructions,
-                #                     "asset_name": data.asset_name,
-                #                     "subject": data.subject
-                #                     })
-                # print("")
-                # print("Correo enviado!!!!!")
-                # print("")
-                
-                try:
-                    send_email(user.email, "ask_team_contribution",
-                                    {"link": data.link,
-                                        "icon_link": data.icon,
-                                        "instructions": data.instructions,
-                                        "asset_name": data.asset_name,
-                                        "subject": data.subject
-                                        })
-                except:
-                    
-                        print("Email could not be send to team user:"+user.email)
+
+                    #Send email to user
+                    # print("")
+                    # print("The data for the email is:")
+                    # print("To user:", user.email)
+                    # print({"link": data.link,
+                    #                     "icon_link": data.icon,
+                    #                     "instructions": data.instructions,
+                    #                     "asset_name": data.asset_name,
+                    #                     "subject": data.subject
+                    #                     })
+                    # print("")
+                    # print("Correo enviado!!!!!")
+                    # print("")
 
     return "Done"
 
