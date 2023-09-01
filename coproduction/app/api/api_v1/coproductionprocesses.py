@@ -22,6 +22,10 @@ import os
 import zipfile
 import json
 import html
+import datetime
+import shutil
+from pathlib import Path
+
 
 router = APIRouter()
 
@@ -467,6 +471,75 @@ async def download_zip(
 
     print("The zip file is: "+zip_path)
     return FileResponse(zip_path, media_type='application/zip', filename=file_name)
+
+
+@router.post("/import")
+async def import_file(file: UploadFile = File(...)):
+    # ensure the uploads directory exists
+    uploads_dir = Path("uploads")
+    uploads_dir.mkdir(exist_ok=True)
+
+
+    temp_file = uploads_dir / file.filename
+    with temp_file.open("wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+
+     # get the creation time of the file
+    timestamp = os.path.getctime(temp_file)
+    creation_time = datetime.datetime.fromtimestamp(timestamp)
+    print("Creation Time:", creation_time)
+
+
+    # format the creation_time as a string and concatenate with the file name
+    creation_time_str = creation_time.strftime("%Y%m%d%H%M%S")
+    filename_split=file.filename.split('.')
+    unzipped_folder_name = f"{filename_split[0]}_{creation_time_str}.{filename_split[1]}"
+
+
+    # unzip the file
+    with zipfile.ZipFile(temp_file, 'r') as zip_ref:
+        zip_ref.extractall(unzipped_folder_name)
+
+    # remove the temp file
+    temp_file.unlink()
+
+    # list contents of the unzipped folder
+    unzipped_folder = Path(unzipped_folder_name+"/processes_exported")
+
+    
+    #Get the process name:
+    process_name=''
+    for directory in unzipped_folder.iterdir():
+        if directory.is_dir():
+            process_name= directory.name
+
+    #Get the process files:
+    path_coproduction_file = Path(unzipped_folder_name+"/processes_exported/"+process_name+"/coproduction.json")
+    with open(path_coproduction_file, 'r') as f:
+        coproduction_json = json.load(f)
+        #print(coproduction_json)
+        
+        #Lets create the process!!
+        
+
+    #Get the schema files:
+    path_schema_file = Path(unzipped_folder_name+"/processes_exported/"+process_name+"/schema.json")
+    with open(path_schema_file, 'r') as f:
+        schema_json = json.load(f)
+        #print(schema_json)
+   
+        #Lets create the schema!!
+        
+
+    
+    contents = {
+        "process_name": [process_name],
+    }
+
+    shutil.rmtree(unzipped_folder)
+
+    return contents
 
 @router.get("/{id}/tree/catalogue", response_model=Optional[List[schemas.PhaseOutFull]])
 async def get_coproductionprocess_tree_catalogue(

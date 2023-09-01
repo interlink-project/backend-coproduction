@@ -146,4 +146,4 @@ async def list_task_asset_contributions(
         #print(task)
         task.assetsWithContribution=listOfAssetsContributions
         return task
-    raise HTTPException(status_code=404, detail="Task not found")
+    raise HTTPException(status_code=404, detail="Task "+ id + " not found")
