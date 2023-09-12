@@ -39,6 +39,7 @@ class CoproductionProcess(BaseModel):
 
     #Active Optional Modules
     incentive_and_rewards_state =Column(Boolean,nullable=True)
+    leaderboard = Column(Boolean,nullable=True)
 
     #Optional field defined just by the user:
     #-------------

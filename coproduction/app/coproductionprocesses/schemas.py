@@ -23,6 +23,7 @@ class CoproductionProcessBase(BaseModel):
     requirements: Optional[str]
     status: Optional[Status]
     incentive_and_rewards_state: Optional[bool]
+    leaderboard: Optional[bool]
 
     #Optional field defined just by the user:
     hasAddAnOrganization : Optional[bool]
@@ -48,6 +49,7 @@ class CoproductionProcessPatch(CoproductionProcessCreate):
     status: Optional[Status]
     logotype: Optional[str]
     incentive_and_rewards_state: Optional[bool]
+    leaderboard: Optional[bool]
     intergovernmental_model: Optional[str]
     is_part_of_publication: Optional[bool]
     is_public: Optional[bool]
