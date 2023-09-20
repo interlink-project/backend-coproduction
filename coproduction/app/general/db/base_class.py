@@ -1,17 +1,14 @@
+from typing import Union, Dict as DictStrAny, Any, AbstractSet as AbstractSetIntStr, Mapping as MappingIntStrAny
+import sqlalchemy
+from sqlalchemy import Column, DateTime, func
+from sqlalchemy.ext.declarative import declared_attr, as_declarative
 import uuid
-from typing import Any, Union
-
-from sqlalchemy import Column, DateTime
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.ext.declarative import as_declarative, declared_attr
-from sqlalchemy.sql import func
-
 
 @as_declarative()
 class Base:
     id: Any
     __name__: str
-    
+
     # Generate __tablename__ automatically
     @declared_attr
     def __tablename__(cls) -> str:
@@ -20,7 +17,7 @@ class Base:
     @declared_attr
     def created_at(self):
         return Column(DateTime, server_default=func.now())
-    
+
     @declared_attr
     def updated_at(self):
         return Column(DateTime, onupdate=func.now())
@@ -34,23 +31,22 @@ class Base:
     def dict(
         self,
         *,
-        include: Union['AbstractSetIntStr', 'MappingIntStrAny'] = None,
-        exclude: Union['AbstractSetIntStr', 'MappingIntStrAny'] = None,
+        include: Union[AbstractSetIntStr, MappingIntStrAny] = None,
+        exclude: Union[AbstractSetIntStr, MappingIntStrAny] = None,
         by_alias: bool = False,
         skip_defaults: bool = None,
         exclude_unset: bool = False,
         exclude_defaults: bool = False,
         exclude_none: bool = False,
-    ) -> 'DictStrAny':
-        attribs = super().dict(
-            include=include,
-            exclude=exclude,
-            by_alias=by_alias,
-            skip_defaults=skip_defaults,
-            exclude_unset=exclude_unset,
-            exclude_defaults=exclude_defaults,
-            exclude_none=exclude_none
-        )
+    ) -> DictStrAny:
+        # Get all column properties (i.e., the SQLAlchemy model's fields)
+        columns = [column.key for column in sqlalchemy.inspect(self.__class__).attrs if isinstance(column, sqlalchemy.orm.ColumnProperty)]
+
+        # Construct a dictionary of column keys and their values
+        attribs = {column: getattr(self, column) for column in columns}
+
+        # ... (keep the rest of your code here for handling properties)
+        
         props = self.get_properties()
         # Include and exclude properties
         if include:
@@ -61,5 +57,10 @@ class Base:
         # Update the attribute dict with the properties
         if props:
             attribs.update({prop: getattr(self, prop) for prop in props})
+
+        # Convert UUID objects to strings
+        for key, value in attribs.items():
+            if isinstance(value, uuid.UUID):
+                attribs[key] = str(value)
 
         return attribs
