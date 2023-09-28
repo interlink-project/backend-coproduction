@@ -351,7 +351,7 @@ def topological_sort(tasks):
 #Download the asset into the assets folder
 def downloadAsset(asset,dirpath,token):
 
-    print("The asset type: "+str(asset.type))
+    #print("The asset type: "+str(asset.type))
     if asset.type=="internalasset":
         #print("The info del internal asset: "+json.dumps(asset.internalData))
 
@@ -487,14 +487,18 @@ async def download_zip(
                 cont_tasks=0
                 for task in ordered_tasks:
                     assets=await crud.asset.get_multi_withIntData(db, task=task, token=token)
-        
+                    
                     assets_dict_list=[]
                     cont_assets=0
                     for asset in assets:
                         
-                        print("The asset type: "+str(asset.type))
-                        downloadAsset(asset=asset,dirpath=dir_name,token=token)
-                        assets_dict_list.append(asset.dict())
+                        #print("The asset type: "+str(asset.type))
+                        try:
+                            downloadAsset(asset=asset,dirpath=dir_name,token=token)
+                            assets_dict_list.append(asset.dict())
+                        except Exception as e:  
+                            logger.error(f"Error while trying to download the asset: {asset.dict()}")
+                        
                         cont_assets=cont_assets+1
 
                     
@@ -529,6 +533,7 @@ async def download_zip(
         # To do a process to download the process information in a file.
         # Convert the CoproductionProcess object to a dictionary
         coproduction_dict = coproductionprocess.to_dict()
+        coproduction_dict['name']="import_"+coproduction_dict['name']
 
         # Specify the directory and filename
         directory = dir_name
