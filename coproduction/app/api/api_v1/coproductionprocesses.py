@@ -3,6 +3,7 @@ import os
 import uuid
 from typing import Any, Dict, List, Optional
 from fastapi_pagination import Page
+from fastapi.responses import StreamingResponse, JSONResponse
 
 import aiofiles
 import requests
@@ -431,6 +432,69 @@ def datetime_serializer(o):
     raise TypeError("Type not serializable")
 
 
+def sanitize_filename(filename):
+    # Replace spaces with underscores
+    sanitized = filename.replace(" ", "_")
+    # Remove any other disallowed characters
+    # This is a simple example; you might need to add more characters based on your needs
+    disallowed_characters = ['<', '>', ':', '"', '/', '\\', '|', '?', '*']
+    for char in disallowed_characters:
+        sanitized = sanitized.replace(char, '')
+    return sanitized
+
+#Method to get the last zip file info and content:
+
+@router.get("/{id}/last_created_zip")
+async def last_created_zip(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: uuid.UUID,
+    current_user: models.User = Depends(deps.get_current_active_user),
+    token: str = Depends(deps.get_current_active_token)
+):
+    try:
+        coproductionprocess = await crud.coproductionprocess.get(db=db, id=id)
+    except Exception as e:
+        logger.error(f"Error fetching coproduction process: {e}")
+        return {"error": "Error fetching coproduction process"}
+    
+    zip_directory = 'zipfiles'
+
+    if not os.path.exists(zip_directory):
+        os.makedirs(zip_directory)
+
+    files = [f for f in os.listdir(zip_directory) if f.startswith(str(id)) and f.endswith('.zip')]
+
+    def extract_datetime_from_filename(filename):
+        parts = filename.split('_')
+        return parts[1] + "_" + parts[2]
+
+    files.sort(key=extract_datetime_from_filename, reverse=True)
+
+    # If there's no file, return a meaningful error response
+    if not files:
+        return JSONResponse(content={"error": "No file found"}, status_code=404)
+
+    # Get the datetime from the filename
+    datetime_from_filename = extract_datetime_from_filename(files[0]).replace('.zip','')
+
+    # Prepare the path of the file to stream back
+    file_path = os.path.join(zip_directory, files[0])
+
+    # Sanitize the process name for the filename
+    sanitized_name = sanitize_filename(coproductionprocess.name)
+
+    # Return the file as a stream with the appropriate headers
+    return StreamingResponse(
+        open(file_path, 'rb'), 
+        media_type="application/octet-stream", 
+        headers={
+            'Content-Disposition': f'attachment; filename="{sanitized_name}.zip"',
+            'X-File-Creation-Datetime': datetime_from_filename  # This line adds the datetime to the headers
+        }
+    )
+
+
 #Download the coproduction process in a zip file:
 
 @router.get("/{id}/download")
@@ -582,7 +646,16 @@ async def download_zip(
             os.makedirs(zip_directory)
 
         # specify the name of your zip file
-        file_name = coproductionprocess.name.replace(' ', '_')+'.zip'
+        from datetime import datetime
+
+        # Get the current date and time
+        now = datetime.now()
+
+        # Format the date and time as a string (for example, in the format "YYYYMMDD_HHMMSS")
+        formatted_date = now.strftime("%Y%m%d_%H%M%S")
+
+        # Use the formatted date and time in the filename
+        file_name = f"{coproductionprocess.id}_{formatted_date}.zip"
 
         # create the full zip file path
         zip_path = os.path.join(zip_directory, file_name)
@@ -609,13 +682,33 @@ async def download_zip(
 
         def remove_files():
             try:
-                shutil.rmtree(dir_root)
-                os.remove(zip_path)
-                logger.info(f"Successfully removed temporary files and directories")
-            except Exception as e:
-                logger.error(f"Error removing temporary files and directories: {e}")
+                # List all files in dir_root with the specific ID
+                # Assuming filename format is like: ID_DATETIME.zip
+                files = [f for f in os.listdir(zip_directory) if f.startswith(str(coproductionprocess.id)) and f.endswith('.zip')]
 
-        background_tasks.add_task(remove_files)  # Schedule the remove_files function to be run in the background
+                # Function to extract datetime from filename
+                def extract_datetime_from_filename(filename):
+                    # Split the filename into its ID and datetime components
+                    parts = filename.split('_')
+                    # Combine date and time parts and return
+                    return parts[1] + "_" + parts[2]
+
+                # Sort files based on datetime
+                files.sort(key=extract_datetime_from_filename, reverse=True)
+
+                # Delete all files except the first one (most recent after reverse sort)
+                for file in files[1:]:
+                    os.remove(os.path.join(zip_directory, file))
+                #Borro Archivos temporales usados para la compression.
+                shutil.rmtree(dir_root)
+                
+                logger.info(f"Successfully removed temporary files except the most recent one")
+            except Exception as e:
+                logger.error(f"Error removing temporary files: {e}")
+
+        # Schedule the remove_files function to be run in the background
+        background_tasks.add_task(remove_files)
+
         return response
 
     except Exception as e:
