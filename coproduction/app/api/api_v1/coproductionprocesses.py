@@ -817,8 +817,6 @@ async def import_file(
         
         #Lets create the process!!
         process = schemas.CoproductionProcessCreate(**coproduction_json)
-        print('The process to creat has the same information:')
-        #print(process)
         created_process=await crud.coproductionprocess.create(db,obj_in=process,creator=current_user,set_creator_admin=current_user)
 
     #Copy the logo:
@@ -848,24 +846,22 @@ async def import_file(
     with open(path_schema_file, 'r') as f:
         schema_json = json.load(f)
         
-
-   
         #Lets create the phase:
         prev_phase=None
         for phase_i in range(len(schema_json)):
 
-            print('---ini---')
-            print('La parte seleccionada es:')
+            # print('---ini---')
+            # print('La parte seleccionada es:')
             
             phase=schema_json[phase_i]
 
-            print('')
-            print(phase)
-            print('')
+            # print('')
+            # print(phase)
+            # print('')
             
-            print(phase['id'])
-            print(phase['type'])
-            print(phase['name'])
+            # print(phase['id'])
+            # print(phase['type'])
+            # print(phase['name'])
 
 
             if (phase['type']=='phase'):
@@ -881,28 +877,29 @@ async def import_file(
                 #Store the previous created object
                 prev_phase=phase_created
 
-                print('The phase  created is:')
+                # print('The phase  created is:')
                 print(phase_created)
-                print('---fin---')
+                print('The phase is: '+phase_created.name)
+                # print('---fin---')
 
                 #Ask if the phase has objectives:
                 prev_objective=None
                 for objective_i in range(len(phase['objectives'])):
 
-                    print('---ini Objective---')
-                    print('La parte seleccionada es:')
+                    # print('---ini Objective---')
+                    # print('La parte seleccionada es:')
                     
                     objective=phase['objectives'][objective_i]
 
-                    print('')
-                    print(objective)
-                    print('')
+                    # print('')
+                    # print(objective)
+                    # print('')
                     
-                    print(objective['id'])
-                    print(objective['type'])
-                    print(objective['name'])
+                    # print(objective['id'])
+                    # print(objective['type'])
+                    print('The objective is: '+objective['name'])
 
-                    print('---fin Objective---')
+                    # print('---fin Objective---')
 
                     if (objective['type']=='objective'):
 
@@ -919,29 +916,29 @@ async def import_file(
                         #Store the previous created object
                         prev_objective=objective_created
 
-                        print('The objective created is:')
-                        print(objective_created)
-                        print('---fin---')
+                        # print('The objective created is:')
+                        # print(objective_created)
+                        # print('---fin---')
                 
 
                         #Ask if the phase has objectives:
                         prev_task=None
                         for task_i in range(len(objective['tasks'])):
 
-                            print('---ini Task---')
-                            print('La parte seleccionada es:')
+                            # print('---ini Task---')
+                            # print('La parte seleccionada es:')
                             
                             task=objective['tasks'][task_i]
 
-                            print('')
-                            print(task)
-                            print('')
+                            # print('')
+                            # print(task)
+                            # print('')
                             
-                            print(task['id'])
-                            print(task['type'])
-                            print(task['name'])
+                            # print(task['id'])
+                            # print(task['type'])
+                            # print(task['name'])
 
-                            print('---fin Task---')
+                            # print('---fin Task---')
 
                             if (task['type']=='task'):
 
@@ -957,9 +954,9 @@ async def import_file(
                                 #Store the previous created object
                                 prev_task=task_created
                             
-                                print('The task created is:')
-                                print(task_created)
-                                print('---fin---')
+                                # print('The task created is:')
+                                # print(task_created)
+                                # print('---fin---')
 
 
                                 #Go over each asset:
@@ -987,10 +984,10 @@ async def import_file(
                                                 # Parse the JSON response
                                                 knowledgeinterlinker = response.json()
                                                 print("The knowledge interlinker found is:"+knowledgeinterlinker["id"])
-                                                print("the name is"+knowledgeinterlinker["name"]) 
+                                                print("- its name is: "+knowledgeinterlinker["name"]) 
                                                 knowledgeinterlinker_id=knowledgeinterlinker["id"]     
                                                 
-                                                print("Success:", knowledgeinterlinker)
+                                                #print("Success:", knowledgeinterlinker)
                                             else:
                                                 print("Failed. Status code:", response.status_code)
 
@@ -1004,7 +1001,7 @@ async def import_file(
 
                                         if match:
                                             service_name = match.group(1)
-                                            print("Service Name:", service_name)
+                                            #print("Service Name:", service_name)
                                         else:
                                             print("Service name not found")
                                         
@@ -1015,8 +1012,8 @@ async def import_file(
                                         # Specify the path to your file
                                         path_asset_folder = Path(unzipped_folder_name+"/processes_exported/"+process_name+"/assets/")
                                         
-                                        print('The asset Id is:')
-                                        print(asset['id'])
+                                        #print('The asset Id is:')
+                                        print('The asset Id is:'+str(asset['id']))
                                         file_path=get_file_by_asset_id(asset['id'],path_asset_folder)
 
                                         # Define the new name
@@ -1036,8 +1033,9 @@ async def import_file(
 
                                         # Check the response
                                         if response.status_code == 201:
-                                            print("File uploaded successfully!")
-                                            print("Response:", response.json())
+                                            #print("File uploaded successfully!")
+                                            #print("Response:", response.json())
+                                            pass
                                         else:
                                             print("Failed to upload file. Status code:", response.status_code)
                                             print("Response:", response.json())
@@ -1058,7 +1056,7 @@ async def import_file(
                                             # Parse the JSON response
                                             serviceinfo = response.json()
                                             
-                                            print("Success:", serviceinfo)
+                                            #print("Success:", serviceinfo)
                                         else:
                                             print("Failed. Status code:", response.status_code)
 
@@ -1080,7 +1078,7 @@ async def import_file(
                                     if(asset["type"]=="externalasset"):
                                         #asset_obj = schemas.ExternalAssetCreate(**asset)
                                         # Creating an instance of the class
-
+                                        print('Creating External Asset: ' +asset['name'])
                                         asset_obj = schemas.ExternalAssetCreate(
                                         task_id=task_created.id,
                                         externalinterlinker_id=None,
@@ -1093,25 +1091,17 @@ async def import_file(
                     
 
                                     asset_created=await crud.asset.create(db,asset=asset_obj,creator=current_user,task=task_created)
-                                    print('The asset created is:')
-                                    print(asset_obj)
+                                    # print('The asset created is:')
+                                    # print(asset_obj)
                                     
-                                    print(asset_created)
-                                    print('---fin---')
+                                    # print(asset_created)
+                                    # print('---fin---')
                            
-                    
-          
-
-
-               
-       
-
-        
-
-    
+                
     contents = created_process
 
     shutil.rmtree(unzipped_folder)
+    shutil.rmtree(Path(unzipped_folder_name))
 
     return contents
 
