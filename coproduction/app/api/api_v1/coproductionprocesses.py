@@ -377,12 +377,12 @@ def downloadAsset(asset,dirpath,token):
 
 
         # Configuración para el número máximo de intentos de reintento
-        max_retries = 3
+        max_retries = 10
         for attempt in range(max_retries):
             try:
                 # Intenta hacer una solicitud GET con un tiempo de espera (timeout) de 10 segundos
                 time.sleep(2) 
-                response = requests.get(url, headers=headers, allow_redirects=True, timeout=10)
+                response = requests.get(url, headers=headers, allow_redirects=True, timeout=30)
                 response.raise_for_status()
 
                 # Comprueba si la solicitud fue exitosa
@@ -416,11 +416,13 @@ def downloadAsset(asset,dirpath,token):
                     break
             except requests.exceptions.HTTPError as http_err:
                 print(f"Request http error.. ({attempt + 1}/{max_retries})")
-                time.sleep(2)  # Espera 2 segundos antes de reintentar
+                time.sleep(5)  # Espera 4 segundos antes de reintentar
 
             except Exception as err:
                 print(f"An error occurred: {err}")
-                break
+                print(f"Exception when downloading error.. ({attempt + 1}/{max_retries})")
+                time.sleep(5)  # Espera 4 segundos antes de reintentar
+
             
 
     #print(asset)
