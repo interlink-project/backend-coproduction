@@ -11,7 +11,7 @@ from app.messages import log
 router = APIRouter()
 
 from app.tasks.schemas import *
-from app.models import  CoproductionProcessNotification
+from app.models import  Claim
 from sqlalchemy import or_, and_
 
 
@@ -132,13 +132,13 @@ async def list_task_asset_contributions(
                 #print('Encontro el asset!!')
                 #print(asset.id)
                 #Get all contribution of users:
-                listofContribucionesNotifications = db.query(CoproductionProcessNotification).filter(and_(
-                                                                                models.CoproductionProcessNotification.asset_id==str(asset.id),
-                                                                                models.CoproductionProcessNotification.user_id!=None
-                                                                                )                                                                                             
-                                                                            ).order_by(models.CoproductionProcessNotification.created_at.desc()).all()
-                
-                asset.contributors=listofContribucionesNotifications
+                listofClaims = db.query(Claim).filter(and_(
+                                                            models.Claim.asset_id==str(asset.id),
+                                                            models.Claim.user_id!=None
+                                                            )                                                                                             
+                                                        ).order_by(models.Claim.created_at.desc()).all()
+                #print(listofClaims)
+                asset.contributors=listofClaims
                 listOfAssetsContributions.append(asset)
              
 

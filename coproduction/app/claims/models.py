@@ -39,4 +39,4 @@ class Claim(BaseModel):
     claim_type = Column(String, nullable=True)
 
     def __repr__(self) -> str:
-        return f"<Claim {self.id} {self.user.name} {self.title} {self.state}>"
+        return f"<Claim {self.id} {self.user_id} {self.title} {self.state}>"
