@@ -852,6 +852,11 @@ async def import_file(
         coproduction_json = json.load(f)
         #print(coproduction_json)
         logotypepath=coproduction_json['logotype']
+
+        #Need to Data transform:
+        #Convert the string "None" to an actual None value for the rating
+        if coproduction_json['rating'] == "None":
+            coproduction_json['rating'] = None
         
         #Lets create the process!!
         process = schemas.CoproductionProcessCreate(**coproduction_json)
@@ -904,6 +909,10 @@ async def import_file(
 
             if (phase['type']=='phase'):
 
+                #In case it have been remove the reference to user most be None:
+                #The disabler user dont exists
+                phase["disabler_id"] = None
+                
                 phase_obj = schemas.PhaseCreate(**phase)
                 phase_obj.coproductionprocess_id=created_process.id
                 
@@ -940,6 +949,10 @@ async def import_file(
                     # print('---fin Objective---')
 
                     if (objective['type']=='objective'):
+
+                        #In case it have been remove the reference to user most be None:
+                        #The disabler user dont exists
+                        objective["disabler_id"] = None
 
                         objective_obj = schemas.ObjectiveCreate(**objective)
                         objective_obj.phase_id=phase_created.id
@@ -979,6 +992,10 @@ async def import_file(
                             # print('---fin Task---')
 
                             if (task['type']=='task'):
+
+                                #In case it have been remove the reference to user most be None:
+                                #The disabler user dont exists
+                                task["disabler_id"] = None
 
                                 task_obj = schemas.TaskCreate(**task)
                                 task_obj.objective_id=objective_created.id
