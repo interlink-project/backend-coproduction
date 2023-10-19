@@ -349,6 +349,43 @@ def topological_sort(tasks):
 
     return stack
 
+def sanitize_filename(filename, replacement="_"):
+    """
+    Sanitize a filename by removing or replacing characters that are not valid 
+    or safe in filenames across major operating systems.
+
+    Args:
+    - filename (str): The original filename.
+    - replacement (str): The character to replace invalid characters with. Default is underscore.
+
+    Returns:
+    - str: The sanitized filename.
+    """
+
+    # Split filename and extension
+    if "." in filename:
+        name, ext = filename.rsplit(".", 1)
+        ext = "." + ext
+    else:
+        name = filename
+        ext = ""
+
+    # Remove or replace characters that are unsafe for filenames
+    # This regex aims at capturing most problematic characters in filenames across major OS
+    name = re.sub(r'[<>:"/\\|?*]', replacement, name)
+    
+    # Remove leading and trailing periods, spaces, and hyphens
+    name = name.strip(". -")
+
+    # Ensure the filename doesn't use any reserved names (CON, PRN, AUX, etc.)
+    # irrespective of its extension (e.g., CON.txt is invalid on Windows)
+    reserved_names = ["CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4","COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3","LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"]
+    
+    if name.upper() in reserved_names:
+        name = replacement + name
+    
+    return name + ext
+
 #Download the asset into the assets folder
 def downloadAsset(asset,dirpath,token):
 
@@ -407,6 +444,7 @@ def downloadAsset(asset,dirpath,token):
                     if not os.path.exists(directory_assetPath):
                         os.makedirs(directory_assetPath)
 
+                    filename = sanitize_filename(filename=filename)
                     file_path = os.path.join(directory_assetPath, str(asset.id) + "." + filename)
 
                     # Guarda el contenido de la respuesta en un archivo
