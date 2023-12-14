@@ -18,6 +18,7 @@ from app.locales import get_language
 from app.general.emails import send_email
 from fastapi.responses import FileResponse
 from app.models import UserNotification
+from app.models import Story
 from app.models import ParticipationRequest
 import os
 import zipfile
@@ -1376,6 +1377,90 @@ async def copy_coproductionprocess(
     #print("POSTUPDATE")
     # If new_coprod is returned it raises an error regarding recursion with Python
     return new_coprod.id
+
+
+
+@router.post("/{id}/publish_story")
+async def publish_coproductionprocess(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: uuid.UUID,
+    current_user: models.User = Depends(deps.get_current_active_user),
+    token: str = Depends(deps.get_current_active_token),
+    label_name: str = '',
+    from_view:str='',
+    data: Dict   # Accept any JSON object
+) -> Any:
+    """
+    1 . - Copy a coproductionprocess.
+    """
+    coproductionprocess = await crud.coproductionprocess.get(db=db, id=id)
+    if not coproductionprocess:
+        raise HTTPException(status_code=404, detail="CoproductionProcess not found")
+    
+    if(from_view != 'story'):    
+        if not crud.coproductionprocess.can_remove(user=current_user, object=coproductionprocess):
+            raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    new_coprod = await crud.coproductionprocess.copy(db=db, coproductionprocess=coproductionprocess, user=current_user, token=token, label_name=label_name,from_view=from_view)
+    #print("new_coprod", new_coprod)
+    if coproductionprocess.logotype:
+        filename, extension = os.path.splitext(coproductionprocess.logotype.split('/')[-1])
+        in_file_path = coproductionprocess.logotype
+        out_file_path = f"/static/coproductionprocesses/{new_coprod.id}{extension}"
+        #print("in_file_path", in_file_path)
+        
+        async with aiofiles.open("/app" + in_file_path, 'rb') as in_file:
+            content = await in_file.read()
+            #print("content", content)
+            async with aiofiles.open("/app" + out_file_path, 'wb') as out_file:
+                #print("out_file", out_file_path)
+                await out_file.write(content) 
+                 # async write
+        #print("PREUPDATE")
+
+    
+        await crud.coproductionprocess.set_logotype(db=db, coproductionprocess=new_coprod,logotype_path=out_file_path)
+    #print("POSTUPDATE")
+    # If new_coprod is returned it raises an error regarding recursion with Python
+    #return clone_coprod.id
+
+    """
+    2 . - Create the story.
+    """
+    
+    """
+    Create new story.
+    """
+
+    newStory=Story()
+    newStory.coproductionprocess_id=coproductionprocess.id
+    newStory.user_id=current_user.id
+    newStory.state=True
+    newStory.rating=3
+    newStory.logotype='/coproduction'+coproductionprocess.logotype
+    newStory.coproductionprocess_cloneforpub_id=new_coprod.id
+
+    # Set the flag in the Coproduction Process to identify it is from catalogue
+    coproductionprocess=await crud.coproductionprocess.get(db=db, id=new_coprod.id)
+    coproductionprocess.is_part_of_publication=True
+    db.add(coproductionprocess)
+    db.commit()
+    db.refresh(coproductionprocess)
+   
+    #print('Los datos de la historia son:')
+    #print(story_in['data_story'])
+
+
+    newStory.data_story=data
+    # story = await crud.story.get_by_name(db=db, name=story_in.name)
+    # if not story:
+    story = await crud.story.create(db=db, obj_in=newStory)
+    return story
+    # raise HTTPException(status_code=400, detail="Story already exists")
+  
+  
+  
 
 @router.post("/{id}/addTag")
 async def add_tag(
