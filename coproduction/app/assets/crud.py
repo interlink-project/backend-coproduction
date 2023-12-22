@@ -349,14 +349,27 @@ class CRUDAsset(CRUDBase[Asset, AssetCreate, AssetPatch]):
                     pass
             if (data_from_interlinker):
                 # print(data_from_interlinker)
-                external_asset_id = data_from_interlinker[
-                    "id"] if "id" in data_from_interlinker else data_from_interlinker["_id"]
-
-                new_asset = InternalAssetCreate(task_id=task.id,
-                                                softwareinterlinker_id=asset.softwareinterlinker_id,
-                                                knowledgeinterlinker_id=asset.knowledgeinterlinker_id,
-                                                external_asset_id=external_asset_id)
-                await self.create(db=db, asset=new_asset, creator=creator, task=task)
+                
+                external_asset_id = None
+                existsId=False
+                
+                if "id" in data_from_interlinker:
+                    external_asset_id = data_from_interlinker["id"]
+                    existsId=True
+                elif "_id" in data_from_interlinker:
+                    external_asset_id = data_from_interlinker["_id"]
+                    existsId=True
+                else:
+                    print("We were not able to get the Id of the external asset")
+                    # Handle the case where neither key is present
+                    # For example, log an error, raise an exception, or take other appropriate action
+        
+                if existsId:
+                    new_asset = InternalAssetCreate(task_id=task.id,
+                                                    softwareinterlinker_id=asset.softwareinterlinker_id,
+                                                    knowledgeinterlinker_id=asset.knowledgeinterlinker_id,
+                                                    external_asset_id=external_asset_id)
+                    await self.create(db=db, asset=new_asset, creator=creator, task=task)
 
         elif asset.type == 'externalasset':
             # print('Copying external asset')
