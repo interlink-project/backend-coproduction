@@ -1077,57 +1077,66 @@ async def import_file(
                                         new_file_name = get_modified_file_name(file_path)  # Replace with the actual new name and extension
                                         new_file_path = str(path_asset_folder / new_file_name)
 
-                                        # Copy the file to the new location with the new name
-                                        shutil.copy(file_path, new_file_path)
                                         
-                                        with open(new_file_path, 'rb') as f:
-                                            files = {'file': f}
-                                            headers = {
-                                            'Authorization': token
-                                            }
-                                            response = requests.post(url,headers=headers, files=files)
-
-                                        # Check the response
-                                        if response.status_code == 201:
-                                            #print("File uploaded successfully!")
-                                            #print("Response:", response.json())
-                                            pass
-                                        else:
-                                            print("Failed to upload file. Status code:", response.status_code)
-                                            print("Response:", response.json())
-
-                                        asset_service=response.json()
-
-                                        #Get the googledrive software interlinker ID
-
-                                        serviceName=service_name
-                                        url = f'http://catalogue:80/api/v1/softwareinterlinkers/'+serviceName
-                                        headers = {
-                                            'Authorization': token
-                                            }
-                                        response = requests.get(url,headers=headers)
-
-                                        # Check if the request was successful
-                                        if response.status_code == 200:
-                                            # Parse the JSON response
-                                            serviceinfo = response.json()
+                                        if os.path.exists(file_path):
+                                        
+                                            # Copy the file to the new location with the new name
+                                            shutil.copy(file_path, new_file_path)
                                             
-                                            #print("Success:", serviceinfo)
+                                            with open(new_file_path, 'rb') as f:
+                                                files = {'file': f}
+                                                headers = {
+                                                'Authorization': token
+                                                }
+                                                print(url)
+                                                print(headers)
+                                                print(files)
+                                                response = requests.post(url,headers=headers, files=files)
+
+                                            # Check the response
+                                            if response.status_code == 201:
+                                                #print("File uploaded successfully!")
+                                                #print("Response:", response.json())
+                                                pass
+                                            else:
+                                                print("Failed to upload file. Status code:", response.status_code)
+                                                print("Response:", response.json())
+
+                                            print("Try to change response to json::")
+                                            asset_service=response.json()
+
+                                            #Get the googledrive software interlinker ID
+
+                                            serviceName=service_name
+                                            url = f'http://catalogue:80/api/v1/softwareinterlinkers/'+serviceName
+                                            headers = {
+                                                'Authorization': token
+                                                }
+                                            response = requests.get(url,headers=headers)
+
+                                            # Check if the request was successful
+                                            if response.status_code == 200:
+                                                # Parse the JSON response
+                                                serviceinfo = response.json()
+                                                
+                                                #print("Success:", serviceinfo)
+                                            else:
+                                                print("Failed. Status code:", response.status_code)
+
+
+
+                                            #asset_obj = schemas.InternalAssetCreate(**asset)
+                                            # Creating an instance of the class
+
+                                            asset_obj = schemas.InternalAssetCreate(
+                                            task_id=task_created.id,
+                                            softwareinterlinker_id=UUID(serviceinfo['id']),
+                                            knowledgeinterlinker_id=knowledgeinterlinker_id,
+                                            external_asset_id=asset_service['id']
+                                            )
                                         else:
-                                            print("Failed. Status code:", response.status_code)
-
-
-
-                                        #asset_obj = schemas.InternalAssetCreate(**asset)
-                                        # Creating an instance of the class
-
-                                        asset_obj = schemas.InternalAssetCreate(
-                                        task_id=task_created.id,
-                                        softwareinterlinker_id=UUID(serviceinfo['id']),
-                                        knowledgeinterlinker_id=knowledgeinterlinker_id,
-                                        external_asset_id=asset_service['id']
-                                        )
-
+                                            print(file_path)
+                                            print('The file dont exists')
 
 
 
